@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAX_LAENGE, MIN_LAENGE, melodieSchluessel, wuerfleMelodie } from "./melodie";
+import { MELODIE_LAENGE, melodieSchluessel, wuerfleMelodie } from "./melodie";
 import { type UebungsNote, istLandmark, notenAusPaketen } from "./curriculum";
 
 const VORRAT = notenAusPaketen([
@@ -17,10 +17,10 @@ function vieleMelodien(anzahl: number, vorrat: readonly UebungsNote[] = VORRAT) 
 }
 
 describe("Laenge", () => {
-  it("bleibt zwischen vier und acht Toenen", () => {
+  it("hat immer acht Toene", () => {
+    expect(MELODIE_LAENGE).toBe(8);
     for (const melodie of vieleMelodien(200)) {
-      expect(melodie.length).toBeGreaterThanOrEqual(MIN_LAENGE);
-      expect(melodie.length).toBeLessThanOrEqual(MAX_LAENGE);
+      expect(melodie).toHaveLength(MELODIE_LAENGE);
     }
   });
 

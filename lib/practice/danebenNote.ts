@@ -39,13 +39,24 @@ export function danebenAlsNote(
   return passtInsBild(note, passend) ? { note, schluessel: passend } : null;
 }
 
+/**
+ * Wie viele Fehlgriffe gleichzeitig gezeigt werden.
+ *
+ * Wer einen Akkord sucht, tastet sich mit ein paar Fingern heran — die letzten
+ * drei zu zeigen hilft. Alles darueber waere nur noch Gewusel neben der
+ * eigentlichen Aufgabe.
+ */
+const MAX_DANEBEN = 3;
+
 /** Mehrere Fehlgriffe auf einmal — fuer Akkorde. */
 export function danebenAlsNoten(
   midis: Iterable<number>,
   bevorzugt: Schluessel | null,
 ): DanebenNote[] {
+  // Sets behalten die Einfuegereihenfolge, die letzten sind also die neuesten.
+  const juengste = [...midis].slice(-MAX_DANEBEN);
   const ergebnis: DanebenNote[] = [];
-  for (const midi of midis) {
+  for (const midi of juengste) {
     const eintrag = danebenAlsNote(midi, bevorzugt);
     if (eintrag) ergebnis.push(eintrag);
   }

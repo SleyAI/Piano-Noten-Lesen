@@ -14,8 +14,8 @@
 import { type UebungsNote, istLandmark, uebungsSchluessel } from "./curriculum";
 import { gewichteteWahl } from "@/lib/practice/auswahl";
 
-export const MIN_LAENGE = 4;
-export const MAX_LAENGE = 8;
+/** Jede Melodie ist gleich lang — acht Toene fuellen das System sauber aus. */
+export const MELODIE_LAENGE = 8;
 
 /** Wie stark ein Schritt gegenueber einem Sprung bevorzugt wird. */
 function naeheGewicht(abstand: number): number {
@@ -55,9 +55,7 @@ export function wuerfleMelodie(
   if (vorrat.length === 0) return [];
 
   const menge = waehleVorrat(vorrat);
-  const laenge =
-    optionen.laenge ??
-    MIN_LAENGE + Math.floor(Math.random() * (MAX_LAENGE - MIN_LAENGE + 1));
+  const laenge = optionen.laenge ?? MELODIE_LAENGE;
 
   const landmarks = menge.filter(istLandmark);
   const start =

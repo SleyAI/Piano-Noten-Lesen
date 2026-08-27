@@ -8,10 +8,11 @@
  * die Hand die drei Griffe als Zusammenhang statt als drei fremde Formen.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Notensystem, type NotenSpalte } from "@/components/notation/Notensystem";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
 import { Lagenband } from "@/components/practice/Lagenband";
+import { WeiterKnopf } from "@/components/practice/WeiterKnopf";
 import { RundenAbschluss } from "@/components/practice/RundenAbschluss";
 import { Fortschrittspunkte } from "@/components/practice/Fortschrittspunkte";
 import {
@@ -33,7 +34,6 @@ import { useTricky } from "@/lib/store/tricky";
 
 /** So viele Akkorde ergeben eine Runde. */
 const RUNDENLAENGE = 4;
-const PAUSE_NACH_TREFFER = 700;
 
 /** Naechsten Akkord ziehen: was hakt, kommt oefter dran. */
 function zieheAkkord(vorrat: readonly Akkord[], vorheriger: Akkord | null): Akkord | null {
@@ -92,14 +92,6 @@ function Runde({
   const [geschafft, setGeschafft] = useState(0);
   const [rundeVorbei, setRundeVorbei] = useState(false);
 
-  const uhren = useRef<number[]>([]);
-  useEffect(
-    () => () => {
-      for (const id of uhren.current) window.clearTimeout(id);
-    },
-    [],
-  );
-
   const reihe: Lage[] = useMemo(
     () => (akkord ? lagenVon(akkord, umkehrungen) : []),
     [akkord, umkehrungen],
@@ -140,22 +132,9 @@ function Runde({
   const griff = useAkkordGriff({
     erwartet,
     aktiv: !getroffen && !rundeVorbei && aktuelleLage !== null,
-    aufTreffer: () => {
-      setGetroffen(true);
-      uhren.current.push(
-        window.setTimeout(() => {
-          if (lagenIndex + 1 < reihe.length) {
-            setLagenIndex((i) => i + 1);
-            setGetroffen(false);
-            return;
-          }
-          const stand = geschafft + 1;
-          setGeschafft(stand);
-          if (stand >= RUNDENLAENGE) setRundeVorbei(true);
-          else naechsterAkkord(akkord);
-        }, PAUSE_NACH_TREFFER),
-      );
-    },
+    // Kein automatisches Weiterspringen: der Griff bleibt stehen, bis man
+    // ihn von sich aus verlaesst.
+    aufTreffer: () => setGetroffen(true),
     aufFehler: () => {
       if (aktuelleLage) {
         merkeFehler(lageSchluessel(aktuelleLage), lageBeschriftung(aktuelleLage));
@@ -198,6 +177,19 @@ function Runde({
     [vorrat, umkehrungen, schluesselWahl],
   );
 
+  /** Naechste Umkehrung, naechster Akkord — oder Rundenende. */
+  function weiter() {
+    if (lagenIndex + 1 < reihe.length) {
+      setLagenIndex((i) => i + 1);
+      setGetroffen(false);
+      return;
+    }
+    const stand = geschafft + 1;
+    setGeschafft(stand);
+    if (stand >= RUNDENLAENGE) setRundeVorbei(true);
+    else naechsterAkkord(akkord);
+  }
+
   function neueRunde() {
     starteRunde();
     setGeschafft(0);
@@ -236,8 +228,14 @@ function Runde({
         }
         hinweis={
           getroffen ? (
-            <span className="animate-auftauchen text-mint-tief">
-              {aktuelleLage && lageBeschriftung(aktuelleLage)} — sitzt.
+            <span className="flex items-center gap-4">
+              <span className="animate-auftauchen text-mint-tief">
+                {aktuelleLage && lageBeschriftung(aktuelleLage)} — sitzt.
+              </span>
+              <WeiterKnopf
+                text={lagenIndex + 1 < reihe.length ? "nächste Umkehrung" : "nächster Akkord"}
+                onClick={weiter}
+              />
             </span>
           ) : griff.daneben.size > 0 ? (
             <span className="text-flieder-tief">

@@ -8,10 +8,11 @@
  * die Folge fluessig statt sie Griff fuer Griff zu suchen.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Notensystem, type NotenSpalte } from "@/components/notation/Notensystem";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
 import { RundenAbschluss } from "@/components/practice/RundenAbschluss";
+import { WeiterKnopf } from "@/components/practice/WeiterKnopf";
 import {
   type Lage,
   flottePlanung,
@@ -37,7 +38,6 @@ import { useEinstellungen } from "@/lib/store/einstellungen";
 import { useTricky } from "@/lib/store/tricky";
 
 type Stellungswahl = "grundstellung" | "flott";
-const PAUSE_NACH_TREFFER = 550;
 
 export function AkkordfolgenUebung({ aufAuswahl }: { aufAuswahl: () => void }) {
   const pakete = useEinstellungen((z) => z.akkordPakete);
@@ -59,14 +59,6 @@ export function AkkordfolgenUebung({ aufAuswahl }: { aufAuswahl: () => void }) {
   const [position, setPosition] = useState(0);
   const [getroffen, setGetroffen] = useState(false);
   const [fertig, setFertig] = useState(false);
-
-  const uhren = useRef<number[]>([]);
-  useEffect(
-    () => () => {
-      for (const id of uhren.current) window.clearTimeout(id);
-    },
-    [],
-  );
 
   const plan: Lage[] = useMemo(() => {
     if (!folge) return [];
@@ -105,24 +97,24 @@ export function AkkordfolgenUebung({ aufAuswahl }: { aufAuswahl: () => void }) {
   const griff = useAkkordGriff({
     erwartet,
     aktiv: gestartet && !getroffen && !fertig,
-    aufTreffer: () => {
-      setGetroffen(true);
-      uhren.current.push(
-        window.setTimeout(() => {
-          if (position + 1 >= plan.length) setFertig(true);
-          else {
-            setPosition((p) => p + 1);
-            setGetroffen(false);
-          }
-        }, PAUSE_NACH_TREFFER),
-      );
-    },
+    // Der Griff bleibt stehen, bis man selbst weitergeht.
+    aufTreffer: () => setGetroffen(true),
     aufFehler: () => {
       if (aktuelleLage) {
         merkeFehler(lageSchluessel(aktuelleLage), lageBeschriftung(aktuelleLage));
       }
     },
   });
+
+  /** Naechster Akkord der Folge — oder Ende. */
+  function weiter() {
+    if (position + 1 >= plan.length) {
+      setFertig(true);
+      return;
+    }
+    setPosition((p) => p + 1);
+    setGetroffen(false);
+  }
 
   const bereich = useMemo(
     () =>
@@ -220,7 +212,15 @@ export function AkkordfolgenUebung({ aufAuswahl }: { aufAuswahl: () => void }) {
         }
         hinweis={
           getroffen ? (
-            <span className="animate-auftauchen text-mint-tief">Weiter zum nächsten.</span>
+            <span className="flex items-center gap-4">
+              <span className="animate-auftauchen text-mint-tief">
+                {aktuelleLage && lageBeschriftung(aktuelleLage)} — sitzt.
+              </span>
+              <WeiterKnopf
+                text={position + 1 < plan.length ? "nächster Akkord" : "Folge beenden"}
+                onClick={weiter}
+              />
+            </span>
           ) : griff.daneben.size > 0 ? (
             <span className="text-flieder-tief">
               Das war {[...griff.daneben].map((m) => nameMitOktave(vonMidi(m))).join(", ")} —

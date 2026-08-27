@@ -9,16 +9,17 @@ und man darf weiter probieren, bis es sitzt.
 
 ## Die drei Modi
 
-**Einzelne Noten** — Eine Note im Doppelsystem, nach der Landmark-Methode:
-Violin- und Bassschlüssel wachsen gemeinsam von der Mitte nach außen. Start
-beim mittleren C, dann G4 und F3, dann C5 und C3, danach stufenweise. Neun
-Pakete, einzeln an- und abwählbar.
+**Einzelne Noten** — Acht gewürfelte Noten stehen im Doppelsystem, ein Cursor
+geht sie durch. Gezogen wird nach Übungsbedarf: was hakt, kommt öfter dran.
+Der Vorrat folgt der Landmark-Methode — Violin- und Bassschlüssel wachsen
+gemeinsam von der Mitte nach außen, Start beim mittleren C, dann G4 und F3,
+dann C5 und C3, danach stufenweise. Neun Pakete, einzeln an- und abwählbar.
 
-**Melodien** — Vier bis acht Töne, ausschließlich aus den freigeschalteten
-Noten gewürfelt. Schritte vor Sprüngen, Anfang und Ende möglichst auf einem
-Landmark. Ein Cursor zeigt, wo man gerade ist. Ist eine Melodie durch, kommt
-ohne Zwischenbilanz die nächste — es wird nichts gezählt und nichts abgehakt,
-man hört auf, wenn man aufhören möchte.
+**Melodien** — Ebenfalls acht Töne, aber nach musikalischen Regeln gebaut
+statt gewürfelt: Schritte vor Sprüngen, Anfang und Ende möglichst auf einem
+Landmark. Ist eine Melodie durch, kommt ohne Zwischenbilanz die nächste — es
+wird nichts gezählt und nichts abgehakt, man hört auf, wenn man aufhören
+möchte.
 
 **Akkorde** — Zwei Wege durch denselben Vorrat:
 
@@ -27,6 +28,10 @@ man hört auf, wenn man aufhören möchte.
   II–V–I-Kadenz bis zum Blues. Vor dem Start steht der komplette Plan da —
   welcher Akkord in welcher Stellung —, damit die Finger wissen, wohin sie
   gehen.
+
+Akkorde springen nie von selbst weiter: sitzt ein Griff, bleibt er stehen, bis
+man auf *weiter* tippt. So kann man ihn in Ruhe anschauen und nachfühlen,
+bevor die nächste Stellung kommt.
 
 Acht Akkordpakete von den ersten Dreiklängen bis zu Non-, Undezim- und
 Tredezimakkorden. Die Auswahl geht über drei Ebenen: Paket, einzelne Akkorde

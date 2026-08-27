@@ -3,16 +3,14 @@
 /**
  * Modus 2 — kurze Melodien spielen.
  *
- * Ohne Runden und ohne Zaehlung: ist eine Melodie durch, kommt die naechste.
- * Man hoert auf, wenn man aufhoeren moechte, nicht wenn ein Zaehler voll ist.
- *
- * Die Melodie besteht ausschliesslich aus freigeschalteten Noten. Ein Cursor
- * zeigt, wo man gerade ist; gespielte Toene bleiben mint stehen.
+ * Acht Toene, ausschliesslich aus den freigeschalteten Noten und nach
+ * musikalischen Regeln gebaut. Ohne Runden und ohne Zaehlung: ist eine Melodie
+ * durch, kommt die naechste. Man hoert auf, wenn man aufhoeren moechte.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Kopfzeile } from "@/components/ui/Kopfzeile";
-import { Notensystem, type NotenSpalte } from "@/components/notation/Notensystem";
+import { NotenReihe } from "@/components/practice/NotenReihe";
 import { NotenPaketWahl } from "@/components/practice/NotenPaketWahl";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
 import {
@@ -24,17 +22,14 @@ import {
 } from "@/lib/music/curriculum";
 import { melodieSchluessel, wuerfleMelodie } from "@/lib/music/melodie";
 import { nameMitOktave, vonMidi } from "@/lib/music/pitch";
-import { danebenAlsNote } from "@/lib/practice/danebenNote";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
-import { useNoteneingabe } from "@/lib/input/useNoteneingabe";
+import { useReihenUebung } from "@/lib/practice/useReihenUebung";
 import { useEinstellungen } from "@/lib/store/einstellungen";
 import { useHydriert } from "@/lib/store/hydriert";
 import { useTricky } from "@/lib/store/tricky";
 
 /** Wie lange die fertige Melodie stehen bleibt, bevor die naechste kommt. */
 const PAUSE_NACH_MELODIE = 1000;
-/** Wie lange ein Fehlgriff nachklingt. */
-const PULS_DAUER = 1300;
 
 export function MelodienUebung() {
   const hydriert = useHydriert();
@@ -68,7 +63,6 @@ function Endlos({
   aufAuswahl: () => void;
 }) {
   const merkeVersuch = useTricky((z) => z.merkeVersuch);
-  const merkeFehler = useTricky((z) => z.merkeFehler);
 
   const vorrat = useMemo(
     () => nachSchluessel(notenAusPaketen(pakete), schluesselWahl),
@@ -77,8 +71,6 @@ function Endlos({
   const bereich = useMemo(() => klaviaturBereich(vorrat.map((u) => u.note.midi)), [vorrat]);
 
   const [melodie, setMelodie] = useState<UebungsNote[]>(() => wuerfleMelodie(vorrat));
-  const [position, setPosition] = useState(0);
-  const [letzteFalsche, setLetzteFalsche] = useState<number | null>(null);
 
   const uhren = useRef<number[]>([]);
   useEffect(
@@ -100,52 +92,18 @@ function Endlos({
 
   const wuerfeln = useCallback(() => {
     setMelodie(wuerfleMelodie(vorrat));
-    setPosition(0);
-    setLetzteFalsche(null);
   }, [vorrat]);
 
-  const fertig = melodie.length > 0 && position >= melodie.length;
+  // Durch? Dann kommt nach kurzer Pause einfach die naechste.
+  const aufFertig = useCallback(() => {
+    uhren.current.push(window.setTimeout(wuerfeln, PAUSE_NACH_MELODIE));
+  }, [wuerfeln]);
 
-  useNoteneingabe((ereignis) => {
-    if (ereignis.art !== "an" || zeigeAuswahl || fertig) return;
-    const erwartet = melodie[position];
-    if (!erwartet) return;
-
-    if (ereignis.midi === erwartet.note.midi) {
-      const naechste = position + 1;
-      setPosition(naechste);
-      setLetzteFalsche(null);
-
-      // Durch? Dann kommt einfach die naechste Melodie.
-      if (naechste >= melodie.length) {
-        uhren.current.push(window.setTimeout(wuerfeln, PAUSE_NACH_MELODIE));
-      }
-      return;
-    }
-
-    merkeFehler(uebungsSchluessel(erwartet), nameMitOktave(erwartet.note));
-    setLetzteFalsche(ereignis.midi);
-    uhren.current.push(window.setTimeout(() => setLetzteFalsche(null), PULS_DAUER));
+  const uebung = useReihenUebung({
+    reihe: melodie,
+    aktiv: !zeigeAuswahl,
+    aufFertig,
   });
-
-  // Was stattdessen gespielt wurde, moeglichst im System der erwarteten Note.
-  const danebenNote = useMemo(() => {
-    if (letzteFalsche == null) return null;
-    return danebenAlsNote(letzteFalsche, melodie[position]?.schluessel ?? null);
-  }, [letzteFalsche, melodie, position]);
-
-  const spalten: NotenSpalte[] = melodie.map((ton, i) => ({
-    id: `${i}-${uebungsSchluessel(ton)}`,
-    noten: [ton],
-    zustand: i < position ? "richtig" : i === position ? "aktiv" : "ruhend",
-    daneben: i === position && danebenNote ? [danebenNote] : undefined,
-  }));
-
-  const hervorgehoben = useMemo(() => {
-    const karte = new Map<number, "mint" | "flieder" | "himmel">();
-    if (letzteFalsche != null) karte.set(letzteFalsche, "flieder");
-    return karte;
-  }, [letzteFalsche]);
 
   return (
     <div className="flex h-full flex-col bg-papier">
@@ -179,28 +137,33 @@ function Endlos({
       ) : (
         <Uebungsflaeche
           notenbild={
-            <Notensystem
-              spalten={spalten}
+            <NotenReihe
+              reihe={melodie}
+              position={uebung.position}
+              danebenNote={uebung.danebenNote}
               beschreibung={`Melodie aus ${melodie.length} Tönen`}
-              className="h-full w-full"
             />
           }
           hinweis={
-            fertig ? (
+            uebung.fertig ? (
               <span className="animate-auftauchen text-mint-tief">
                 Durch. Die nächste kommt gleich.
               </span>
-            ) : letzteFalsche != null ? (
+            ) : uebung.letzteFalsche != null ? (
               <span className="text-flieder-tief">
-                Das war {nameMitOktave(vonMidi(letzteFalsche))} — der Cursor wartet.
+                Das war {nameMitOktave(vonMidi(uebung.letzteFalsche))} — der Cursor wartet.
               </span>
             ) : (
               <span className="text-tinte-leise">
-                Ton {position + 1} von {melodie.length}
+                Ton {uebung.position + 1} von {melodie.length}
               </span>
             )
           }
-          hervorgehoben={hervorgehoben}
+          hervorgehoben={
+            uebung.letzteFalsche != null
+              ? new Map([[uebung.letzteFalsche, "flieder" as const]])
+              : undefined
+          }
           klaviaturVon={bereich.von}
           klaviaturBis={bereich.bis}
         />

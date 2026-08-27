@@ -7,7 +7,16 @@
  * und im Bassschluessel eine darueber — spiegelbildlich zueinander.
  */
 
-import { type Note, type Schluessel, n, noten, passenderSchluessel } from "./pitch";
+import {
+  type Note,
+  type Schluessel,
+  type SchluesselWahl,
+  n,
+  noten,
+  passenderSchluessel,
+} from "./pitch";
+
+export type { SchluesselWahl };
 
 export interface NotenPaket {
   id: string;
@@ -27,7 +36,7 @@ export const NOTEN_PAKETE: NotenPaket[] = [
     stufe: 1,
     titel: "Die Mitte",
     hinweis:
-      "Das mittlere C — der Ankerpunkt. Oben haengt es unter dem System, unten sitzt es darueber.",
+      "Das mittlere C — der Ankerpunkt. Oben hängt es unter dem System, unten sitzt es darüber.",
     violin: noten("C4"),
     bass: noten("C4"),
   },
@@ -36,15 +45,15 @@ export const NOTEN_PAKETE: NotenPaket[] = [
     stufe: 2,
     titel: "Die Landmarks",
     hinweis:
-      "G4 sitzt genau in der Windung des Violinschluessels, F3 zwischen den beiden Punkten des Bassschluessels.",
+      "G4 sitzt genau in der Windung des Violinschlüssels, F3 zwischen den beiden Punkten des Bassschlüssels.",
     violin: noten("G4"),
     bass: noten("F3"),
   },
   {
     id: "aeussere-c",
     stufe: 3,
-    titel: "Die aeusseren C",
-    hinweis: "Eine Oktave ueber und unter der Mitte — drei feste Punkte pro System.",
+    titel: "Die äußeren C",
+    hinweis: "Eine Oktave über und unter der Mitte — drei feste Punkte pro System.",
     violin: noten("C5"),
     bass: noten("C3"),
   },
@@ -67,7 +76,7 @@ export const NOTEN_PAKETE: NotenPaket[] = [
   {
     id: "um-die-aeusseren-c",
     stufe: 6,
-    titel: "Um die aeusseren C",
+    titel: "Um die äußeren C",
     hinweis: "Nachbarn von C5 und C3. Damit ist jeder Anker von beiden Seiten erschlossen.",
     violin: noten("H4 D5"),
     bass: noten("D3 H2"),
@@ -76,29 +85,35 @@ export const NOTEN_PAKETE: NotenPaket[] = [
     id: "oktave-voll",
     stufe: 7,
     titel: "Die Oktave ist voll",
-    hinweis: "Alle Stammtoene von C4 bis C5 oben und von C3 bis C4 unten — keine Luecken mehr.",
+    hinweis: "Alle Stammtöne von C4 bis C5 oben und von C3 bis C4 unten — keine Lücken mehr.",
     violin: noten("C4 D4 E4 F4 G4 A4 H4 C5"),
     bass: noten("C3 D3 E3 F3 G3 A3 H3 C4"),
   },
   {
     id: "nach-aussen",
     stufe: 8,
-    titel: "Weiter nach aussen",
-    hinweis: "Die restlichen Toene im System und knapp daneben — noch ohne Hilfslinien.",
+    titel: "Weiter nach außen",
+    hinweis: "Die restlichen Töne im System und knapp daneben — noch ohne Hilfslinien.",
     violin: noten("E5 F5 G5"),
     bass: noten("A2 G2 F2"),
   },
   {
     id: "hilfslinien",
     stufe: 9,
-    titel: "Ueber die Linien hinaus",
-    hinweis: "Die Toene mit Hilfslinien am oberen und unteren Rand.",
+    titel: "Über die Linien hinaus",
+    hinweis: "Die Töne mit Hilfslinien am oberen und unteren Rand.",
     violin: noten("A5 H5 C6"),
     bass: noten("E2 D2 C2"),
   },
 ];
 
 export const PAKET_NACH_ID = new Map(NOTEN_PAKETE.map((p) => [p.id, p]));
+
+export const SCHLUESSEL_WAHLEN: Array<{ wert: SchluesselWahl; titel: string; hinweis: string }> = [
+  { wert: "beide", titel: "Beide Systeme", hinweis: "So, wie Klaviernoten geschrieben sind." },
+  { wert: "violin", titel: "Nur Violinschlüssel", hinweis: "Das obere System, meist die rechte Hand." },
+  { wert: "bass", titel: "Nur Bassschlüssel", hinweis: "Das untere System, meist die linke Hand." },
+];
 
 /** Eine Note zusammen mit dem System, in dem sie geuebt wird. */
 export interface UebungsNote {
@@ -141,6 +156,21 @@ export function notenAusPaketen(paketIds: readonly string[]): UebungsNote[] {
   }
 
   return ergebnis;
+}
+
+/**
+ * Auf ein System einschraenken.
+ *
+ * Bleibt dabei nichts uebrig, gewinnt der volle Vorrat — eine leere Uebung
+ * waere kein hilfreiches Ergebnis einer Einstellung.
+ */
+export function nachSchluessel(
+  noten: readonly UebungsNote[],
+  wahl: SchluesselWahl,
+): UebungsNote[] {
+  if (wahl === "beide") return [...noten];
+  const gefiltert = noten.filter((u) => u.schluessel === wahl);
+  return gefiltert.length > 0 ? gefiltert : [...noten];
 }
 
 /** Wie viele Noten bringt ein Paket mit? Fuer die Anzeige auf der Kachel. */

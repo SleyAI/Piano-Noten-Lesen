@@ -47,6 +47,11 @@ export interface NotenSpalte {
   id: string;
   noten: SystemNote[];
   zustand: NotenZustand;
+  /**
+   * Was stattdessen gespielt wurde. Erscheint blass in Flieder rechts neben
+   * der erwarteten Note, damit man den Unterschied sieht statt ihn zu raten.
+   */
+  daneben?: SystemNote[];
 }
 
 /** Zeichenfarbe je Zustand. Kein Rot — Fehler sind Flieder, nicht Alarm. */
@@ -81,6 +86,7 @@ function Notenkopf({
 }: {
   eintrag: SystemNote;
   x: number;
+  /** Seitlicher Versatz in Kopfbreiten. */
   versatz: number;
   zustand: NotenZustand;
 }) {
@@ -129,6 +135,9 @@ function Notenkopf({
   );
 }
 
+/** Wie weit rechts die falsch gespielte Note steht — in Kopfbreiten. */
+const DANEBEN_VERSATZ = 1.35;
+
 function Spalte({ spalte, x }: { spalte: NotenSpalte; x: number }) {
   // Pro System sortieren und Sekunden versetzen, damit sich nichts ueberlappt.
   const proSystem = (["bass", "violin"] as const).map((schluessel) => {
@@ -151,6 +160,18 @@ function Spalte({ spalte, x }: { spalte: NotenSpalte; x: number }) {
           />
         )),
       )}
+
+      {/* Die tatsaechlich gespielte Note daneben — eigene Spur, damit sie
+          nie mit der erwarteten kollidiert. */}
+      {spalte.daneben?.map((eintrag) => (
+        <Notenkopf
+          key={`daneben-${eintrag.schluessel}-${eintrag.note.diatonic}-${eintrag.note.alteration}`}
+          eintrag={eintrag}
+          x={x}
+          versatz={DANEBEN_VERSATZ}
+          zustand="daneben"
+        />
+      ))}
     </g>
   );
 }

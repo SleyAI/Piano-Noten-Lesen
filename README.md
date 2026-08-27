@@ -16,8 +16,9 @@ Pakete, einzeln an- und abwählbar.
 
 **Melodien** — Vier bis acht Töne, ausschließlich aus den freigeschalteten
 Noten gewürfelt. Schritte vor Sprüngen, Anfang und Ende möglichst auf einem
-Landmark. Ein Cursor zeigt, wo man gerade ist; der Würfel-Knopf liefert endlos
-neue Varianten.
+Landmark. Ein Cursor zeigt, wo man gerade ist. Ist eine Melodie durch, kommt
+ohne Zwischenbilanz die nächste — es wird nichts gezählt und nichts abgehakt,
+man hört auf, wenn man aufhören möchte.
 
 **Akkorde** — Zwei Wege durch denselben Vorrat:
 
@@ -30,6 +31,30 @@ neue Varianten.
 Acht Akkordpakete von den ersten Dreiklängen bis zu Non-, Undezim- und
 Tredezimakkorden. Die Auswahl geht über drei Ebenen: Paket, einzelne Akkorde
 daraus, und welche Umkehrungen drankommen sollen.
+
+## Ein System oder beide
+
+In jeder Auswahl-Ansicht lässt sich einstellen, ob beide Systeme zusammen
+geübt werden oder nur eines. Das gilt für alle drei Modi:
+
+- **Beide Systeme** — so, wie Klaviernoten geschrieben sind. Die
+  Voreinstellung, denn davon lebt die Landmark-Methode.
+- **Nur Violinschlüssel** oder **nur Bassschlüssel** — für gezieltes Üben
+  einer Hand. Noten und Melodien werden auf dieses System eingeschränkt;
+  Akkorde rutschen oktavweise dorthin, wo sie im gewählten System bequem
+  liegen. C-Dur steht im Bassschlüssel deshalb als C3–E3–G3 mitten im System
+  statt auf drei Hilfslinien darüber.
+
+## Wenn etwas danebengeht
+
+Kein Rot, kein Abbruch, keine Wertung. Stattdessen erscheint die tatsächlich
+gespielte Note blass in Flieder direkt neben der erwarteten — man sieht den
+Abstand, statt ihn zu raten — und der Hinweis nennt sie beim Namen („Das war
+G2"). Beliebig viele Versuche, die Aufgabe wartet.
+
+Im Hintergrund zählt die App mit, welche Noten und Griffe zögern. Auf der
+Startseite steht eine kurze Liste davon; in der Akkordauswahl lässt sich mit
+einem Tipp genau darauf eingrenzen.
 
 ## Zwei Spielweisen
 

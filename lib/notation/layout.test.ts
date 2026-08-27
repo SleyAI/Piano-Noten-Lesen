@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { AKKORD_PAKETE, akkordeImPaket, lageBeschriftung, lagen } from "@/lib/music/akkorde";
+import {
+  AKKORD_PAKETE,
+  akkordeImPaket,
+  griffImSystem,
+  lageBeschriftung,
+  lagen,
+} from "@/lib/music/akkorde";
 import { NOTEN_PAKETE } from "@/lib/music/curriculum";
 import { type Schluessel, n, passenderSchluesselFuer } from "@/lib/music/pitch";
 import {
   KOPF_HOEHE,
   SYSTEM_HOEHE,
   hilfslinienY,
+  passtInsBild,
   klammerOben,
   klammerUnten,
   schluesselAnkerY,
@@ -138,6 +145,62 @@ describe("Alle Akkordgriffe passen ins Bild", () => {
               hilfslinienY(ton, schluessel).length,
               `${lageBeschriftung(l)} ${ton.stufe}${ton.oktave}`,
             ).toBeLessThanOrEqual(3);
+          }
+        }
+      }
+    }
+  });
+});
+
+describe("Griffe bei fester Schluesselwahl", () => {
+  it("zeichnet jede Lage vollstaendig, egal welches System gewaehlt ist", () => {
+    for (const wahl of ["beide", "violin", "bass"] as const) {
+      for (const paket of AKKORD_PAKETE) {
+        for (const akkord of akkordeImPaket(paket)) {
+          for (const l of lagen(akkord)) {
+            const griff = griffImSystem(l.toene, wahl);
+            for (const ton of griff.toene) {
+              expect(
+                passtInsBild(ton, griff.schluessel),
+                `${wahl}: ${lageBeschriftung(l)} ${ton.stufe}${ton.oktave}`,
+              ).toBe(true);
+            }
+          }
+        }
+      }
+    }
+  });
+
+  it("bleibt auch im erzwungenen System bei hoechstens drei Hilfslinien", () => {
+    for (const wahl of ["violin", "bass"] as const) {
+      for (const paket of AKKORD_PAKETE) {
+        for (const akkord of akkordeImPaket(paket)) {
+          for (const l of lagen(akkord)) {
+            const griff = griffImSystem(l.toene, wahl);
+            for (const ton of griff.toene) {
+              expect(
+                hilfslinienY(ton, griff.schluessel).length,
+                `${wahl}: ${lageBeschriftung(l)} ${ton.stufe}${ton.oktave}`,
+              ).toBeLessThanOrEqual(3);
+            }
+          }
+        }
+      }
+    }
+  });
+
+  it("haelt die Griffe in einer spielbaren Lage", () => {
+    for (const wahl of ["violin", "bass"] as const) {
+      for (const paket of AKKORD_PAKETE) {
+        for (const akkord of akkordeImPaket(paket)) {
+          for (const l of lagen(akkord)) {
+            const griff = griffImSystem(l.toene, wahl);
+            // Innerhalb eines 88-Tasten-Klaviers, mit Luft nach beiden Seiten.
+            expect(griff.toene[0].midi, wahl).toBeGreaterThanOrEqual(28);
+            expect(
+              griff.toene[griff.toene.length - 1].midi,
+              wahl,
+            ).toBeLessThanOrEqual(100);
           }
         }
       }

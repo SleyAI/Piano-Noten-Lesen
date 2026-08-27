@@ -16,12 +16,15 @@ import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
 import { RundenAbschluss } from "@/components/practice/RundenAbschluss";
 import { Fortschrittspunkte } from "@/components/practice/Fortschrittspunkte";
 import {
+  type SchluesselWahl,
   type UebungsNote,
+  nachSchluessel,
   notenAusPaketen,
   uebungsSchluessel,
 } from "@/lib/music/curriculum";
-import { nameMitOktave } from "@/lib/music/pitch";
+import { nameMitOktave, vonMidi } from "@/lib/music/pitch";
 import { gewichteteWahl } from "@/lib/practice/auswahl";
+import { danebenAlsNote } from "@/lib/practice/danebenNote";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
 import { useNoteneingabe } from "@/lib/input/useNoteneingabe";
 import { useEinstellungen } from "@/lib/store/einstellungen";
@@ -51,6 +54,7 @@ function zieheNote(
 export function EinzelnotenUebung() {
   const hydriert = useHydriert();
   const pakete = useEinstellungen((z) => z.notenPakete);
+  const schluesselWahl = useEinstellungen((z) => z.schluesselWahl);
   const [zeigeAuswahl, setZeigeAuswahl] = useState(false);
 
   if (!hydriert) return <div className="h-full bg-papier" />;
@@ -60,8 +64,9 @@ export function EinzelnotenUebung() {
   // alten Vorrat zeigen.
   return (
     <Runde
-      key={pakete.join("|")}
+      key={`${pakete.join("|")}#${schluesselWahl}`}
       pakete={pakete}
+      schluesselWahl={schluesselWahl}
       zeigeAuswahl={zeigeAuswahl}
       aufAuswahl={() => setZeigeAuswahl((z) => !z)}
     />
@@ -70,10 +75,12 @@ export function EinzelnotenUebung() {
 
 function Runde({
   pakete,
+  schluesselWahl,
   zeigeAuswahl,
   aufAuswahl,
 }: {
   pakete: string[];
+  schluesselWahl: SchluesselWahl;
   zeigeAuswahl: boolean;
   aufAuswahl: () => void;
 }) {
@@ -81,13 +88,17 @@ function Runde({
   const merkeFehler = useTricky((z) => z.merkeFehler);
   const starteRunde = useTricky((z) => z.starteRunde);
 
-  const vorrat = useMemo(() => notenAusPaketen(pakete), [pakete]);
+  const vorrat = useMemo(
+    () => nachSchluessel(notenAusPaketen(pakete), schluesselWahl),
+    [pakete, schluesselWahl],
+  );
   const bereich = useMemo(() => klaviaturBereich(vorrat.map((u) => u.note.midi)), [vorrat]);
 
   const [aufgabe, setAufgabe] = useState<UebungsNote | null>(() => zieheNote(vorrat, null));
   const [getroffen, setGetroffen] = useState(false);
-  const [daneben, setDaneben] = useState(false);
-  const [falscheTasten, setFalscheTasten] = useState<Set<number>>(() => new Set());
+  // Nur der letzte Fehlgriff — bei einer einzelnen Note ist das die klarste
+  // Rueckmeldung.
+  const [letzteFalsche, setLetzteFalsche] = useState<number | null>(null);
   const [erledigt, setErledigt] = useState(0);
   const [rundeVorbei, setRundeVorbei] = useState(false);
 
@@ -115,8 +126,7 @@ function Runde({
   const naechsteAufgabe = useCallback((vorherige: UebungsNote | null) => {
     setAufgabe(zieheNote(vorrat, vorherige));
     setGetroffen(false);
-    setDaneben(false);
-    setFalscheTasten(new Set());
+    setLetzteFalsche(null);
   }, [vorrat]);
 
   useNoteneingabe((ereignis) => {
@@ -137,32 +147,36 @@ function Runde({
     }
 
     merkeFehler(uebungsSchluessel(aufgabe), nameMitOktave(aufgabe.note));
-    setDaneben(true);
-    setFalscheTasten((s) => new Set(s).add(ereignis.midi));
-    uhren.current.push(
-      window.setTimeout(() => {
-        setDaneben(false);
-        setFalscheTasten(new Set());
-      }, PULS_DAUER),
-    );
+    setLetzteFalsche(ereignis.midi);
+    uhren.current.push(window.setTimeout(() => setLetzteFalsche(null), PULS_DAUER));
   });
+
+  // Was stattdessen gespielt wurde — moeglichst im selben System wie die
+  // Aufgabe, damit der Abstand direkt ablesbar ist.
+  const danebenNote = useMemo(
+    () => (letzteFalsche == null ? null : danebenAlsNote(letzteFalsche, aufgabe?.schluessel ?? null)),
+    [letzteFalsche, aufgabe],
+  );
 
   const spalten: NotenSpalte[] = aufgabe
     ? [
         {
           id: uebungsSchluessel(aufgabe),
           noten: [aufgabe],
-          zustand: getroffen ? "richtig" : daneben ? "daneben" : "ruhend",
+          // Die erwartete Note bleibt ruhig stehen; der Fehlgriff pulsiert
+          // daneben, statt die Aufgabe selbst einzufaerben.
+          zustand: getroffen ? "richtig" : "ruhend",
+          daneben: danebenNote ? [danebenNote] : undefined,
         },
       ]
     : [];
 
   const hervorgehoben = useMemo(() => {
     const karte = new Map<number, "mint" | "flieder" | "himmel">();
-    for (const midi of falscheTasten) karte.set(midi, "flieder");
+    if (letzteFalsche != null) karte.set(letzteFalsche, "flieder");
     if (getroffen && aufgabe) karte.set(aufgabe.note.midi, "mint");
     return karte;
-  }, [falscheTasten, getroffen, aufgabe]);
+  }, [letzteFalsche, getroffen, aufgabe]);
 
   function neueRunde() {
     starteRunde();
@@ -210,8 +224,10 @@ function Runde({
               <span className="animate-auftauchen text-mint-tief">
                 {aufgabe && nameMitOktave(aufgabe.note)} — genau die.
               </span>
-            ) : daneben ? (
-              <span className="text-flieder-tief">Noch nicht ganz. Probier ruhig weiter.</span>
+            ) : letzteFalsche != null ? (
+              <span className="text-flieder-tief">
+                Das war {nameMitOktave(vonMidi(letzteFalsche))} — probier ruhig weiter.
+              </span>
             ) : (
               <span className="text-tinte-leise">Welche Note ist das?</span>
             )

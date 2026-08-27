@@ -68,7 +68,7 @@ function beschreibe(zustand: ReturnType<typeof useMidiZustand>) {
         punkt: "bg-creme-tief",
         text: "kein Klavier gefunden",
         aktion: true,
-        titel: "Kabel pruefen und erneut versuchen",
+        titel: "Kabel prüfen und erneut versuchen",
       };
     case "abgelehnt":
       return {
@@ -80,10 +80,10 @@ function beschreibe(zustand: ReturnType<typeof useMidiZustand>) {
     case "unsicherer-kontext":
       return {
         punkt: "bg-creme-tief",
-        text: "nur ueber HTTPS",
+        text: "nur über HTTPS",
         aktion: false,
         titel:
-          "Der Browser gibt MIDI nur auf einer sicheren Verbindung frei. Die veroeffentlichte Seite oder localhost benutzen.",
+          "Der Browser gibt MIDI nur auf einer sicheren Verbindung frei. Die veröffentlichte Seite oder localhost benutzen.",
       };
     case "nicht-verfuegbar":
       return {
@@ -98,7 +98,7 @@ function beschreibe(zustand: ReturnType<typeof useMidiZustand>) {
         punkt: "bg-tinte-leise",
         text: "Klavier verbinden",
         aktion: true,
-        titel: "Nach angeschlossenen MIDI-Geraeten suchen",
+        titel: "Nach angeschlossenen MIDI-Geräten suchen",
       };
   }
 }

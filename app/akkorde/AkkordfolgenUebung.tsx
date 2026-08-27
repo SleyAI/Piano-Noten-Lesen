@@ -16,6 +16,7 @@ import {
   type Lage,
   flottePlanung,
   gewaehlteAkkorde,
+  griffImSystem,
   grundstellungsPlanung,
   lageBeschriftung,
   lageSchluessel,
@@ -28,7 +29,8 @@ import {
   fehlendeAkkorde,
   folgeSpielbar,
 } from "@/lib/music/akkordfolgen";
-import { passenderSchluesselFuer } from "@/lib/music/pitch";
+import { nameMitOktave, vonMidi } from "@/lib/music/pitch";
+import { danebenAlsNoten } from "@/lib/practice/danebenNote";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
 import { useAkkordGriff } from "@/lib/practice/useAkkordGriff";
 import { useEinstellungen } from "@/lib/store/einstellungen";
@@ -41,6 +43,7 @@ export function AkkordfolgenUebung({ aufAuswahl }: { aufAuswahl: () => void }) {
   const pakete = useEinstellungen((z) => z.akkordPakete);
   const abgewaehlt = useEinstellungen((z) => z.abgewaehlteAkkorde);
   const umkehrungen = useEinstellungen((z) => z.umkehrungen);
+  const schluesselWahl = useEinstellungen((z) => z.schluesselWahl);
   const merkeVersuch = useTricky((z) => z.merkeVersuch);
   const merkeFehler = useTricky((z) => z.merkeFehler);
   const starteRunde = useTricky((z) => z.starteRunde);
@@ -91,10 +94,13 @@ export function AkkordfolgenUebung({ aufAuswahl }: { aufAuswahl: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aktuelleLage?.akkord.id, aktuelleLage?.umkehrung, position]);
 
-  const erwartet = useMemo(
-    () => aktuelleLage?.toene.map((t) => t.midi) ?? [],
-    [aktuelleLage],
+  // Bei fester Schluesselwahl rutscht der Griff in die passende Oktavlage.
+  const griffLage = useMemo(
+    () => (aktuelleLage ? griffImSystem(aktuelleLage.toene, schluesselWahl) : null),
+    [aktuelleLage, schluesselWahl],
   );
+
+  const erwartet = useMemo(() => griffLage?.toene.map((t) => t.midi) ?? [], [griffLage]);
 
   const griff = useAkkordGriff({
     erwartet,
@@ -119,8 +125,11 @@ export function AkkordfolgenUebung({ aufAuswahl }: { aufAuswahl: () => void }) {
   });
 
   const bereich = useMemo(
-    () => klaviaturBereich(plan.flatMap((l) => l.toene.map((t) => t.midi))),
-    [plan],
+    () =>
+      klaviaturBereich(
+        plan.flatMap((l) => griffImSystem(l.toene, schluesselWahl).toene.map((t) => t.midi)),
+      ),
+    [plan, schluesselWahl],
   );
 
   const hervorgehoben = useMemo(() => {
@@ -159,13 +168,14 @@ export function AkkordfolgenUebung({ aufAuswahl }: { aufAuswahl: () => void }) {
     );
   }
 
-  const schluessel = aktuelleLage ? passenderSchluesselFuer(aktuelleLage.toene) : "violin";
-  const spalten: NotenSpalte[] = aktuelleLage
+  const danebenNoten = danebenAlsNoten(griff.daneben, griffLage?.schluessel ?? null);
+  const spalten: NotenSpalte[] = aktuelleLage && griffLage
     ? [
         {
           id: `${position}-${lageSchluessel(aktuelleLage)}`,
-          noten: aktuelleLage.toene.map((note) => ({ note, schluessel })),
-          zustand: getroffen ? "richtig" : griff.daneben.size > 0 ? "daneben" : "ruhend",
+          noten: griffLage.toene.map((note) => ({ note, schluessel: griffLage.schluessel })),
+          zustand: getroffen ? "richtig" : "ruhend",
+          daneben: danebenNoten.length > 0 ? danebenNoten : undefined,
         },
       ]
     : [];
@@ -212,7 +222,10 @@ export function AkkordfolgenUebung({ aufAuswahl }: { aufAuswahl: () => void }) {
           getroffen ? (
             <span className="animate-auftauchen text-mint-tief">Weiter zum nächsten.</span>
           ) : griff.daneben.size > 0 ? (
-            <span className="text-flieder-tief">Noch nicht ganz — die Folge wartet.</span>
+            <span className="text-flieder-tief">
+              Das war {[...griff.daneben].map((m) => nameMitOktave(vonMidi(m))).join(", ")} —
+              die Folge wartet.
+            </span>
           ) : (
             <span className="text-tinte-leise">
               Akkord {position + 1} von {plan.length}

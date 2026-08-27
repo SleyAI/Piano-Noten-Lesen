@@ -120,6 +120,19 @@ export function kopfVersatz(diatonics: readonly number[]): number[] {
   return versatz;
 }
 
+/**
+ * Laesst sich diese Note in diesem System vollstaendig zeichnen?
+ *
+ * Gebraucht fuer die Anzeige einer falsch gespielten Note: wer versehentlich
+ * ans andere Ende der Tastatur greift, soll kein abgeschnittenes Notenbild
+ * sehen — dann steht der Name im Hinweis und sonst nichts.
+ */
+export function passtInsBild(note: Note, schluessel: Schluessel): boolean {
+  const y = yVonNote(note, schluessel);
+  const halberKopf = KOPF_HOEHE / 2;
+  return y - halberKopf > 0 && y + halberKopf < SYSTEM_HOEHE;
+}
+
 /** Grenzen des Zeichenbereichs — fuer das viewBox-Attribut. */
 export function viewBox(spalten: number): string {
   return `0 0 ${systemBreite(spalten)} ${SYSTEM_HOEHE}`;

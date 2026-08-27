@@ -22,7 +22,7 @@ export function Kopfzeile({
     <header className="flex shrink-0 items-center gap-4 px-5 py-3">
       <Link
         href="/"
-        aria-label="Zurueck zur Auswahl"
+        aria-label="Zurück zur Auswahl"
         className="flex h-10 w-10 items-center justify-center rounded-full bg-papier-tief text-lg text-tinte transition-colors hover:bg-mint"
       >
         ←

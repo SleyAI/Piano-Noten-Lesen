@@ -8,6 +8,7 @@
 import { NOTEN_PAKETE, paketUmfang } from "@/lib/music/curriculum";
 import { useEinstellungen } from "@/lib/store/einstellungen";
 import { Wahlkachel } from "@/components/ui/Wahlkachel";
+import { SchluesselWahlBand } from "./SchluesselWahlBand";
 
 export function NotenPaketWahl() {
   const gewaehlt = useEinstellungen((z) => z.notenPakete);
@@ -15,9 +16,11 @@ export function NotenPaketWahl() {
   const setzen = useEinstellungen((z) => z.setzeNotenPakete);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-5">
+      <SchluesselWahlBand />
+
       <div className="flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold text-tinte">Welche Noten moechtest du ueben?</h2>
+        <h2 className="text-sm font-semibold text-tinte">Welche Noten möchtest du üben?</h2>
         <div className="flex gap-2 text-xs">
           <button
             type="button"

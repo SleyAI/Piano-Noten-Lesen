@@ -90,7 +90,7 @@ function verarbeite(daten: Uint8Array) {
 function geraeteNamen(access: MIDIAccess): string[] {
   const namen: string[] = [];
   access.inputs.forEach((eingang) => {
-    namen.push(eingang.name ?? "Unbenanntes Geraet");
+    namen.push(eingang.name ?? "Unbenanntes Gerät");
   });
   return namen;
 }

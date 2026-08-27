@@ -18,12 +18,14 @@ import {
   type Akkord,
   type Lage,
   gewaehlteAkkorde,
+  griffImSystem,
   lageBeschriftung,
   lageSchluessel,
   lagen as lagenVon,
 } from "@/lib/music/akkorde";
-import { passenderSchluesselFuer } from "@/lib/music/pitch";
+import { type SchluesselWahl, nameMitOktave, vonMidi } from "@/lib/music/pitch";
 import { gewichteteWahl } from "@/lib/practice/auswahl";
+import { danebenAlsNoten } from "@/lib/practice/danebenNote";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
 import { useAkkordGriff } from "@/lib/practice/useAkkordGriff";
 import { useEinstellungen } from "@/lib/store/einstellungen";
@@ -47,14 +49,16 @@ export function AkkordeUebung({ aufAuswahl }: { aufAuswahl: () => void }) {
   const pakete = useEinstellungen((z) => z.akkordPakete);
   const abgewaehlt = useEinstellungen((z) => z.abgewaehlteAkkorde);
   const umkehrungen = useEinstellungen((z) => z.umkehrungen);
+  const schluesselWahl = useEinstellungen((z) => z.schluesselWahl);
 
   // Geaenderte Auswahl heisst frische Runde — das erledigt der Key.
   return (
     <Runde
-      key={`${pakete.join("|")}#${abgewaehlt.join("|")}#${umkehrungen.join("|")}`}
+      key={`${pakete.join("|")}#${abgewaehlt.join("|")}#${umkehrungen.join("|")}#${schluesselWahl}`}
       pakete={pakete}
       abgewaehlt={abgewaehlt}
       umkehrungen={umkehrungen}
+      schluesselWahl={schluesselWahl}
       aufAuswahl={aufAuswahl}
     />
   );
@@ -64,11 +68,13 @@ function Runde({
   pakete,
   abgewaehlt,
   umkehrungen,
+  schluesselWahl,
   aufAuswahl,
 }: {
   pakete: string[];
   abgewaehlt: string[];
   umkehrungen: number[];
+  schluesselWahl: SchluesselWahl;
   aufAuswahl: () => void;
 }) {
   const merkeVersuch = useTricky((z) => z.merkeVersuch);
@@ -122,10 +128,14 @@ function Runde({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aktuelleLage?.akkord.id, aktuelleLage?.umkehrung]);
 
-  const erwartet = useMemo(
-    () => aktuelleLage?.toene.map((t) => t.midi) ?? [],
-    [aktuelleLage],
+  // Bei fester Schluesselwahl rutscht der Griff in die passende Oktavlage —
+  // sonst stuenden Akkorde im Bassschluessel auf drei Hilfslinien.
+  const griff_ = useMemo(
+    () => (aktuelleLage ? griffImSystem(aktuelleLage.toene, schluesselWahl) : null),
+    [aktuelleLage, schluesselWahl],
   );
+
+  const erwartet = useMemo(() => griff_?.toene.map((t) => t.midi) ?? [], [griff_]);
 
   const griff = useAkkordGriff({
     erwartet,
@@ -153,14 +163,18 @@ function Runde({
     },
   });
 
-  const schluessel = aktuelleLage ? passenderSchluesselFuer(aktuelleLage.toene) : "violin";
+  const danebenNoten = useMemo(
+    () => danebenAlsNoten(griff.daneben, griff_?.schluessel ?? null),
+    [griff.daneben, griff_],
+  );
 
-  const spalten: NotenSpalte[] = aktuelleLage
+  const spalten: NotenSpalte[] = aktuelleLage && griff_
     ? [
         {
           id: lageSchluessel(aktuelleLage),
-          noten: aktuelleLage.toene.map((note) => ({ note, schluessel })),
-          zustand: getroffen ? "richtig" : griff.daneben.size > 0 ? "daneben" : "ruhend",
+          noten: griff_.toene.map((note) => ({ note, schluessel: griff_.schluessel })),
+          zustand: getroffen ? "richtig" : "ruhend",
+          daneben: danebenNoten.length > 0 ? danebenNoten : undefined,
         },
       ]
     : [];
@@ -173,8 +187,15 @@ function Runde({
   }, [griff.gespielt, griff.daneben]);
 
   const bereich = useMemo(
-    () => klaviaturBereich(vorrat.flatMap((a) => lagenVon(a).flatMap((l) => l.toene.map((t) => t.midi)))),
-    [vorrat],
+    () =>
+      klaviaturBereich(
+        vorrat.flatMap((a) =>
+          lagenVon(a, umkehrungen).flatMap((l) =>
+            griffImSystem(l.toene, schluesselWahl).toene.map((t) => t.midi),
+          ),
+        ),
+      ),
+    [vorrat, umkehrungen, schluesselWahl],
   );
 
   function neueRunde() {
@@ -219,7 +240,10 @@ function Runde({
               {aktuelleLage && lageBeschriftung(aktuelleLage)} — sitzt.
             </span>
           ) : griff.daneben.size > 0 ? (
-            <span className="text-flieder-tief">Fast. Lass die Hand ruhig suchen.</span>
+            <span className="text-flieder-tief">
+              Das war {[...griff.daneben].map((m) => nameMitOktave(vonMidi(m))).join(", ")} —
+              lass die Hand ruhig suchen.
+            </span>
           ) : (
             <span className="text-tinte-leise">
               {griff.gespielt.size} von {erwartet.length} Tönen

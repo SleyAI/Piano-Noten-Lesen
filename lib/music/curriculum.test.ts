@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { NOTEN_PAKETE, notenAusPaketen, uebungsSchluessel } from "./curriculum";
+import {
+  NOTEN_PAKETE,
+  nachSchluessel,
+  notenAusPaketen,
+  uebungsSchluessel,
+} from "./curriculum";
 import { darstellbar, hilfslinien, linienPosition, nameMitOktave } from "./pitch";
 
 describe("Paketaufbau", () => {
@@ -76,5 +81,39 @@ describe("Noten aus Paketen sammeln", () => {
     const klein = notenAusPaketen(["mitte"]).length;
     const gross = notenAusPaketen(["mitte", "landmarks", "aeussere-c"]).length;
     expect(gross).toBeGreaterThan(klein);
+  });
+});
+
+describe("Auf ein System einschraenken", () => {
+  const alles = notenAusPaketen(NOTEN_PAKETE.map((p) => p.id));
+
+  it("laesst bei \"beide\" alles stehen", () => {
+    expect(nachSchluessel(alles, "beide")).toHaveLength(alles.length);
+  });
+
+  it("liefert nur noch Noten des gewaehlten Systems", () => {
+    for (const wahl of ["violin", "bass"] as const) {
+      const gefiltert = nachSchluessel(alles, wahl);
+      expect(gefiltert.length, wahl).toBeGreaterThan(0);
+      expect(gefiltert.every((u) => u.schluessel === wahl), wahl).toBe(true);
+    }
+  });
+
+  it("teilt den Vorrat auf, ohne etwas zu verlieren", () => {
+    const violin = nachSchluessel(alles, "violin").length;
+    const bass = nachSchluessel(alles, "bass").length;
+    expect(violin + bass).toBe(alles.length);
+  });
+
+  it("laesst auch das kleinste Paket in beiden Systemen ueben", () => {
+    const mitte = notenAusPaketen(["mitte"]);
+    expect(nachSchluessel(mitte, "violin")).toHaveLength(1);
+    expect(nachSchluessel(mitte, "bass")).toHaveLength(1);
+  });
+
+  it("faellt auf den vollen Vorrat zurueck, statt nichts zu liefern", () => {
+    const nurViolin = nachSchluessel(notenAusPaketen(["mitte"]), "violin");
+    // In dieser Auswahl gibt es keine Bassnote mehr — dann gewinnt der Vorrat.
+    expect(nachSchluessel(nurViolin, "bass")).toEqual(nurViolin);
   });
 });

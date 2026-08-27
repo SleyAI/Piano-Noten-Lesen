@@ -9,14 +9,16 @@ import {
   anzahlUmkehrungen,
   baueAkkord,
   flottePlanung,
+  griffImSystem,
   grundstellungsPlanung,
+  inSystem,
   lage,
   lageBeschriftung,
   lagen,
   stimmabstand,
   umkehrungName,
 } from "./akkorde";
-import { nameMitOktave, name } from "./pitch";
+import { hilfslinien, linienPosition, nameMitOktave, name } from "./pitch";
 
 function hole(symbol: string): Akkord {
   const akkord = akkordNachSymbol(symbol);
@@ -253,5 +255,58 @@ describe("Lage der Akkorde auf der Tastatur", () => {
         }
       }
     }
+  });
+});
+
+describe("Griff ins gewaehlte System legen", () => {
+  const hilfslinienZahl = (toene: ReturnType<typeof lage>["toene"], schluessel: "violin" | "bass") =>
+    toene.reduce((summe, t) => summe + hilfslinien(linienPosition(t, schluessel)).length, 0);
+
+  it("legt C-Dur fuer den Bassschluessel eine Oktave tiefer", () => {
+    const gelegt = inSystem(hole("C").toene, "bass");
+    expect(gelegt.map(nameMitOktave)).toEqual(["C3", "E3", "G3"]);
+  });
+
+  it("laesst C-Dur im Violinschluessel, wo es ist", () => {
+    expect(inSystem(hole("C").toene, "violin").map(nameMitOktave)).toEqual(["C4", "E4", "G4"]);
+  });
+
+  it("laesst dem C-Dur seine vertraute Hilfslinie, statt eine Oktave zu springen", () => {
+    // Eine einzelne Hilfslinie ist kein Grund, den Akkord zu verschieben.
+    expect(hilfslinienZahl(inSystem(hole("C").toene, "violin"), "violin")).toBe(1);
+  });
+
+  it("verringert die Hilfslinien in jedem System", () => {
+    for (const schluessel of ["violin", "bass"] as const) {
+      for (const paket of AKKORD_PAKETE) {
+        for (const akkord of akkordeImPaket(paket)) {
+          for (const l of lagen(akkord)) {
+            const vorher = hilfslinienZahl(l.toene, schluessel);
+            const nachher = hilfslinienZahl(inSystem(l.toene, schluessel), schluessel);
+            expect(nachher, `${lageBeschriftung(l)} ${schluessel}`).toBeLessThanOrEqual(vorher);
+          }
+        }
+      }
+    }
+  });
+
+  it("behaelt die Toene, nur eine Oktave versetzt", () => {
+    const grund = hole("G7").toene;
+    const gelegt = inSystem(grund, "bass");
+    expect(gelegt.map((t) => t.midi % 12)).toEqual(grund.map((t) => t.midi % 12));
+    const versatz = gelegt[0].midi - grund[0].midi;
+    expect(Math.abs(versatz) % 12).toBe(0);
+    expect(gelegt.every((t, i) => t.midi - grund[i].midi === versatz)).toBe(true);
+  });
+
+  it("folgt der Schluesselwahl", () => {
+    expect(griffImSystem(hole("C").toene, "bass").schluessel).toBe("bass");
+    expect(griffImSystem(hole("C").toene, "violin").schluessel).toBe("violin");
+  });
+
+  it("laesst bei \"beide\" den Akkord selbst entscheiden", () => {
+    const frei = griffImSystem(hole("C").toene, "beide");
+    expect(frei.toene.map(nameMitOktave)).toEqual(["C4", "E4", "G4"]);
+    expect(["violin", "bass"]).toContain(frei.schluessel);
   });
 });

@@ -12,6 +12,8 @@
 export type Stufe = "C" | "D" | "E" | "F" | "G" | "A" | "H";
 export type Alteration = -1 | 0 | 1;
 export type Schluessel = "violin" | "bass";
+/** Welches System geuebt wird — beide zusammen oder nur eines. */
+export type SchluesselWahl = "beide" | Schluessel;
 
 export interface Note {
   /** MIDI-Notennummer, C4 = 60. */

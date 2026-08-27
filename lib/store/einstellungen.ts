@@ -9,7 +9,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { START_PAKETE } from "@/lib/music/curriculum";
+import { type SchluesselWahl, START_PAKETE } from "@/lib/music/curriculum";
 
 /** Woher kommen die Toene und wohin geht die Eingabe? */
 export type Spielweise =
@@ -24,6 +24,8 @@ export interface EinstellungsZustand {
   klaviaturImmerZeigen: boolean;
   klangAn: boolean;
 
+  /** Nur ein System ueben oder beide? Gilt fuer Noten, Melodien und Akkorde. */
+  schluesselWahl: SchluesselWahl;
   /** Gewaehlte Landmark-Stufen fuer Noten und Melodien. */
   notenPakete: string[];
   /** Gewaehlte Akkord-Stufen. */
@@ -36,6 +38,7 @@ export interface EinstellungsZustand {
   vorherigeAkkordAuswahl: { pakete: string[]; abgewaehlt: string[] } | null;
 
   setzeSpielweise: (s: Spielweise) => void;
+  setzeSchluesselWahl: (w: SchluesselWahl) => void;
   schalteKlaviatur: () => void;
   schalteKlang: () => void;
   setzeNotenPakete: (ids: string[]) => void;
@@ -69,6 +72,7 @@ export const useEinstellungen = create<EinstellungsZustand>()(
       klaviaturImmerZeigen: false,
       klangAn: true,
 
+      schluesselWahl: "beide",
       notenPakete: [...START_PAKETE],
       akkordPakete: ["dreiklaenge-erste"],
       abgewaehlteAkkorde: [],
@@ -76,6 +80,7 @@ export const useEinstellungen = create<EinstellungsZustand>()(
       vorherigeAkkordAuswahl: null,
 
       setzeSpielweise: (spielweise) => set({ spielweise }),
+      setzeSchluesselWahl: (schluesselWahl) => set({ schluesselWahl }),
       schalteKlaviatur: () =>
         set((z) => ({ klaviaturImmerZeigen: !z.klaviaturImmerZeigen })),
       schalteKlang: () => set((z) => ({ klangAn: !z.klangAn })),
@@ -127,7 +132,7 @@ export const useEinstellungen = create<EinstellungsZustand>()(
     }),
     {
       name: "noten-einstellungen",
-      version: 1,
+      version: 2,
     },
   ),
 );

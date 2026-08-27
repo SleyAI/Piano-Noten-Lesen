@@ -14,10 +14,15 @@
 import {
   type Alteration,
   type Note,
+  type Schluessel,
+  type SchluesselWahl,
   type Stufe,
   ausDiatonicUndMidi,
+  hilfslinien,
+  linienPosition,
   name,
   note,
+  passenderSchluesselFuer,
 } from "./pitch";
 
 /** Ein Akkordton: so viele Stufen und so viele Halbtoene ueber dem Grundton. */
@@ -52,7 +57,7 @@ export const AKKORD_TYPEN = {
   maj7: {
     id: "maj7",
     suffix: "maj7",
-    bezeichnung: "grosser Septakkord",
+    bezeichnung: "großer Septakkord",
     toene: [[0, 0], [2, 4], [4, 7], [6, 11]],
   },
   moll7: {
@@ -76,7 +81,7 @@ export const AKKORD_TYPEN = {
   uebermaessig: {
     id: "uebermaessig",
     suffix: "aug",
-    bezeichnung: "uebermaessig",
+    bezeichnung: "übermäßig",
     toene: [[0, 0], [2, 4], [4, 8]],
   },
   halbvermindert: {
@@ -277,6 +282,53 @@ export function lageBeschriftung(l: Lage): string {
 /** Stabiler Schluessel fuer die Fehlerstatistik. */
 export function lageSchluessel(l: Lage): string {
   return `akkord:${l.akkord.id}:${l.umkehrung}`;
+}
+
+/**
+ * Legt einen Griff oktavweise in das gewuenschte System.
+ *
+ * Wer nur den Bassschluessel ueben will, bekommt C-Dur sonst mit drei
+ * Hilfslinien ueber dem System zu sehen — eine Oktave tiefer sitzt derselbe
+ * Akkord bequem mitten drin. Bei Gleichstand bleibt die Lage, wie sie ist.
+ */
+export function inSystem(toene: readonly Note[], schluessel: Schluessel): Note[] {
+  const hilfslinienZahl = (kandidat: readonly Note[]) =>
+    kandidat.reduce((summe, t) => summe + hilfslinien(linienPosition(t, schluessel)).length, 0);
+
+  // Ein Oktavsprung kostet etwas, sonst wandert C-Dur im Violinschluessel nach
+  // oben, nur um die eine vertraute Hilfslinie unter dem C4 loszuwerden.
+  // Mit diesem Gewicht wird erst verschoben, wenn das zwei Hilfslinien spart.
+  const SPRUNG_KOSTEN = 1.5;
+
+  let beste = [...toene];
+  let bestesMass = hilfslinienZahl(toene);
+
+  for (const oktaven of [-1, 1, -2, 2]) {
+    const kandidat = toene.map((t) => note(t.stufe, t.alteration, t.oktave + oktaven));
+    const mass = hilfslinienZahl(kandidat) + Math.abs(oktaven) * SPRUNG_KOSTEN;
+    if (mass < bestesMass) {
+      bestesMass = mass;
+      beste = kandidat;
+    }
+  }
+
+  return beste;
+}
+
+/**
+ * In welchem System wird dieser Griff gezeigt, und in welcher Lage?
+ *
+ * Bei "beide" entscheidet der Akkord selbst, bei einer festen Wahl wird er
+ * dorthin gelegt.
+ */
+export function griffImSystem(
+  toene: readonly Note[],
+  wahl: SchluesselWahl,
+): { schluessel: Schluessel; toene: Note[] } {
+  if (wahl === "beide") {
+    return { schluessel: passenderSchluesselFuer(toene), toene: [...toene] };
+  }
+  return { schluessel: wahl, toene: inSystem(toene, wahl) };
 }
 
 // --- Stimmfuehrung ----------------------------------------------------------

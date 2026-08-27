@@ -23,6 +23,7 @@ import {
 import { useEinstellungen } from "@/lib/store/einstellungen";
 import { useTricky } from "@/lib/store/tricky";
 import { Wahlkachel } from "@/components/ui/Wahlkachel";
+import { SchluesselWahlBand } from "./SchluesselWahlBand";
 
 export function AkkordPaketWahl() {
   const pakete = useEinstellungen((z) => z.akkordPakete);
@@ -62,6 +63,8 @@ export function AkkordPaketWahl() {
 
   return (
     <div className="flex flex-col gap-5">
+      <SchluesselWahlBand />
+
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-sm font-semibold text-tinte">Welche Akkorde möchtest du üben?</h2>

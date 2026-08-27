@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@theme {
+  /* Cozy-Pastellpalette. Bewusst kein Rot, kein Schwarz. */
+  --color-papier: #fdfbf7;
+  --color-papier-tief: #f6f1e8;
+  --color-tinte: #5c5470;
+  --color-tinte-leise: #9a92ad;
+
+  --color-mint: #d9f0e3;
+  --color-mint-tief: #a8dcc0;
+  --color-flieder: #e4dcf2;
+  --color-flieder-tief: #c4b5e0;
+  --color-rose: #f7dde4;
+  --color-rose-tief: #ebbfce;
+  --color-himmel: #dcebf7;
+  --color-himmel-tief: #b5d4ec;
+  --color-creme: #faf3dc;
+  --color-creme-tief: #f0e3b8;
+
+  --font-sans: var(--font-nunito), ui-rounded, system-ui, sans-serif;
+
+  --animate-puls-sanft: puls-sanft 1.4s ease-in-out infinite;
+  --animate-aufbluehen: aufbluehen 0.5s ease-out;
+  --animate-auftauchen: auftauchen 0.4s ease-out;
+
+  @keyframes puls-sanft {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.55; transform: scale(1.06); }
+  }
+  @keyframes aufbluehen {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.18); }
+    100% { transform: scale(1); }
+  }
+  @keyframes auftauchen {
+    0% { opacity: 0; transform: translateY(6px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--color-papier);
+  color: var(--color-tinte);
+  font-family: var(--font-sans);
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Uebungsflaechen sollen sich nicht wie Text anfuehlen. */
+.keine-auswahl {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

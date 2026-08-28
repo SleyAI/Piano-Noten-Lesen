@@ -9,6 +9,10 @@
  *
  * Gebaut wird ausschliesslich aus den freigeschalteten Noten — die Melodie
  * kann also nie ueber das hinausgehen, was schon geuebt wurde.
+ *
+ * Wer beide Systeme uebt, bekommt sie in derselben Tonfolge gemischt: der
+ * Wechsel zwischen den Haenden ist genau das, was am Doppelsystem schwerfaellt,
+ * und den uebt man nicht, indem man beide Systeme getrennt durchspielt.
  */
 
 import { type UebungsNote, istLandmark, uebungsSchluessel } from "./curriculum";
@@ -40,8 +44,36 @@ function waehleVorrat(vorrat: readonly UebungsNote[]): UebungsNote[] {
   return brauchbar[Math.floor(Math.random() * brauchbar.length)];
 }
 
+/**
+ * Wie oft die Melodie das System wechselt, wenn beide geuebt werden.
+ *
+ * Ein Wechsel ist ein Sprung ueber die Systemluecke — nach dem reinen
+ * Naeheprinzip kaeme er so gut wie nie zustande. Deshalb wird zuerst das
+ * System gewuerfelt und erst danach die Note darin; so entsteht die
+ * Abwechslung, ohne dass innerhalb einer Hand die Schritte verloren gehen.
+ */
+const HANDWECHSEL = 0.3;
+
+/** Aus welchem Vorrat kommt der naechste Ton? */
+function naechsteMenge(
+  menge: readonly UebungsNote[],
+  vorherige: UebungsNote,
+  mischen: boolean,
+): readonly UebungsNote[] {
+  if (!mischen) return menge;
+  const gleiches = menge.filter((u) => u.schluessel === vorherige.schluessel);
+  const anderes = menge.filter((u) => u.schluessel !== vorherige.schluessel);
+  if (gleiches.length === 0 || anderes.length === 0) return menge;
+  return Math.random() < HANDWECHSEL ? anderes : gleiches;
+}
+
 export interface MelodieOptionen {
   laenge?: number;
+  /**
+   * Beide Systeme in derselben Tonfolge mischen. Ohne das bleibt eine
+   * Melodie in einem System — leichter zu lesen, aber eben nur eine Hand.
+   */
+  mischen?: boolean;
 }
 
 /**
@@ -54,7 +86,8 @@ export function wuerfleMelodie(
 ): UebungsNote[] {
   if (vorrat.length === 0) return [];
 
-  const menge = waehleVorrat(vorrat);
+  const mischen = optionen.mischen ?? false;
+  const menge = mischen ? [...vorrat] : waehleVorrat(vorrat);
   const laenge = optionen.laenge ?? MELODIE_LAENGE;
 
   const landmarks = menge.filter(istLandmark);
@@ -67,7 +100,7 @@ export function wuerfleMelodie(
     const vorherige = melodie[i - 1];
     const letzterSchritt = i === laenge - 1;
 
-    const naechste = gewichteteWahl(menge, (kandidat) => {
+    const naechste = gewichteteWahl(naechsteMenge(menge, vorherige, mischen), (kandidat) => {
       const abstand = Math.abs(kandidat.note.diatonic - vorherige.note.diatonic);
       let gewicht = naeheGewicht(abstand);
       // Zum Schluss zieht es zu einem Landmark hin.

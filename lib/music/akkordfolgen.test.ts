@@ -5,8 +5,16 @@ import {
   benoetigteAkkorde,
   fehlendeAkkorde,
   folgeSpielbar,
+  folgeUm,
+  passendeAkkorde,
+  wuerfleFolge,
 } from "./akkordfolgen";
-import { akkordeAusPaketen, flottePlanung, stimmabstand } from "./akkorde";
+import {
+  akkordNachSymbol,
+  akkordeAusPaketen,
+  flottePlanung,
+  stimmabstand,
+} from "./akkorde";
 
 describe("Aufbau der Folgen", () => {
   it("vergibt eindeutige IDs", () => {
@@ -85,5 +93,124 @@ describe("Stimmfuehrung in den Folgen", () => {
         }
       }
     }
+  });
+});
+
+// --- Selbst erzeugte Folgen -------------------------------------------------
+
+describe("Passende Akkorde finden", () => {
+  const akkord = (symbol: string) => {
+    const a = akkordNachSymbol(symbol);
+    if (!a) throw new Error(`Testakkord fehlt: ${symbol}`);
+    return a;
+  };
+
+  it("nennt zu C die uebrigen Stufen von C-Dur", () => {
+    const symbole = passendeAkkorde(akkord("C")).map((a) => a.symbol);
+    expect(symbole).toEqual(["C", "Dm", "Em", "F", "G", "Am"]);
+  });
+
+  it("liest a-Moll als Parallele von C-Dur", () => {
+    const symbole = passendeAkkorde(akkord("Am")).map((a) => a.symbol);
+    expect(symbole[0]).toBe("Am");
+    expect(symbole).toContain("C");
+    expect(symbole).toContain("F");
+    expect(symbole).toContain("G");
+  });
+
+  it("liest G7 als Dominante von C-Dur", () => {
+    const symbole = passendeAkkorde(akkord("G7")).map((a) => a.symbol);
+    expect(symbole[0]).toBe("G7");
+    expect(symbole).toContain("C");
+    expect(symbole).toContain("Dm");
+  });
+
+  it("stellt den Akkord selbst nach vorn und nennt ihn nur einmal", () => {
+    for (const symbol of ["C", "Am", "F", "G7", "Dm7", "Es"]) {
+      const liste = passendeAkkorde(akkord(symbol));
+      expect(liste[0].symbol).toBe(symbol);
+      expect(new Set(liste.map((a) => a.id)).size).toBe(liste.length);
+    }
+  });
+});
+
+describe("Folge um einen Akkord herum", () => {
+  const akkord = (symbol: string) => {
+    const a = akkordNachSymbol(symbol);
+    if (!a) throw new Error(`Testakkord fehlt: ${symbol}`);
+    return a;
+  };
+
+  const PRUEFLINGE = ["C", "G", "F", "Am", "Dm", "Em", "G7", "Cmaj7", "Es"];
+
+  it("faengt immer mit dem gewaehlten Akkord an", () => {
+    for (const symbol of PRUEFLINGE) {
+      for (let i = 0; i < 20; i += 1) {
+        expect(folgeUm(akkord(symbol))[0].symbol, symbol).toBe(symbol);
+      }
+    }
+  });
+
+  it("liefert mindestens drei Akkorde", () => {
+    for (const symbol of PRUEFLINGE) {
+      for (let i = 0; i < 20; i += 1) {
+        expect(folgeUm(akkord(symbol)).length, symbol).toBeGreaterThanOrEqual(3);
+      }
+    }
+  });
+
+  it("bleibt in einem vorgegebenen Vorrat", () => {
+    // Der Anfaengervorrat: sechs Dreiklaenge ohne jedes Vorzeichen.
+    const erlaubt = new Set(["C", "Dm", "Em", "F", "G", "Am"]);
+    for (const symbol of ["C", "F", "G", "Am", "Dm", "Em"]) {
+      for (let i = 0; i < 20; i += 1) {
+        const folge = folgeUm(akkord(symbol), erlaubt);
+        expect(folge.length, symbol).toBeGreaterThanOrEqual(3);
+        for (const a of folge) expect(erlaubt.has(a.id), `${symbol} → ${a.symbol}`).toBe(true);
+      }
+    }
+  });
+
+  it("baut aus C eine Kette, die in C-Dur zu Hause ist", () => {
+    const heimisch = new Set(["C", "Dm", "Em", "F", "G", "Am"]);
+    for (let i = 0; i < 30; i += 1) {
+      for (const a of folgeUm(akkord("C"))) expect(heimisch.has(a.symbol)).toBe(true);
+    }
+  });
+});
+
+describe("Folge aus frei gewaehlten Akkorden", () => {
+  const vorrat = ["C", "F", "G", "Am"].map((symbol) => {
+    const a = akkordNachSymbol(symbol);
+    if (!a) throw new Error(`Testakkord fehlt: ${symbol}`);
+    return a;
+  });
+
+  it("nimmt nur Akkorde aus dem Vorrat", () => {
+    const erlaubt = new Set(vorrat.map((a) => a.id));
+    for (let i = 0; i < 50; i += 1) {
+      for (const a of wuerfleFolge(vorrat)) expect(erlaubt.has(a.id)).toBe(true);
+    }
+  });
+
+  it("bringt jeden gewaehlten Akkord unter, wenn sie in die Laenge passen", () => {
+    for (let i = 0; i < 50; i += 1) {
+      const folge = wuerfleFolge(vorrat);
+      expect(new Set(folge.map((a) => a.id)).size).toBe(vorrat.length);
+    }
+  });
+
+  it("wiederholt keinen Akkord direkt hintereinander", () => {
+    for (let i = 0; i < 50; i += 1) {
+      const folge = wuerfleFolge(vorrat, 6);
+      for (let k = 1; k < folge.length; k += 1) {
+        expect(folge[k].id, folge.map((a) => a.symbol).join("-")).not.toBe(folge[k - 1].id);
+      }
+    }
+  });
+
+  it("kommt mit einem einzigen Akkord und mit gar keinem klar", () => {
+    expect(wuerfleFolge([vorrat[0]])).toHaveLength(1);
+    expect(wuerfleFolge([])).toEqual([]);
   });
 });

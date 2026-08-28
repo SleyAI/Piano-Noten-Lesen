@@ -1,83 +1,77 @@
 "use client";
 
 /**
- * Modus 3 — Akkorde.
+ * Akkorde — drei Wege durch dasselbe Material.
  *
- * Zwei Wege durch dieselben Akkorde: einzeln mit ihren Umkehrungen, oder als
- * ganze Folge. Die Akkordauswahl gilt fuer beide.
+ *  - *neu lernen*: einen Akkord aussuchen, seinen Griff anschauen und ihn
+ *    von mehreren Seiten durchspielen
+ *  - *Umkehrungen*: dieselben Uebungen, aber ueber die gewaehlten Stellungen
+ *  - *Folgen*: mehrere Akkorde hintereinander, als Bloecke oder gebrochen
+ *
+ * Welche Akkorde ueberhaupt zur Auswahl stehen, entscheidet das Niveau.
  */
 
 import { useState } from "react";
 import { Kopfzeile } from "@/components/ui/Kopfzeile";
-import { AkkordPaketWahl } from "@/components/practice/AkkordPaketWahl";
-import { useEinstellungen } from "@/lib/store/einstellungen";
+import { type AkkordModus, useEinstellungen } from "@/lib/store/einstellungen";
 import { useHydriert } from "@/lib/store/hydriert";
-import { gewaehlteAkkorde } from "@/lib/music/akkorde";
-import { AkkordeUebung } from "./AkkordeUebung";
+import { erlaubteAkkorde, niveauTitel } from "@/lib/music/niveau";
+import { AkkordLernen } from "./AkkordLernen";
 import { AkkordfolgenUebung } from "./AkkordfolgenUebung";
 
-type Reiter = "einzeln" | "folgen";
+const REITER: Array<{ wert: AkkordModus; titel: string }> = [
+  { wert: "lernen", titel: "neu lernen" },
+  { wert: "umkehrungen", titel: "Umkehrungen" },
+  { wert: "folgen", titel: "Folgen" },
+];
 
 export function AkkordSeite() {
   const hydriert = useHydriert();
-  const [reiter, setReiter] = useState<Reiter>("einzeln");
-  const [zeigeAuswahl, setZeigeAuswahl] = useState(false);
-  const pakete = useEinstellungen((z) => z.akkordPakete);
-  const abgewaehlt = useEinstellungen((z) => z.abgewaehlteAkkorde);
+  const niveau = useEinstellungen((z) => z.niveau);
+  const modus = useEinstellungen((z) => z.akkordModus);
+  const setzeModus = useEinstellungen((z) => z.setzeAkkordModus);
+  // Der Zaehler setzt den laufenden Modus zurueck, wenn man den Reiter
+  // wechselt und wieder zurueckkommt — sonst haengt man in einer halb
+  // gespielten Folge fest.
+  const [wechsel, setWechsel] = useState(0);
 
   if (!hydriert) return <div className="h-full bg-papier" />;
 
-  const anzahl = gewaehlteAkkorde(pakete, abgewaehlt).length;
+  const anzahl = erlaubteAkkorde(niveau).length;
 
   return (
     <div className="flex h-full flex-col bg-papier">
       <Kopfzeile
         titel="Akkorde"
-        unterzeile={`${anzahl} Akkorde im Vorrat`}
+        unterzeile={`${anzahl} Akkorde als ${niveauTitel(niveau)}`}
         rechts={
           <div className="flex gap-1 rounded-full bg-papier-tief p-1">
-            {(
-              [
-                ["einzeln", "einzeln"],
-                ["folgen", "Folgen"],
-              ] as const
-            ).map(([wert, beschriftung]) => (
+            {REITER.map((reiter) => (
               <button
-                key={wert}
+                key={reiter.wert}
                 type="button"
-                aria-pressed={reiter === wert}
+                aria-pressed={modus === reiter.wert}
                 onClick={() => {
-                  setReiter(wert);
-                  setZeigeAuswahl(false);
+                  setzeModus(reiter.wert);
+                  setWechsel((w) => w + 1);
                 }}
                 className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
-                  reiter === wert ? "bg-flieder text-tinte" : "text-tinte-leise hover:bg-white/60"
+                  modus === reiter.wert
+                    ? "bg-flieder text-tinte"
+                    : "text-tinte-leise hover:bg-white/60"
                 }`}
               >
-                {beschriftung}
+                {reiter.titel}
               </button>
             ))}
           </div>
         }
       />
 
-      {zeigeAuswahl ? (
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
-          <div className="mb-3 flex justify-end">
-            <button
-              type="button"
-              onClick={() => setZeigeAuswahl(false)}
-              className="rounded-full bg-mint px-5 py-1.5 text-sm font-semibold text-tinte transition-colors hover:bg-mint-tief"
-            >
-              weiter üben
-            </button>
-          </div>
-          <AkkordPaketWahl />
-        </div>
-      ) : reiter === "einzeln" ? (
-        <AkkordeUebung aufAuswahl={() => setZeigeAuswahl(true)} />
+      {modus === "folgen" ? (
+        <AkkordfolgenUebung key={wechsel} />
       ) : (
-        <AkkordfolgenUebung aufAuswahl={() => setZeigeAuswahl(true)} />
+        <AkkordLernen key={`${modus}-${wechsel}`} modus={modus} />
       )}
     </div>
   );

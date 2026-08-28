@@ -5,7 +5,14 @@
  * die halbe Pop-Musik traegt, bis zu Blues und Zwischendominanten.
  */
 
-import { type Akkord, akkordNachSymbol } from "./akkorde";
+import {
+  type Akkord,
+  type AkkordTypId,
+  akkordNachSymbol,
+  akkordVon,
+  grundtonIndex,
+} from "./akkorde";
+import { gemischt, gewichteteWahl } from "@/lib/practice/auswahl";
 
 export interface Akkordfolge {
   id: string;
@@ -142,4 +149,144 @@ export function fehlendeAkkorde(
   verfuegbar: ReadonlySet<string>,
 ): string[] {
   return benoetigteAkkorde(folge).filter((symbol) => !verfuegbar.has(symbol));
+}
+
+// --- Passende Akkorde selbst finden -----------------------------------------
+
+/**
+ * Die sechs gebraeuchlichen Stufen einer Durtonart: I, ii, iii, IV, V, vi.
+ *
+ * Die siebte Stufe bleibt weg — sie ist vermindert, klingt allein unfertig und
+ * gehoert nicht in eine Folge, die man einfach durchspielen koennen soll.
+ */
+const STUFEN: Array<{ halbton: number; typ: AkkordTypId }> = [
+  { halbton: 0, typ: "dur" },
+  { halbton: 2, typ: "moll" },
+  { halbton: 4, typ: "moll" },
+  { halbton: 5, typ: "dur" },
+  { halbton: 7, typ: "dur" },
+  { halbton: 9, typ: "moll" },
+];
+
+/** Akkordtypen, die typischerweise auf der fuenften Stufe stehen. */
+const ALS_DOMINANTE = new Set(["dominant7", "neun", "elf", "dreizehn"]);
+/** Akkordtypen, die als sechste Stufe ihrer Paralleltonart gelesen werden. */
+const ALS_MOLL = new Set(["moll", "moll7", "moll9", "halbvermindert"]);
+
+/**
+ * In welcher Durtonart ist dieser Akkord zu Hause, und auf welcher Stufe?
+ *
+ * Ein Durakkord wird als Grundstufe gelesen, ein Mollakkord als sechste Stufe
+ * seiner Paralleltonart — a-Moll fuehrt also nach C-Dur —, und ein
+ * Septakkord als Dominante: G7 gehoert nach C, nicht nach G. Das sind die
+ * Lesarten, aus denen die vertrauten Folgen entstehen.
+ */
+function tonartVon(akkord: Akkord): { grundton: number; stufe: number } {
+  const wurzel = grundtonIndex(akkord);
+  if (ALS_DOMINANTE.has(akkord.typ.id)) {
+    return { grundton: (wurzel + 5) % 12, stufe: 4 };
+  }
+  if (ALS_MOLL.has(akkord.typ.id)) {
+    return { grundton: (wurzel + 3) % 12, stufe: 5 };
+  }
+  return { grundton: wurzel, stufe: 0 };
+}
+
+/** Die Akkorde einer Stufe in dieser Tonart. */
+function akkordDerStufe(grundton: number, stufe: number): Akkord | undefined {
+  const eintrag = STUFEN[stufe];
+  return eintrag && akkordVon(grundton + eintrag.halbton, eintrag.typ);
+}
+
+/**
+ * Welche Akkorde passen zu diesem hier?
+ *
+ * Die uebrigen Stufen seiner Tonart — die Akkorde also, mit denen er in
+ * praktisch jedem Lied zusammensteht. Der Akkord selbst steht vorne.
+ */
+export function passendeAkkorde(akkord: Akkord): Akkord[] {
+  const { grundton } = tonartVon(akkord);
+  const ergebnis: Akkord[] = [akkord];
+
+  for (let stufe = 0; stufe < STUFEN.length; stufe += 1) {
+    const kandidat = akkordDerStufe(grundton, stufe);
+    if (kandidat && !ergebnis.some((a) => a.id === kandidat.id)) ergebnis.push(kandidat);
+  }
+
+  return ergebnis;
+}
+
+/** Wie viele Akkorde eine selbst gebaute Folge hat. */
+const FOLGEN_LAENGE = 4;
+
+/**
+ * Bewaehrte Stufenfolgen, aus denen sich eine Kette bauen laesst.
+ * Die Zahlen sind Stufen der Durtonart, also Indizes in STUFEN.
+ */
+const VORLAGEN: number[][] = [
+  [0, 4, 5, 3], // I – V – vi – IV
+  [0, 5, 3, 4], // I – vi – IV – V
+  [5, 3, 0, 4], // vi – IV – I – V
+  [0, 3, 4, 0], // I – IV – V – I
+  [0, 5, 1, 4], // I – vi – ii – V
+  [5, 1, 4, 0], // vi – ii – V – I
+  [0, 4, 3, 0], // I – V – IV – I
+];
+
+/**
+ * Baut eine Folge um einen einzelnen Akkord herum.
+ *
+ * Genommen wird eine Vorlage, in der seine Stufe vorkommt, und so gedreht,
+ * dass er am Anfang steht — man faengt mit dem Akkord an, den man ueben
+ * wollte, und bekommt die passenden Nachbarn dazu.
+ */
+export function folgeUm(akkord: Akkord, erlaubt?: ReadonlySet<string>): Akkord[] {
+  const { grundton, stufe } = tonartVon(akkord);
+  const passt = (a: Akkord) => !erlaubt || erlaubt.has(a.id);
+
+  // Vorlagen, in denen die Stufe des Akkords vorkommt — die erste, deren
+  // Akkorde alle zur Verfuegung stehen, gewinnt.
+  for (const vorlage of gemischt(VORLAGEN.filter((v) => v.includes(stufe)))) {
+    const start = vorlage.indexOf(stufe);
+    const gedreht = [...vorlage.slice(start), ...vorlage.slice(0, start)];
+    const kette = gedreht.map((s) => akkordDerStufe(grundton, s));
+    if (kette.length >= 3 && kette.every((a) => a !== undefined && passt(a))) {
+      // Der gewaehlte Akkord bleibt vorn, auch wenn seine Schreibweise abweicht.
+      return [akkord, ...(kette as Akkord[]).slice(1)];
+    }
+  }
+
+  // Keine Vorlage geht ganz auf: dann eben die Nachbarn, die es gibt.
+  const nachbarn = passendeAkkorde(akkord).filter((a) => a.id !== akkord.id && passt(a));
+  return [akkord, ...gemischt(nachbarn).slice(0, FOLGEN_LAENGE - 1)];
+}
+
+/**
+ * Baut eine Folge aus frei gewaehlten Akkorden.
+ *
+ * Ohne Tonart-Wissen bleibt nur eines uebrig, das trotzdem hilft: jeder
+ * gewaehlte Akkord soll drankommen, und keiner zweimal hintereinander. Wer
+ * eine wirklich harmonische Kette moechte, waehlt einen Akkord und laesst sich
+ * die Nachbarn dazu geben.
+ */
+export function wuerfleFolge(
+  vorrat: readonly Akkord[],
+  laenge = FOLGEN_LAENGE,
+): Akkord[] {
+  if (vorrat.length === 0) return [];
+  if (vorrat.length === 1) return [vorrat[0]];
+
+  const kette = gemischt(vorrat).slice(0, laenge);
+  while (kette.length < laenge) {
+    const vorherige = kette[kette.length - 1];
+    const naechster = gewichteteWahl(
+      vorrat,
+      () => 1,
+      (a) => a.id === vorherige.id,
+    );
+    if (!naechster) break;
+    kette.push(naechster);
+  }
+
+  return kette;
 }

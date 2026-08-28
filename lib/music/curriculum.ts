@@ -105,12 +105,40 @@ export const NOTEN_PAKETE: NotenPaket[] = [
     violin: noten("A5 H5 C6"),
     bass: noten("E2 D2 C2"),
   },
+  {
+    id: "kreuze",
+    stufe: 10,
+    titel: "Die ersten Kreuze",
+    hinweis: "Fis und Cis — die beiden schwarzen Tasten, die am häufigsten vorkommen.",
+    violin: noten("Fis4 Cis5"),
+    bass: noten("Fis3 Cis3"),
+  },
+  {
+    id: "be-vorzeichen",
+    stufe: 11,
+    titel: "Die ersten Be",
+    hinweis: "B und Es — dieselben schwarzen Tasten von der anderen Seite gedacht.",
+    violin: noten("B4 Es5"),
+    bass: noten("B2 Es3"),
+  },
+  {
+    id: "alle-halbtoene",
+    stufe: 12,
+    titel: "Die restlichen Halbtöne",
+    hinweis: "Gis und Dis — damit ist jede Taste der Oktave einmal dran gewesen.",
+    violin: noten("Gis4 Dis5"),
+    bass: noten("Gis3 Dis3"),
+  },
 ];
 
 export const PAKET_NACH_ID = new Map(NOTEN_PAKETE.map((p) => [p.id, p]));
 
 export const SCHLUESSEL_WAHLEN: Array<{ wert: SchluesselWahl; titel: string; hinweis: string }> = [
-  { wert: "beide", titel: "Beide Systeme", hinweis: "So, wie Klaviernoten geschrieben sind." },
+  {
+    wert: "beide",
+    titel: "Beide Systeme",
+    hinweis: "Gemischt in derselben Tonfolge — mit dem Sprung zwischen den Händen.",
+  },
   { wert: "violin", titel: "Nur Violinschlüssel", hinweis: "Das obere System, meist die rechte Hand." },
   { wert: "bass", titel: "Nur Bassschlüssel", hinweis: "Das untere System, meist die linke Hand." },
 ];

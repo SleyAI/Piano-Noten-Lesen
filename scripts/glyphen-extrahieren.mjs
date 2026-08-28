@@ -19,6 +19,11 @@ const GLYPHEN = {
   kreuz: 0xe262, // accidentalSharp
   be: 0xe260, // accidentalFlat
   aufloesung: 0xe261, // accidentalNatural
+  kopfGanze: 0xe0a2, // noteheadWhole
+  kopfHalbe: 0xe0a3, // noteheadHalf
+  kopfViertel: 0xe0a4, // noteheadBlack
+  fahneAufwaerts: 0xe240, // flag8thUp
+  fahneAbwaerts: 0xe241, // flag8thDown
 };
 
 const ergebnis = {};
@@ -71,6 +76,24 @@ export const KREUZ: Glyph = ${JSON.stringify(ergebnis.kreuz)};
 export const BE: Glyph = ${JSON.stringify(ergebnis.be)};
 
 export const AUFLOESUNG: Glyph = ${JSON.stringify(ergebnis.aufloesung)};
+
+/**
+ * Notenkoepfe. Der Ursprung liegt am linken Rand des Kopfes, auf der Hoehe
+ * der Note — also genau auf der Linie oder im Zwischenraum, wo sie sitzt.
+ */
+export const KOPF_GANZE: Glyph = ${JSON.stringify(ergebnis.kopfGanze)};
+
+export const KOPF_HALBE: Glyph = ${JSON.stringify(ergebnis.kopfHalbe)};
+
+export const KOPF_VIERTEL: Glyph = ${JSON.stringify(ergebnis.kopfViertel)};
+
+/**
+ * Fahnen der Achtelnote. Der Ursprung liegt am Halsende: bei der
+ * aufwaertsgerichteten Fahne oben, bei der abwaertsgerichteten unten.
+ */
+export const FAHNE_AUF: Glyph = ${JSON.stringify(ergebnis.fahneAufwaerts)};
+
+export const FAHNE_AB: Glyph = ${JSON.stringify(ergebnis.fahneAbwaerts)};
 `;
 
 writeFileSync("lib/notation/glyphen.ts", datei);

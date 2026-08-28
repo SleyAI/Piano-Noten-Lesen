@@ -37,6 +37,17 @@ export interface KlaviaturProps {
   mitKlang?: boolean;
   /** Namen auf den weissen Tasten zeigen. */
   mitBeschriftung?: boolean;
+  /**
+   * Eigene Aufschrift je Taste — etwa Fingersaetze. Steht auch auf schwarzen
+   * Tasten und geht `mitBeschriftung` vor.
+   */
+  beschriftungen?: ReadonlyMap<number, string>;
+  /**
+   * Nur ansehen, nicht anfassen. Fuer das Akkordbild, das zeigt, wie ein
+   * Griff auf der Tastatur aussieht — dort waere eine spielbare Klaviatur
+   * eine Einladung, die Uebung an der falschen Stelle zu machen.
+   */
+  nurZeigen?: boolean;
   className?: string;
 }
 
@@ -52,6 +63,8 @@ export function Klaviatur({
   hervorgehoben,
   mitKlang = true,
   mitBeschriftung = false,
+  beschriftungen,
+  nurZeigen = false,
   className,
 }: KlaviaturProps) {
   const [gedrueckt, setGedrueckt] = useState<Set<number>>(() => new Set());
@@ -86,6 +99,7 @@ export function Klaviatur({
 
   const anfassen = useCallback(
     (midi: number, zeigerId: number) => {
+      if (nurZeigen) return;
       // Derselbe Finger auf derselben Taste — nichts zu tun.
       if (zeiger.current.get(zeigerId) === midi) return;
       // Beim Gleiten die vorherige Taste ordentlich freigeben.
@@ -98,7 +112,7 @@ export function Klaviatur({
       if (mitKlang) spieleTon(midi);
       tasteGedrueckt(midi);
     },
-    [mitKlang, loslassen],
+    [mitKlang, loslassen, nurZeigen],
   );
 
   // Finger koennen ausserhalb der Taste losgelassen werden.
@@ -114,6 +128,13 @@ export function Klaviatur({
       window.removeEventListener("pointercancel", aufraeumen);
     };
   }, [loslassen]);
+
+  /** Was auf dieser Taste steht — Fingersatz geht vor Notenname. */
+  function aufschrift(midi: number): string | null {
+    const eigene = beschriftungen?.get(midi);
+    if (eigene) return eigene;
+    return mitBeschriftung ? name(vonMidi(midi)) : null;
+  }
 
   function tastenFarbe(midi: number): string | undefined {
     if (gedrueckt.has(midi)) return "var(--color-himmel-tief)";
@@ -143,12 +164,13 @@ export function Klaviatur({
               onPointerEnter={(e) => {
                 if (e.buttons > 0) anfassen(midi, e.pointerId);
               }}
-              className="relative flex-1 rounded-b-xl border border-papier-tief bg-white shadow-sm transition-colors duration-100"
+              disabled={nurZeigen}
+              className="relative flex-1 rounded-b-xl border border-papier-tief bg-white shadow-sm transition-colors duration-100 disabled:cursor-default"
               style={farbe ? { backgroundColor: farbe } : undefined}
             >
-              {mitBeschriftung && (
-                <span className="pointer-events-none absolute inset-x-0 bottom-2 text-center text-[0.65rem] font-semibold text-tinte-leise">
-                  {name(vonMidi(midi))}
+              {aufschrift(midi) && (
+                <span className="pointer-events-none absolute inset-x-0 bottom-2 text-center text-[0.7rem] font-semibold text-tinte">
+                  {aufschrift(midi)}
                 </span>
               )}
             </button>
@@ -176,13 +198,22 @@ export function Klaviatur({
                 onPointerEnter={(e) => {
                   if (e.buttons > 0) anfassen(midi, e.pointerId);
                 }}
-                className="pointer-events-auto absolute top-0 h-[62%] rounded-b-lg bg-tinte shadow-md transition-colors duration-100"
+                disabled={nurZeigen}
+                className={`absolute top-0 h-[62%] rounded-b-lg bg-tinte shadow-md transition-colors duration-100 ${
+                  nurZeigen ? "cursor-default" : "pointer-events-auto"
+                }`}
                 style={{
                   left: `calc(${links}% - ${breite / 2}%)`,
                   width: `${breite}%`,
                   ...(farbe ? { backgroundColor: farbe } : {}),
                 }}
-              />
+              >
+                {beschriftungen?.get(midi) && (
+                  <span className="pointer-events-none absolute inset-x-0 bottom-1.5 text-center text-[0.7rem] font-semibold text-papier">
+                    {beschriftungen.get(midi)}
+                  </span>
+                )}
+              </button>
             );
           })}
       </div>

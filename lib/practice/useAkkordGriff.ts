@@ -17,6 +17,12 @@ export interface AkkordGriffOptionen {
   erwartet: readonly number[];
   /** Solange false, werden Eingaben ignoriert (Pause, Auswahl, Abschluss). */
   aktiv: boolean;
+  /**
+   * Woran erkannt wird, dass eine neue Aufgabe angefangen hat. Ohne Angabe
+   * sind es die erwarteten Toene — was nicht reicht, wenn derselbe Griff
+   * zweimal hintereinander drankommt, etwa in einer Rhythmusuebung.
+   */
+  kennung?: string;
   aufTreffer: () => void;
   aufFehler: (midi: number) => void;
 }
@@ -32,6 +38,7 @@ export interface AkkordGriff {
 export function useAkkordGriff({
   erwartet,
   aktiv,
+  kennung: kennungVon,
   aufTreffer,
   aufFehler,
 }: AkkordGriffOptionen): AkkordGriff {
@@ -42,7 +49,7 @@ export function useAkkordGriff({
   // Neue Aufgabe: alles auf Anfang. Das passiert bewusst waehrend des
   // Renderns und nicht in einem Effekt — sonst zeigt der erste Frame nach dem
   // Wechsel noch den Griff der vorherigen Aufgabe.
-  const kennung = erwartet.join(",");
+  const kennung = kennungVon ?? erwartet.join(",");
   const [letzteKennung, setLetzteKennung] = useState(kennung);
   if (kennung !== letzteKennung) {
     setLetzteKennung(kennung);

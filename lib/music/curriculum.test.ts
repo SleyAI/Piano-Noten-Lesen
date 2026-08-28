@@ -9,7 +9,9 @@ import { darstellbar, hilfslinien, linienPosition, nameMitOktave } from "./pitch
 
 describe("Paketaufbau", () => {
   it("nummeriert die Stufen luecklos aufsteigend", () => {
-    expect(NOTEN_PAKETE.map((p) => p.stufe)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(NOTEN_PAKETE.map((p) => p.stufe)).toEqual(
+      NOTEN_PAKETE.map((_, i) => i + 1),
+    );
   });
 
   it("vergibt eindeutige IDs", () => {

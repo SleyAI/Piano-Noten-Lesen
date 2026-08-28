@@ -4,8 +4,13 @@
  * Beide Systeme zusammen üben oder nur eines?
  *
  * Die Landmark-Methode lebt davon, dass beide Schlüssel gemeinsam wachsen —
- * deshalb ist "beide" die Voreinstellung. Wer gezielt eine Hand übt, schaltet
- * hier um; die Wahl gilt für Noten, Melodien und Akkorde gleichermaßen.
+ * deshalb ist "beide" die Voreinstellung. Bei Melodien heißt das nicht, dass
+ * abwechselnd eine Melodie oben und eine unten kommt, sondern dass beide
+ * Systeme in derselben Tonfolge vorkommen: der Sprung zwischen den Händen ist
+ * genau das, was am Doppelsystem schwerfällt.
+ *
+ * Wer gezielt eine Hand übt, schaltet hier um; die Wahl gilt für Melodien und
+ * Akkorde gleichermaßen.
  */
 
 import { SCHLUESSEL_WAHLEN } from "@/lib/music/curriculum";

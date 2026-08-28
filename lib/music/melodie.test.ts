@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { MELODIE_LAENGE, melodieSchluessel, wuerfleMelodie } from "./melodie";
-import { type UebungsNote, istLandmark, notenAusPaketen } from "./curriculum";
+import {
+  type UebungsNote,
+  istLandmark,
+  notenAusPaketen,
+  uebungsSchluessel,
+} from "./curriculum";
 
 const VORRAT = notenAusPaketen([
   "mitte",
@@ -86,12 +91,46 @@ describe("Musikalische Regeln", () => {
     expect(treffer / melodien.length).toBeGreaterThan(0.4);
   });
 
-  it("bleibt meistens in einem System", () => {
+  it("bleibt ohne Mischen meistens in einem System", () => {
     const melodien = vieleMelodien(200);
     const einheitlich = melodien.filter(
       (m) => new Set(m.map((t) => t.schluessel)).size === 1,
     ).length;
     expect(einheitlich / melodien.length).toBeGreaterThan(0.9);
+  });
+});
+
+describe("Beide Systeme mischen", () => {
+  const gemischt = () =>
+    Array.from({ length: 200 }, () => wuerfleMelodie(VORRAT, { mischen: true }));
+
+  it("bringt fast immer beide Systeme in dieselbe Melodie", () => {
+    const melodien = gemischt();
+    const beide = melodien.filter(
+      (m) => new Set(m.map((t) => t.schluessel)).size === 2,
+    ).length;
+    expect(beide / melodien.length).toBeGreaterThan(0.85);
+  });
+
+  it("haelt die Schritte innerhalb einer Hand trotzdem klein", () => {
+    let schritte = 0;
+    let spruenge = 0;
+    for (const melodie of gemischt()) {
+      for (let i = 1; i < melodie.length; i += 1) {
+        if (melodie[i].schluessel !== melodie[i - 1].schluessel) continue;
+        const abstand = Math.abs(melodie[i].note.diatonic - melodie[i - 1].note.diatonic);
+        if (abstand > 0 && abstand <= 2) schritte += 1;
+        if (abstand > 4) spruenge += 1;
+      }
+    }
+    expect(schritte).toBeGreaterThan(spruenge * 3);
+  });
+
+  it("bleibt beim Mischen im freigeschalteten Vorrat", () => {
+    const erlaubt = new Set(VORRAT.map((u) => uebungsSchluessel(u)));
+    for (const melodie of gemischt()) {
+      for (const ton of melodie) expect(erlaubt.has(uebungsSchluessel(ton))).toBe(true);
+    }
   });
 });
 

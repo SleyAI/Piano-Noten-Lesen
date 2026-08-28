@@ -533,6 +533,23 @@ export function akkordNachSymbol(symbol: string): Akkord | undefined {
 }
 
 /**
+ * Der Grundton als Halbtonabstand ueber C, 0 bis 11.
+ * Genau der Index, mit dem `grundtonNote` und `akkordVon` rechnen.
+ */
+export function grundtonIndex(akkord: Akkord): number {
+  return ((akkord.grundton.midi % 12) + 12) % 12;
+}
+
+/**
+ * Schlaegt einen Akkord ueber Grundton und Typ nach — der Weg, auf dem
+ * Akkordfolgen ihre Stufen in wirkliche Akkorde uebersetzen.
+ */
+export function akkordVon(index: number, typ: AkkordTypId): Akkord | undefined {
+  const gebaut = baueAkkord(((index % 12) + 12) % 12, AKKORD_TYPEN[typ], "");
+  return gebaut ? ALLE_AKKORDE.get(gebaut.symbol) : undefined;
+}
+
+/**
  * Die tatsaechlich geuebten Akkorde: alles aus den gewaehlten Paketen, minus
  * das, was einzeln abgewaehlt wurde.
  *

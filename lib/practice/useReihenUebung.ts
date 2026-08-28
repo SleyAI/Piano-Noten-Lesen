@@ -3,35 +3,58 @@
 /**
  * Eine Reihe von Noten der Reihe nach durchspielen.
  *
- * Einzelne Noten und Melodien unterscheiden sich nur darin, woher die Reihe
- * kommt — gewuerfelt oder nach musikalischen Regeln gebaut. Das Durchspielen
- * selbst ist dasselbe: ein Cursor wandert, richtige Toene bleiben stehen,
- * falsche zeigen sich daneben und halten den Cursor auf.
+ * Ein Fehlgriff setzt die Reihe zurueck an den Anfang. Das ist der Punkt der
+ * Uebung: eine Melodie kann man erst, wenn sie am Stueck sitzt — nicht, wenn
+ * jede Note irgendwann einmal getroffen wurde. Was danebenging, bleibt
+ * trotzdem sichtbar: die gespielte Note steht blass neben der erwarteten.
+ *
+ * Zaehlen die Notenwerte mit, wird ausserdem der Abstand zwischen zwei
+ * Anschlaegen gemessen. Die Grenzen sind bewusst weit — es geht darum, eine
+ * Halbe von einer Viertel zu unterscheiden, nicht darum, ein Metronom zu
+ * treffen.
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type UebungsNote, uebungsSchluessel } from "@/lib/music/curriculum";
 import { nameMitOktave } from "@/lib/music/pitch";
+import { type NotenwertId, TEMPO, millisekunden } from "@/lib/music/rhythmus";
 import { useNoteneingabe } from "@/lib/input/useNoteneingabe";
 import { useTricky } from "@/lib/store/tricky";
 import { type DanebenNote, danebenAlsNote } from "./danebenNote";
 
 /** Wie lange ein Fehlgriff nachklingt. */
-const PULS_DAUER = 1300;
+const PULS_DAUER = 1600;
+
+/** Ab wann eine Note als zu kurz beziehungsweise zu lang gilt. */
+const ZU_KURZ = 0.55;
+const ZU_LANG = 1.9;
+
+export type FehlerArt = "ton" | "zu-kurz" | "zu-lang";
 
 export interface ReihenUebungOptionen {
   reihe: readonly UebungsNote[];
+  /** Notenwerte der Reihe. Nur wenn gesetzt, zaehlen sie mit. */
+  werte?: readonly NotenwertId[];
+  tempo?: number;
   /** Solange false, werden Eingaben ignoriert (Auswahl offen, Pause, Abschluss). */
   aktiv: boolean;
   /** Wird einmal aufgerufen, sobald der letzte Ton sitzt. */
   aufFertig: () => void;
 }
 
+export interface Fehler {
+  art: FehlerArt;
+  /** Gespielte MIDI-Nummer. */
+  midi: number;
+  /** An welcher Stelle der Reihe es passiert ist. */
+  index: number;
+}
+
 export interface ReihenUebung {
   /** Index des naechsten zu spielenden Tons. */
   position: number;
-  /** Zuletzt daneben gegriffener Ton, als MIDI-Nummer. */
-  letzteFalsche: number | null;
+  /** Der letzte Fehlversuch, solange er nachklingt. */
+  fehler: Fehler | null;
   /** Derselbe Ton aufbereitet fuers Notenbild — null, wenn er nicht ins Bild passt. */
   danebenNote: DanebenNote | null;
   fertig: boolean;
@@ -41,13 +64,21 @@ export interface ReihenUebung {
 
 export function useReihenUebung({
   reihe,
+  werte,
+  tempo = TEMPO,
   aktiv,
   aufFertig,
 }: ReihenUebungOptionen): ReihenUebung {
   const merkeFehler = useTricky((z) => z.merkeFehler);
 
   const [position, setPosition] = useState(0);
-  const [letzteFalsche, setLetzteFalsche] = useState<number | null>(null);
+  const [fehler, setFehler] = useState<Fehler | null>(null);
+  /**
+   * Zeitpunkt des letzten richtigen Anschlags — Bezugspunkt fuer die Laenge.
+   * Bewusst als Zustand: er wird beim Neuaufsetzen der Reihe waehrend des
+   * Renderns zurueckgesetzt, und dort darf keine Ref beschrieben werden.
+   */
+  const [letzterAnschlag, setLetzterAnschlag] = useState<number | null>(null);
 
   // Neue Reihe: Cursor auf Anfang. Bewusst waehrend des Renderns, damit der
   // erste Frame nicht noch den Cursorstand der vorherigen Reihe zeigt.
@@ -56,7 +87,8 @@ export function useReihenUebung({
   if (kennung !== letzteKennung) {
     setLetzteKennung(kennung);
     setPosition(0);
-    setLetzteFalsche(null);
+    setFehler(null);
+    setLetzterAnschlag(null);
   }
 
   const uhren = useRef<number[]>([]);
@@ -69,38 +101,65 @@ export function useReihenUebung({
 
   const fertig = reihe.length > 0 && position >= reihe.length;
 
+  /** Zurueck auf Anfang, mit sichtbarem Grund. */
+  function zurueckAufAnfang(art: FehlerArt, midi: number, index: number) {
+    const erwartet = reihe[index];
+    if (erwartet) {
+      merkeFehler(uebungsSchluessel(erwartet), nameMitOktave(erwartet.note));
+    }
+    setPosition(0);
+    setFehler({ art, midi, index });
+    setLetzterAnschlag(null);
+    uhren.current.push(window.setTimeout(() => setFehler(null), PULS_DAUER));
+  }
+
   useNoteneingabe((ereignis) => {
     if (!aktiv || ereignis.art !== "an" || fertig) return;
     const erwartet = reihe[position];
     if (!erwartet) return;
 
-    if (ereignis.midi === erwartet.note.midi) {
-      setPosition(position + 1);
-      setLetzteFalsche(null);
-      if (position + 1 >= reihe.length) aufFertig();
+    if (ereignis.midi !== erwartet.note.midi) {
+      zurueckAufAnfang("ton", ereignis.midi, position);
       return;
     }
 
-    merkeFehler(uebungsSchluessel(erwartet), nameMitOktave(erwartet.note));
-    setLetzteFalsche(ereignis.midi);
-    uhren.current.push(window.setTimeout(() => setLetzteFalsche(null), PULS_DAUER));
+    // Der Ton stimmt — wie lange stand der vorherige?
+    const jetzt = performance.now();
+    if (werte && position > 0 && letzterAnschlag != null) {
+      const soll = millisekunden(werte[position - 1], tempo);
+      const ist = jetzt - letzterAnschlag;
+      if (ist < soll * ZU_KURZ) {
+        zurueckAufAnfang("zu-kurz", ereignis.midi, position - 1);
+        return;
+      }
+      if (ist > soll * ZU_LANG) {
+        zurueckAufAnfang("zu-lang", ereignis.midi, position - 1);
+        return;
+      }
+    }
+
+    setLetzterAnschlag(jetzt);
+    setPosition(position + 1);
+    setFehler(null);
+    if (position + 1 >= reihe.length) aufFertig();
   });
 
   // Der Fehlgriff moeglichst im System der erwarteten Note, damit sich der
   // Abstand direkt ablesen laesst.
   const danebenNote = useMemo(() => {
-    if (letzteFalsche == null) return null;
-    return danebenAlsNote(letzteFalsche, reihe[position]?.schluessel ?? null);
-  }, [letzteFalsche, reihe, position]);
+    if (!fehler || fehler.art !== "ton") return null;
+    return danebenAlsNote(fehler.midi, reihe[fehler.index]?.schluessel ?? null);
+  }, [fehler, reihe]);
 
   return {
     position,
-    letzteFalsche,
+    fehler,
     danebenNote,
     fertig,
     vonVorn: () => {
       setPosition(0);
-      setLetzteFalsche(null);
+      setFehler(null);
+      setLetzterAnschlag(null);
     },
   };
 }

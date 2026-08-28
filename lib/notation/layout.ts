@@ -103,6 +103,40 @@ export function systemBreite(spalten: number): number {
   return NOTEN_START + inhaltsBreite(spalten) + NOTEN_ENDE;
 }
 
+// --- Haelse und Fahnen ------------------------------------------------------
+
+/** Halslaenge ab Notenkopf: dreieinhalb Zeilenabstaende, wie im Notensatz. */
+export const HALS_LAENGE = 7 * HALBSCHRITT;
+export const HALS_STAERKE = ZEILENABSTAND * 0.13;
+/**
+ * Wie weit neben der Kopfmitte der Hals ansetzt. Etwas weniger als eine halbe
+ * Kopfbreite, damit er den Kopf beruehrt statt danebenzustehen.
+ */
+export const HALS_ANSATZ = KOPF_BREITE / 2 - ZEILENABSTAND * 0.07;
+
+/**
+ * Zeigt der Hals nach oben oder nach unten?
+ *
+ * Faustregel des Notensatzes: unterhalb der Mittellinie nach oben, darueber
+ * nach unten — so bleibt der Hals im System statt darueber hinauszuragen. Bei
+ * mehreren Koepfen entscheidet der, der am weitesten von der Mitte weg liegt.
+ */
+export function halsRichtung(positionen: readonly number[]): "auf" | "ab" {
+  if (positionen.length === 0) return "auf";
+  const MITTE = 4;
+  const aeusserste = positionen.reduce((weit, p) =>
+    Math.abs(p - MITTE) > Math.abs(weit - MITTE) ? p : weit,
+  );
+  return aeusserste < MITTE ? "auf" : "ab";
+}
+
+// --- Taktstriche ------------------------------------------------------------
+
+/** x eines Taktstrichs hinter der Spalte mit diesem Index. */
+export function xVonTaktstrich(index: number, anzahl: number): number {
+  return xVonSpalte(index, anzahl) + SPALTEN_ABSTAND / 2;
+}
+
 /**
  * Sekundabstaende muessen versetzt gezeichnet werden, sonst ueberlappen sich
  * die Koepfe. Liefert je Note einen x-Versatz in Kopfbreiten (0 oder 1).

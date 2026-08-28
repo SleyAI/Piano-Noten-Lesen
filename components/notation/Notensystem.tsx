@@ -3,27 +3,40 @@
  *
  * Noten kommen als Spalten herein: eine Spalte mit einer Note ist eine
  * Flashcard, mehrere Spalten sind eine Melodie, eine Spalte mit mehreren
- * Noten ist ein Akkord. Damit deckt eine Komponente alle drei Modi ab.
+ * Noten ist ein Akkord. Damit deckt eine Komponente alle Modi ab.
  *
- * Bewusst ohne Notenhaelse — geuebt wird die Tonhoehe, nicht der Rhythmus,
- * und blosse Koepfe sind ruhiger anzusehen.
+ * Notenwerte sind optional. Ohne sie bleiben blosse Koepfe stehen — ruhiger
+ * anzusehen und genau richtig, solange nur die Tonhoehe geuebt wird. Sobald
+ * eine Spalte einen Wert mitbringt, kommen Hals, Fahne und Taktstrich dazu.
+ * Bewusst ohne Balken: einzelne Fahnen sind fuer Leseanfaenger eindeutiger,
+ * und es gibt hier nichts, was ein Balken zusaetzlich gruppieren muesste.
  */
 
 import { Fragment } from "react";
 import type { Note, Schluessel } from "@/lib/music/pitch";
+import { linienPosition } from "@/lib/music/pitch";
+import type { NotenwertId } from "@/lib/music/rhythmus";
 import {
   BE,
+  FAHNE_AB,
+  FAHNE_AUF,
   type Glyph,
+  KOPF_GANZE,
+  KOPF_HALBE,
+  KOPF_VIERTEL,
   KREUZ,
   BASSSCHLUESSEL,
   VIOLINSCHLUESSEL,
   ZEILENABSTAND_EM,
 } from "@/lib/notation/glyphen";
 import {
+  HALS_ANSATZ,
+  HALS_LAENGE,
+  HALS_STAERKE,
   KOPF_BREITE,
-  KOPF_HOEHE,
   SYSTEM_HOEHE,
   ZEILENABSTAND,
+  halsRichtung,
   hilfslinienY,
   klammerOben,
   klammerUnten,
@@ -33,6 +46,7 @@ import {
   systemLinien,
   viewBox,
   xVonSpalte,
+  xVonTaktstrich,
   yVonNote,
 } from "@/lib/notation/layout";
 
@@ -47,6 +61,10 @@ export interface NotenSpalte {
   id: string;
   noten: SystemNote[];
   zustand: NotenZustand;
+  /** Notenwert dieser Spalte. Ohne Angabe wird nur der Kopf gezeichnet. */
+  wert?: NotenwertId;
+  /** Faellt hinter dieser Spalte ein Taktstrich? */
+  taktEnde?: boolean;
   /**
    * Was stattdessen gespielt wurde. Erscheint blass in Flieder rechts neben
    * der erwarteten Note, damit man den Unterschied sieht statt ihn zu raten.
@@ -78,21 +96,32 @@ function glyphBreite(glyph: Glyph): number {
   return (glyph.bbox.x2 - glyph.bbox.x1) * GLYPH_SKALA;
 }
 
+/** Welcher Notenkopf gehoert zu diesem Wert? */
+function kopfGlyph(wert: NotenwertId | undefined): Glyph {
+  if (wert === "ganze") return KOPF_GANZE;
+  if (wert === "halbe") return KOPF_HALBE;
+  return KOPF_VIERTEL;
+}
+
 function Notenkopf({
   eintrag,
   x,
   versatz,
   zustand,
+  wert,
 }: {
   eintrag: SystemNote;
   x: number;
   /** Seitlicher Versatz in Kopfbreiten. */
   versatz: number;
   zustand: NotenZustand;
+  wert?: NotenwertId;
 }) {
   const y = yVonNote(eintrag.note, eintrag.schluessel);
   const mitte = x + versatz * KOPF_BREITE;
   const farbe = FARBE[zustand];
+  const glyph = kopfGlyph(wert);
+  const breite = glyphBreite(glyph);
   const linien = hilfslinienY(eintrag.note, eintrag.schluessel);
   const vorzeichen = eintrag.note.alteration === 1 ? KREUZ : eintrag.note.alteration === -1 ? BE : null;
 
@@ -104,8 +133,8 @@ function Notenkopf({
       {linien.map((linienY) => (
         <line
           key={linienY}
-          x1={mitte - KOPF_BREITE * 0.85}
-          x2={mitte + KOPF_BREITE * 0.85}
+          x1={mitte - breite * 0.72}
+          x2={mitte + breite * 0.72}
           y1={linienY}
           y2={linienY}
           stroke={farbe}
@@ -117,20 +146,76 @@ function Notenkopf({
       {vorzeichen && (
         <GlyphPfad
           glyph={vorzeichen}
-          x={mitte - KOPF_BREITE / 2 - glyphBreite(vorzeichen) - ZEILENABSTAND * 0.22}
+          x={mitte - breite / 2 - glyphBreite(vorzeichen) - ZEILENABSTAND * 0.22}
           y={y}
           fill={farbe}
         />
       )}
 
-      <ellipse
-        cx={mitte}
-        cy={y}
-        rx={KOPF_BREITE / 2}
-        ry={KOPF_HOEHE / 2}
-        fill={farbe}
-        transform={`rotate(-20 ${mitte} ${y})`}
+      <GlyphPfad glyph={glyph} x={mitte - breite / 2} y={y} fill={farbe} />
+    </g>
+  );
+}
+
+/**
+ * Hals samt Fahne fuer eine Notengruppe innerhalb eines Systems.
+ *
+ * Die ganze Note bekommt keinen — und ohne Notenwerte gibt es ueberhaupt
+ * keine Haelse, dann steht nur der Kopf da.
+ */
+function Hals({
+  eintraege,
+  versatz,
+  x,
+  zustand,
+  wert,
+}: {
+  eintraege: SystemNote[];
+  versatz: number[];
+  x: number;
+  zustand: NotenZustand;
+  wert: NotenwertId;
+}) {
+  if (wert === "ganze" || eintraege.length === 0) return null;
+
+  const farbe = FARBE[zustand];
+  const schluessel = eintraege[0].schluessel;
+  const positionen = eintraege.map((e) => linienPosition(e.note, schluessel));
+  const richtung = halsRichtung(positionen);
+
+  const ys = eintraege.map((e) => yVonNote(e.note, schluessel));
+  const tiefsteY = Math.max(...ys);
+  const hoechsteY = Math.min(...ys);
+
+  // Der Hals sitzt am Kopf, der ihn traegt: oben am tiefsten, unten am hoechsten.
+  const traegerIndex = ys.indexOf(richtung === "auf" ? tiefsteY : hoechsteY);
+  const traegerMitte = x + versatz[traegerIndex] * KOPF_BREITE;
+
+  const halsX =
+    richtung === "auf" ? traegerMitte + HALS_ANSATZ : traegerMitte - HALS_ANSATZ;
+  const ansatzY = richtung === "auf" ? tiefsteY : hoechsteY;
+  const endeY =
+    richtung === "auf" ? hoechsteY - HALS_LAENGE : tiefsteY + HALS_LAENGE;
+
+  return (
+    <g>
+      <line
+        x1={halsX}
+        x2={halsX}
+        y1={ansatzY}
+        y2={endeY}
+        stroke={farbe}
+        strokeWidth={HALS_STAERKE}
+        strokeLinecap="round"
       />
+      {wert === "achtel" && (
+        <GlyphPfad
+          glyph={richtung === "auf" ? FAHNE_AUF : FAHNE_AB}
+          x={halsX}
+          y={endeY}
+          fill={farbe}
+        />
+      )}
     </g>
   );
 }
@@ -149,17 +234,29 @@ function Spalte({ spalte, x }: { spalte: NotenSpalte; x: number }) {
 
   return (
     <g>
-      {proSystem.map(({ eintraege, versatz }, systemIndex) =>
-        eintraege.map((eintrag, i) => (
-          <Notenkopf
-            key={`${systemIndex}-${eintrag.note.diatonic}-${eintrag.note.alteration}`}
-            eintrag={eintrag}
-            x={x}
-            versatz={versatz[i]}
-            zustand={spalte.zustand}
-          />
-        )),
-      )}
+      {proSystem.map(({ eintraege, versatz }, systemIndex) => (
+        <Fragment key={systemIndex}>
+          {spalte.wert && (
+            <Hals
+              eintraege={eintraege}
+              versatz={versatz}
+              x={x}
+              zustand={spalte.zustand}
+              wert={spalte.wert}
+            />
+          )}
+          {eintraege.map((eintrag, i) => (
+            <Notenkopf
+              key={`${eintrag.note.diatonic}-${eintrag.note.alteration}`}
+              eintrag={eintrag}
+              x={x}
+              versatz={versatz[i]}
+              zustand={spalte.zustand}
+              wert={spalte.wert}
+            />
+          ))}
+        </Fragment>
+      ))}
 
       {/* Die tatsaechlich gespielte Note daneben — eigene Spur, damit sie
           nie mit der erwarteten kollidiert. */}
@@ -229,6 +326,22 @@ export function Notensystem({ spalten, beschreibung, className }: NotensystemPro
         strokeWidth={3}
         strokeLinecap="round"
       />
+
+      {/* Taktstriche gehen wie im Klaviersatz durch beide Systeme. */}
+      {spalten.map((spalte, i) =>
+        spalte.taktEnde && i < spalten.length - 1 ? (
+          <line
+            key={`takt-${spalte.id}`}
+            x1={xVonTaktstrich(i, spalten.length)}
+            x2={xVonTaktstrich(i, spalten.length)}
+            y1={klammerOben()}
+            y2={klammerUnten()}
+            stroke={linienfarbe}
+            strokeWidth={1.6}
+            strokeLinecap="round"
+          />
+        ) : null,
+      )}
 
       {spalten.map((spalte, i) => (
         <Spalte key={spalte.id} spalte={spalte} x={xVonSpalte(i, spalten.length)} />

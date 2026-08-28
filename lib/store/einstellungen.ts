@@ -9,12 +9,8 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { type SchluesselWahl } from "@/lib/music/curriculum";
-import {
-  type Niveau,
-  erlaubteAkkorde,
-  erlaubteNotenPakete,
-} from "@/lib/music/niveau";
+import { type SchluesselWahl, type Tastenwahl } from "@/lib/music/curriculum";
+import type { Haende } from "@/lib/music/akkorde";
 import type { UebungsartId } from "@/lib/music/akkorduebung";
 
 /** Woher kommen die Toene und wohin geht die Eingabe? */
@@ -43,19 +39,19 @@ export interface EinstellungsZustand {
   klaviaturImmerZeigen: boolean;
   klangAn: boolean;
 
-  /** Anfaenger, Fortgeschritten oder Profi — begrenzt den ganzen Vorrat. */
-  niveau: Niveau;
-  /** Abgehakte Lernziele, ueber alle Niveaus hinweg. */
+  /** Abgehakte Lernziele des Uebungsplans, ueber alle Niveaus hinweg. */
   beherrscht: string[];
 
-  /** Nur ein System ueben oder beide gemischt? Gilt fuer Melodien und Akkorde. */
+  /** Nur ein System ueben oder beide gemischt? Gilt fuer die Melodien. */
   schluesselWahl: SchluesselWahl;
-  /** Gewaehlte Landmark-Stufen fuer die Melodien. */
-  notenPakete: string[];
+  /** Bleiben die Melodien auf den weissen Tasten, oder kommen die schwarzen dazu? */
+  tastenwahl: Tastenwahl;
   /** Zaehlen die Notenwerte mit, oder geht es nur um die Tonhoehen? */
   notenwerteAn: boolean;
 
   akkordModus: AkkordModus;
+  /** Mit welcher Hand gegriffen wird — oder mit beiden zusammen. */
+  akkordHaende: Haende;
   /** Der Akkord, der gerade gelernt oder umgekehrt wird. */
   lernAkkord: string | null;
   /** Welche Stellungen geuebt werden: 0 = Grundstellung, 1..3 = Umkehrungen. */
@@ -72,16 +68,15 @@ export interface EinstellungsZustand {
   schalteKlaviatur: () => void;
   schalteKlang: () => void;
 
-  setzeNiveau: (n: Niveau) => void;
   schalteLernziel: (id: string) => void;
   vergisssLernziele: () => void;
 
   setzeSchluesselWahl: (w: SchluesselWahl) => void;
-  setzeNotenPakete: (ids: string[]) => void;
-  schalteNotenPaket: (id: string) => void;
+  setzeTastenwahl: (w: Tastenwahl) => void;
   schalteNotenwerte: () => void;
 
   setzeAkkordModus: (m: AkkordModus) => void;
+  setzeAkkordHaende: (h: Haende) => void;
   setzeLernAkkord: (id: string | null) => void;
   setzeUmkehrungen: (stufen: number[]) => void;
   schalteUmkehrung: (stufe: number) => void;
@@ -102,9 +97,6 @@ function umschalten(liste: string[], id: string, mindestensEines: boolean): stri
   return [...liste, id];
 }
 
-/** Voreinstellung beim allerersten Start: nur die Mitte. */
-const START_PAKETE = ["mitte"];
-
 export const useEinstellungen = create<EinstellungsZustand>()(
   persist(
     (set) => ({
@@ -112,14 +104,14 @@ export const useEinstellungen = create<EinstellungsZustand>()(
       klaviaturImmerZeigen: false,
       klangAn: true,
 
-      niveau: "anfaenger",
       beherrscht: [],
 
       schluesselWahl: "beide",
-      notenPakete: [...START_PAKETE],
+      tastenwahl: "weiss",
       notenwerteAn: false,
 
       akkordModus: "lernen",
+      akkordHaende: "rechts",
       lernAkkord: null,
       umkehrungen: [0, 1, 2],
       uebungsarten: ["griff", "takt", "gebrochen", "melodie"],
@@ -133,35 +125,16 @@ export const useEinstellungen = create<EinstellungsZustand>()(
         set((z) => ({ klaviaturImmerZeigen: !z.klaviaturImmerZeigen })),
       schalteKlang: () => set((z) => ({ klangAn: !z.klangAn })),
 
-      /**
-       * Beim Niveauwechsel wird die Auswahl auf das gestutzt, was es dort
-       * gibt — sonst uebt man im Anfaengermodus weiter Akkorde mit
-       * Vorzeichen, nur weil sie einmal ausgewaehlt waren.
-       */
-      setzeNiveau: (niveau) =>
-        set((z) => {
-          const pakete = new Set(erlaubteNotenPakete(niveau).map((p) => p.id));
-          const akkorde = new Set(erlaubteAkkorde(niveau).map((a) => a.id));
-          const uebrig = z.notenPakete.filter((id) => pakete.has(id));
-          return {
-            niveau,
-            notenPakete: uebrig.length > 0 ? uebrig : [...START_PAKETE],
-            lernAkkord: z.lernAkkord && akkorde.has(z.lernAkkord) ? z.lernAkkord : null,
-            folgenAkkorde: z.folgenAkkorde.filter((id) => akkorde.has(id)),
-          };
-        }),
-
       schalteLernziel: (id) =>
         set((z) => ({ beherrscht: umschalten(z.beherrscht, id, false) })),
       vergisssLernziele: () => set({ beherrscht: [] }),
 
       setzeSchluesselWahl: (schluesselWahl) => set({ schluesselWahl }),
-      setzeNotenPakete: (notenPakete) => set({ notenPakete }),
-      schalteNotenPaket: (id) =>
-        set((z) => ({ notenPakete: umschalten(z.notenPakete, id, true) })),
+      setzeTastenwahl: (tastenwahl) => set({ tastenwahl }),
       schalteNotenwerte: () => set((z) => ({ notenwerteAn: !z.notenwerteAn })),
 
       setzeAkkordModus: (akkordModus) => set({ akkordModus }),
+      setzeAkkordHaende: (akkordHaende) => set({ akkordHaende }),
       setzeLernAkkord: (lernAkkord) => set({ lernAkkord }),
       setzeUmkehrungen: (umkehrungen) =>
         set(() => (umkehrungen.length === 0 ? {} : { umkehrungen })),
@@ -188,28 +161,37 @@ export const useEinstellungen = create<EinstellungsZustand>()(
     }),
     {
       name: "noten-einstellungen",
-      // Version 3: Niveau, Notenwerte und die neuen Akkordmodi.
-      version: 3,
+      // Version 4: weisse/schwarze Tasten statt Landmark-Stufen, Handwahl bei
+      // den Akkorden, kein Niveau mehr als Vorratsgrenze.
+      version: 4,
       /**
-       * Was es weiter gibt, wird uebernommen; die alte Paketauswahl fuer
-       * Akkorde faellt weg, weil Akkorde jetzt einzeln gewaehlt werden.
-       * Alles Uebrige kommt aus den Voreinstellungen — zustand legt das
+       * Was es weiter gibt, wird uebernommen; die Landmark-Stufen und das
+       * Niveau fallen weg. Wer schon einmal ueber den Anfaenger hinaus war,
+       * hatte die schwarzen Tasten im Vorrat — das bleibt so.
+       *
+       * Alles Uebrige kommt aus den Voreinstellungen: zustand legt das
        * Ergebnis ueber den Anfangszustand.
        */
       migrate: (gespeichert) => {
-        const alt = (gespeichert ?? {}) as Partial<EinstellungsZustand>;
-        const erlaubt = new Set(erlaubteNotenPakete("anfaenger").map((p) => p.id));
-        const pakete = (alt.notenPakete ?? []).filter((id) => erlaubt.has(id));
-
-        const uebernommen: Partial<EinstellungsZustand> = {
-          notenPakete: pakete.length > 0 ? pakete : [...START_PAKETE],
+        const alt = (gespeichert ?? {}) as Partial<EinstellungsZustand> & {
+          niveau?: string;
         };
+        const uebernommen: Partial<EinstellungsZustand> = {};
+
+        if (alt.niveau && alt.niveau !== "anfaenger") uebernommen.tastenwahl = "alle";
+        if (alt.tastenwahl) uebernommen.tastenwahl = alt.tastenwahl;
+
         // Nur setzen, was wirklich dastand — sonst ueberschreibt ein
         // `undefined` die Voreinstellung.
         if (alt.spielweise) uebernommen.spielweise = alt.spielweise;
         if (alt.schluesselWahl) uebernommen.schluesselWahl = alt.schluesselWahl;
+        if (alt.akkordHaende) uebernommen.akkordHaende = alt.akkordHaende;
         if (alt.umkehrungen?.length) uebernommen.umkehrungen = alt.umkehrungen;
+        if (alt.beherrscht?.length) uebernommen.beherrscht = alt.beherrscht;
         if (typeof alt.klangAn === "boolean") uebernommen.klangAn = alt.klangAn;
+        if (typeof alt.notenwerteAn === "boolean") {
+          uebernommen.notenwerteAn = alt.notenwerteAn;
+        }
         if (typeof alt.klaviaturImmerZeigen === "boolean") {
           uebernommen.klaviaturImmerZeigen = alt.klaviaturImmerZeigen;
         }

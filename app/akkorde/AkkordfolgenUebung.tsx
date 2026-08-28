@@ -8,21 +8,25 @@
  * mit denen er in praktisch jedem Lied zusammensteht —, oder selbst anhaken,
  * welche Akkorde vorkommen sollen.
  *
- * Gespielt wird als Bloecke, gebrochen oder gemischt. Vor dem Start steht der
- * ganze Plan da: welcher Akkord in welcher Stellung. Das ist der Punkt der
- * Uebung — wer vorher weiss, wohin die Hand geht, spielt die Folge fluessig
- * statt sie Griff fuer Griff zu suchen.
+ * Eine Variation sind immer vier Akkorde. Ist sie durch, kommt die naechste:
+ * andere Reihenfolge, andere Stellungen, dieselbe Auswahl. Es gibt keine
+ * Zwischenbilanz und kein Ende der Runde — geuebt wird, bis man aufhoert.
+ *
+ * Gespielt wird als Bloecke, gebrochen oder gemischt. Der ganze Plan steht
+ * ueber der Uebung: welcher Akkord in welcher Stellung. Das ist der Punkt —
+ * wer vorher weiss, wohin die Hand geht, spielt die Folge fluessig statt sie
+ * Griff fuer Griff zu suchen.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AkkordWahl } from "@/components/practice/AkkordWahl";
+import { HandWahl } from "@/components/practice/HandWahl";
 import { PlayKnopf } from "@/components/practice/PlayKnopf";
-import { RundenAbschluss } from "@/components/practice/RundenAbschluss";
 import { SchrittReihe } from "@/components/practice/SchrittReihe";
-import { SchluesselWahlBand } from "@/components/practice/SchluesselWahlBand";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
 import {
   type Akkord,
+  type Haende,
   type Lage,
   akkordNachSymbol,
   flottePlanung,
@@ -32,14 +36,16 @@ import {
 } from "@/lib/music/akkorde";
 import { type UebungsSchritt, baueUebung } from "@/lib/music/akkorduebung";
 import { folgeUm, wuerfleFolge } from "@/lib/music/akkordfolgen";
-import { erlaubteAkkorde } from "@/lib/music/niveau";
-import { type SchluesselWahl, nameMitOktave, vonMidi } from "@/lib/music/pitch";
+import { nameMitOktave, vonMidi } from "@/lib/music/pitch";
 import { danebenAlsNoten } from "@/lib/practice/danebenNote";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
 import { useSchrittfolge } from "@/lib/practice/useSchrittfolge";
 import { useVorspielen } from "@/lib/practice/useVorspielen";
 import { type Spielart, useEinstellungen } from "@/lib/store/einstellungen";
 import { useTricky } from "@/lib/store/tricky";
+
+/** Wie lange die fertige Folge stehen bleibt, bevor die naechste kommt. */
+const PAUSE_NACH_FOLGE = 1200;
 
 /** Ein Schritt weiss, zu welchem Akkord der Folge er gehoert. */
 interface FolgenSchritt extends UebungsSchritt {
@@ -64,10 +70,10 @@ const SPIELARTEN: Array<{ wert: Spielart; titel: string; hinweis: string }> = [
 function schritteAusPlan(
   plan: readonly Lage[],
   spielart: Spielart,
-  wahl: SchluesselWahl,
-): { schritte: FolgenSchritt[]; schluessel: ReturnType<typeof baueUebung>["schluessel"] } {
+  haende: Haende,
+): { schritte: FolgenSchritt[]; bassGrenze: number } {
   const schritte: FolgenSchritt[] = [];
-  let schluessel: ReturnType<typeof baueUebung>["schluessel"] = "violin";
+  let bassGrenze = Number.NEGATIVE_INFINITY;
 
   plan.forEach((lage, akkordIndex) => {
     const art =
@@ -78,16 +84,15 @@ function schritteAusPlan(
           : akkordIndex % 2 === 0
             ? "griff"
             : "gebrochen";
-    const gebaut = baueUebung(lage, art, wahl);
-    schluessel = gebaut.schluessel;
+    const gebaut = baueUebung(lage, art, haende);
+    bassGrenze = gebaut.bassGrenze;
     for (const schritt of gebaut.schritte) schritte.push({ ...schritt, akkordIndex });
   });
 
-  return { schritte, schluessel };
+  return { schritte, bassGrenze };
 }
 
 export function AkkordfolgenUebung() {
-  const niveau = useEinstellungen((z) => z.niveau);
   const quelle = useEinstellungen((z) => z.folgenQuelle);
   const setzeQuelle = useEinstellungen((z) => z.setzeFolgenQuelle);
   const lernAkkord = useEinstellungen((z) => z.lernAkkord);
@@ -96,37 +101,34 @@ export function AkkordfolgenUebung() {
   const schalteFolgenAkkord = useEinstellungen((z) => z.schalteFolgenAkkord);
   const spielart = useEinstellungen((z) => z.folgenSpielart);
   const setzeSpielart = useEinstellungen((z) => z.setzeFolgenSpielart);
-  const schluesselWahl = useEinstellungen((z) => z.schluesselWahl);
+  const haende = useEinstellungen((z) => z.akkordHaende);
   const umkehrungen = useEinstellungen((z) => z.umkehrungen);
 
-  const vorrat = useMemo(() => erlaubteAkkorde(niveau), [niveau]);
   const [folge, setFolge] = useState<Akkord[] | null>(null);
+  /** Zaehlt die Variationen mit — auch zwei gleiche sollen frisch anfangen. */
+  const [variation, setVariation] = useState(0);
 
-  /** Die Akkorde, aus denen die naechste Folge entsteht. */
+  /** Die Akkorde, aus denen die naechste Variation entsteht. */
   const grundlage = useMemo(() => {
     if (quelle === "passend") {
-      const akkord = lernAkkord ? akkordNachSymbol(lernAkkord) : undefined;
-      return akkord && vorrat.some((a) => a.id === akkord.id) ? akkord : null;
+      return lernAkkord ? (akkordNachSymbol(lernAkkord) ?? null) : null;
     }
-    const gewaehlt = vorrat.filter((a) => folgenAkkorde.includes(a.id));
+    const gewaehlt = folgenAkkorde
+      .map((id) => akkordNachSymbol(id))
+      .filter((a): a is Akkord => a !== undefined);
     return gewaehlt.length >= 2 ? gewaehlt : null;
-  }, [quelle, lernAkkord, folgenAkkorde, vorrat]);
+  }, [quelle, lernAkkord, folgenAkkorde]);
 
   const bauen = useCallback(() => {
     if (!grundlage) return;
-    // Nur die Akkorde nehmen, die es auf diesem Niveau auch gibt — eine Folge
-    // soll nicht an einem Akkord haengen, der hier noch gar nicht vorkommt.
-    const erlaubt = new Set(vorrat.map((a) => a.id));
-    const kette = Array.isArray(grundlage)
-      ? wuerfleFolge(grundlage)
-      : folgeUm(grundlage, erlaubt);
+    const kette = Array.isArray(grundlage) ? wuerfleFolge(grundlage) : folgeUm(grundlage);
+    setVariation((v) => v + 1);
     setFolge(kette.length >= 2 ? kette : null);
-  }, [grundlage, vorrat]);
+  }, [grundlage]);
 
   if (!folge) {
     return (
       <FolgenWahl
-        niveau={niveau}
         quelle={quelle}
         setzeQuelle={setzeQuelle}
         lernAkkord={lernAkkord}
@@ -143,13 +145,13 @@ export function AkkordfolgenUebung() {
 
   return (
     <Lauf
-      key={`${folge.map((a) => a.id).join("-")}#${spielart}#${schluesselWahl}#${umkehrungen.join("|")}`}
+      key={`${variation}#${spielart}#${haende}#${umkehrungen.join("|")}`}
       folge={folge}
       spielart={spielart}
-      schluesselWahl={schluesselWahl}
+      haende={haende}
       umkehrungen={umkehrungen}
       aufAndere={() => setFolge(null)}
-      aufNochmal={bauen}
+      aufNaechste={bauen}
     />
   );
 }
@@ -157,17 +159,17 @@ export function AkkordfolgenUebung() {
 function Lauf({
   folge,
   spielart,
-  schluesselWahl,
+  haende,
   umkehrungen,
   aufAndere,
-  aufNochmal,
+  aufNaechste,
 }: {
   folge: Akkord[];
   spielart: Spielart;
-  schluesselWahl: SchluesselWahl;
+  haende: Haende;
   umkehrungen: number[];
   aufAndere: () => void;
-  aufNochmal: () => void;
+  aufNaechste: () => void;
 }) {
   const merkeVersuch = useTricky((z) => z.merkeVersuch);
   const merkeFehler = useTricky((z) => z.merkeFehler);
@@ -176,28 +178,38 @@ function Lauf({
   // Die Stimmfuehrung waehlt die Lagen so, dass die Finger moeglichst wenig
   // wandern — genau das macht eine Folge spielbar.
   const plan = useMemo(() => flottePlanung(folge, umkehrungen), [folge, umkehrungen]);
-  const { schritte, schluessel } = useMemo(
-    () => schritteAusPlan(plan, spielart, schluesselWahl),
-    [plan, spielart, schluesselWahl],
+  const { schritte, bassGrenze } = useMemo(
+    () => schritteAusPlan(plan, spielart, haende),
+    [plan, spielart, haende],
   );
-
-  const [fertig, setFertig] = useState(false);
 
   useEffect(() => {
     starteRunde();
     for (const lage of plan) merkeVersuch(lageSchluessel(lage), lageBeschriftung(lage));
-    // Einmal je Folge.
+    // Einmal je Variation.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const uhren = useRef<number[]>([]);
+  useEffect(
+    () => () => {
+      for (const id of uhren.current) window.clearTimeout(id);
+    },
+    [],
+  );
+
+  const aufFertig = useCallback(() => {
+    uhren.current.push(window.setTimeout(aufNaechste, PAUSE_NACH_FOLGE));
+  }, [aufNaechste]);
+
   const lauf = useSchrittfolge({
     schritte,
-    aktiv: !fertig,
+    aktiv: true,
     aufFehler: (index) => {
       const lage = plan[schritte[index]?.akkordIndex ?? 0];
       if (lage) merkeFehler(lageSchluessel(lage), lageBeschriftung(lage));
     },
-    aufFertig: () => setFertig(true),
+    aufFertig,
   });
 
   const klang = useMemo(
@@ -219,23 +231,17 @@ function Lauf({
   }, [lauf.gespielt, lauf.daneben]);
 
   const danebenNoten = useMemo(
-    () => danebenAlsNoten(lauf.daneben, schluessel),
-    [lauf.daneben, schluessel],
+    () =>
+      danebenAlsNoten(
+        lauf.daneben,
+        haende === "beide" ? null : haende === "links" ? "bass" : "violin",
+      ),
+    [lauf.daneben, haende],
   );
 
-  if (fertig) {
-    return (
-      <RundenAbschluss
-        titel={`${folge.map((a) => a.symbol).join(" – ")} — durch`}
-        aufNeueRunde={() => {
-          setFertig(false);
-          aufNochmal();
-        }}
-      />
-    );
-  }
-
-  const aktuellerAkkord = schritte[lauf.index]?.akkordIndex ?? 0;
+  const aktuellerAkkord = lauf.fertig
+    ? plan.length - 1
+    : (schritte[lauf.index]?.akkordIndex ?? 0);
 
   return (
     <>
@@ -250,7 +256,7 @@ function Lauf({
             key={`${i}-${l.akkord.id}`}
             aria-current={i === aktuellerAkkord ? "step" : undefined}
             className={`flex shrink-0 flex-col rounded-2xl px-3 py-1.5 transition-colors duration-300 ${
-              i < aktuellerAkkord
+              lauf.fertig || i < aktuellerAkkord
                 ? "bg-mint text-tinte"
                 : i === aktuellerAkkord
                   ? "bg-himmel text-tinte"
@@ -271,7 +277,7 @@ function Lauf({
           }}
           className="ml-auto shrink-0 rounded-full bg-papier-tief px-4 py-1.5 text-sm text-tinte transition-colors hover:bg-mint"
         >
-          andere Folge
+          aufhören
         </button>
       </div>
 
@@ -279,14 +285,18 @@ function Lauf({
         notenbild={
           <SchrittReihe
             schritte={schritte}
-            schluessel={schluessel}
-            position={lauf.index}
+            bassGrenze={bassGrenze}
+            position={lauf.fertig ? schritte.length : lauf.index}
             daneben={danebenNoten}
             beschreibung={folge.map((a) => a.symbol).join(" – ")}
           />
         }
         hinweis={
-          lauf.daneben.size > 0 ? (
+          lauf.fertig ? (
+            <span className="animate-auftauchen text-mint-tief">
+              Durch. Die nächste Variation kommt gleich.
+            </span>
+          ) : lauf.daneben.size > 0 ? (
             <span className="text-flieder-tief">
               Das war {[...lauf.daneben].map((m) => nameMitOktave(vonMidi(m))).join(", ")} —
               die Folge wartet.
@@ -309,7 +319,6 @@ function Lauf({
 // --- Auswahl ----------------------------------------------------------------
 
 function FolgenWahl({
-  niveau,
   quelle,
   setzeQuelle,
   lernAkkord,
@@ -321,7 +330,6 @@ function FolgenWahl({
   bereit,
   aufStart,
 }: {
-  niveau: ReturnType<typeof useEinstellungen.getState>["niveau"];
   quelle: ReturnType<typeof useEinstellungen.getState>["folgenQuelle"];
   setzeQuelle: (q: ReturnType<typeof useEinstellungen.getState>["folgenQuelle"]) => void;
   lernAkkord: string | null;
@@ -338,7 +346,7 @@ function FolgenWahl({
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
       <div className="flex flex-col gap-6">
-        <SchluesselWahlBand />
+        <HandWahl />
 
         <section className="flex flex-col gap-2">
           <h2 className="text-sm font-semibold text-tinte">Woher kommen die Akkorde?</h2>
@@ -353,7 +361,7 @@ function FolgenWahl({
               aktiv={!passend}
               onClick={() => setzeQuelle("auswahl")}
               titel="Ich hake selbst an"
-              hinweis="Mindestens zwei Akkorde — daraus wird eine Folge gewürfelt."
+              hinweis="Mindestens zwei Akkorde — daraus werden immer neue Vierergruppen gewürfelt."
             />
           </div>
         </section>
@@ -374,7 +382,6 @@ function FolgenWahl({
         </section>
 
         <AkkordWahl
-          niveau={niveau}
           gewaehlt={passend ? (lernAkkord ? [lernAkkord] : []) : folgenAkkorde}
           aufWahl={(a) => (passend ? setzeLernAkkord(a.id) : schalteFolgenAkkord(a.id))}
           ueberschrift={

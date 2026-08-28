@@ -9,12 +9,13 @@ import {
   anzahlUmkehrungen,
   baueAkkord,
   flottePlanung,
-  griffImSystem,
+  griffFuerHaende,
   grundstellungsPlanung,
   inSystem,
   lage,
   lageBeschriftung,
   lagen,
+  schluesselAn,
   stimmabstand,
   umkehrungName,
 } from "./akkorde";
@@ -299,14 +300,87 @@ describe("Griff ins gewaehlte System legen", () => {
     expect(gelegt.every((t, i) => t.midi - grund[i].midi === versatz)).toBe(true);
   });
 
-  it("folgt der Schluesselwahl", () => {
-    expect(griffImSystem(hole("C").toene, "bass").schluessel).toBe("bass");
-    expect(griffImSystem(hole("C").toene, "violin").schluessel).toBe("violin");
+});
+
+describe("Griff auf die Haende verteilen", () => {
+  it("gibt einer Hand den ganzen Griff, in ihrer Lage", () => {
+    expect(griffFuerHaende(hole("C").toene, "rechts").noten.map(nameMitOktave)).toEqual([
+      "C4",
+      "E4",
+      "G4",
+    ]);
+    expect(griffFuerHaende(hole("C").toene, "links").noten.map(nameMitOktave)).toEqual([
+      "C3",
+      "E3",
+      "G3",
+    ]);
   });
 
-  it("laesst bei \"beide\" den Akkord selbst entscheiden", () => {
-    const frei = griffImSystem(hole("C").toene, "beide");
-    expect(frei.toene.map(nameMitOktave)).toEqual(["C4", "E4", "G4"]);
-    expect(["violin", "bass"]).toContain(frei.schluessel);
+  it("laesst die andere Hand dabei leer", () => {
+    expect(griffFuerHaende(hole("C").toene, "rechts").links).toEqual([]);
+    expect(griffFuerHaende(hole("C").toene, "links").rechts).toEqual([]);
+  });
+
+  it("verdoppelt einen engen Griff eine Oktave tiefer", () => {
+    const beide = griffFuerHaende(hole("C").toene, "beide");
+    expect(beide.links.map(nameMitOktave)).toEqual(["C3", "E3", "G3"]);
+    expect(beide.rechts.map(nameMitOktave)).toEqual(["C4", "E4", "G4"]);
+    expect(beide.noten).toHaveLength(6);
+  });
+
+  it("gibt der linken Hand nur den Basston, wenn der Griff weiter als eine Oktave reicht", () => {
+    for (const paket of AKKORD_PAKETE) {
+      for (const akkord of akkordeImPaket(paket)) {
+        for (const l of lagen(akkord)) {
+          const { links, rechts } = griffFuerHaende(l.toene, "beide");
+          const spanne = rechts[rechts.length - 1].midi - rechts[0].midi;
+          expect(links.length, lageBeschriftung(l)).toBe(spanne < 12 ? rechts.length : 1);
+        }
+      }
+    }
+  });
+
+  it("laesst die Haende nie ineinandergreifen", () => {
+    for (const paket of AKKORD_PAKETE) {
+      for (const akkord of akkordeImPaket(paket)) {
+        for (const l of lagen(akkord)) {
+          const { links, rechts } = griffFuerHaende(l.toene, "beide");
+          expect(
+            links[links.length - 1].midi,
+            lageBeschriftung(l),
+          ).toBeLessThan(rechts[0].midi);
+        }
+      }
+    }
+  });
+
+  it("trennt die Systeme genau zwischen den Haenden", () => {
+    for (const haende of ["rechts", "links", "beide"] as const) {
+      for (const paket of AKKORD_PAKETE) {
+        for (const akkord of akkordeImPaket(paket)) {
+          for (const l of lagen(akkord)) {
+            const griff = griffFuerHaende(l.toene, haende);
+            const wo = `${haende}: ${lageBeschriftung(l)}`;
+            for (const ton of griff.links) {
+              expect(schluesselAn(ton.midi, griff.bassGrenze), wo).toBe("bass");
+            }
+            for (const ton of griff.rechts) {
+              expect(schluesselAn(ton.midi, griff.bassGrenze), wo).toBe("violin");
+            }
+          }
+        }
+      }
+    }
+  });
+
+  it("behaelt die Toene, nur oktavweise versetzt", () => {
+    for (const haende of ["rechts", "links", "beide"] as const) {
+      for (const l of lagen(hole("G7"))) {
+        const klassen = new Set(l.toene.map((t) => ((t.midi % 12) + 12) % 12));
+        for (const ton of griffFuerHaende(l.toene, haende).noten) {
+          expect(klassen.has(((ton.midi % 12) + 12) % 12), haende).toBe(true);
+        }
+      }
+    }
   });
 });

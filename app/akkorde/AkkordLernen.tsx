@@ -11,21 +11,26 @@
  *
  * Der Unterschied zwischen den Modi liegt allein darin, welche Stellungen
  * drankommen: beim Lernen nur die Grundstellung, sonst die gewaehlten
- * Umkehrungen.
+ * Umkehrungen. Beim Lernen sind die Uebungen ausserdem laenger, und ein
+ * Fehlgriff setzt sie an den Anfang zurueck — durch ist eine Uebung erst,
+ * wenn sie am Stueck sitzt.
+ *
+ * Zwischen den Uebungen wird nicht gewartet: sitzt eine, kommt nach einem
+ * Augenblick die naechste, und nach der letzten faengt die Runde mit frischen
+ * Rhythmen wieder an. Aufgehoert wird, wenn man aufhoeren moechte.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Akkordbild } from "@/components/practice/Akkordbild";
 import { Fortschrittspunkte } from "@/components/practice/Fortschrittspunkte";
+import { HandWahl } from "@/components/practice/HandWahl";
 import { PlayKnopf } from "@/components/practice/PlayKnopf";
-import { RundenAbschluss } from "@/components/practice/RundenAbschluss";
 import { SchrittReihe } from "@/components/practice/SchrittReihe";
-import { SchluesselWahlBand } from "@/components/practice/SchluesselWahlBand";
 import { AkkordWahl } from "@/components/practice/AkkordWahl";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
-import { WeiterKnopf } from "@/components/practice/WeiterKnopf";
 import {
   type Akkord,
+  type Haende,
   type Lage,
   akkordNachSymbol,
   anzahlUmkehrungen,
@@ -43,7 +48,6 @@ import {
   baueUebung,
   midisDerUebung,
 } from "@/lib/music/akkorduebung";
-import { erlaubteAkkorde } from "@/lib/music/niveau";
 import { nameMitOktave, vonMidi } from "@/lib/music/pitch";
 import { danebenAlsNoten } from "@/lib/practice/danebenNote";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
@@ -52,6 +56,9 @@ import { useVorspielen } from "@/lib/practice/useVorspielen";
 import { useEinstellungen } from "@/lib/store/einstellungen";
 import { useTricky } from "@/lib/store/tricky";
 
+/** Wie lange eine fertige Uebung stehen bleibt, bevor die naechste kommt. */
+const PAUSE_NACH_UEBUNG = 1100;
+
 /** Eine Station der Runde: diese Stellung, diese Uebungsart. */
 interface Station {
   lage: Lage;
@@ -59,32 +66,30 @@ interface Station {
 }
 
 export function AkkordLernen({ modus }: { modus: "lernen" | "umkehrungen" }) {
-  const niveau = useEinstellungen((z) => z.niveau);
   const lernAkkord = useEinstellungen((z) => z.lernAkkord);
   const setzeLernAkkord = useEinstellungen((z) => z.setzeLernAkkord);
   const umkehrungen = useEinstellungen((z) => z.umkehrungen);
   const uebungsarten = useEinstellungen((z) => z.uebungsarten);
-  const schluesselWahl = useEinstellungen((z) => z.schluesselWahl);
+  const haende = useEinstellungen((z) => z.akkordHaende);
 
   const [zeigeAuswahl, setZeigeAuswahl] = useState(false);
-  const [runde, setRunde] = useState(0);
 
-  const vorrat = useMemo(() => erlaubteAkkorde(niveau), [niveau]);
   const akkord = lernAkkord ? akkordNachSymbol(lernAkkord) : undefined;
-  const bekannt = akkord && vorrat.some((a) => a.id === akkord.id) ? akkord : undefined;
 
   // Ohne Akkord gibt es nichts zu üben — dann steht die Auswahl da.
-  if (!bekannt) {
+  if (!akkord) {
     return (
-      <Auswahl
-        titel={
-          modus === "lernen"
-            ? "Welchen Akkord möchtest du lernen?"
-            : "Von welchem Akkord die Umkehrungen?"
-        }
-        gewaehlt={null}
-        aufWahl={(a) => setzeLernAkkord(a.id)}
-      />
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
+        <AkkordWahl
+          gewaehlt={[]}
+          aufWahl={(a) => setzeLernAkkord(a.id)}
+          ueberschrift={
+            modus === "lernen"
+              ? "Welchen Akkord möchtest du lernen?"
+              : "Von welchem Akkord die Umkehrungen?"
+          }
+        />
+      </div>
     );
   }
 
@@ -101,12 +106,11 @@ export function AkkordLernen({ modus }: { modus: "lernen" | "umkehrungen" }) {
           </button>
         </div>
         <div className="flex flex-col gap-6">
-          <SchluesselWahlBand />
-          {modus === "umkehrungen" && <StellungsWahl akkord={bekannt} />}
+          <HandWahl />
+          {modus === "umkehrungen" && <StellungsWahl akkord={akkord} />}
           <UebungsartWahl />
           <AkkordWahl
-            niveau={niveau}
-            gewaehlt={[bekannt.id]}
+            gewaehlt={[akkord.id]}
             aufWahl={(a) => setzeLernAkkord(a.id)}
             ueberschrift="Ein anderer Akkord?"
           />
@@ -117,16 +121,14 @@ export function AkkordLernen({ modus }: { modus: "lernen" | "umkehrungen" }) {
 
   return (
     <Runde
-      // Neue Auswahl heisst frische Runde — das erledigt der Key. `runde`
-      // wuerfelt ausserdem die Rhythmen neu, wenn man noch einmal spielt.
-      key={`${bekannt.id}#${modus}#${umkehrungen.join("|")}#${uebungsarten.join("|")}#${schluesselWahl}#${runde}`}
-      akkord={bekannt}
+      // Neue Auswahl heisst frische Runde — das erledigt der Key.
+      key={`${akkord.id}#${modus}#${umkehrungen.join("|")}#${uebungsarten.join("|")}#${haende}`}
+      akkord={akkord}
       modus={modus}
       umkehrungen={umkehrungen}
       uebungsarten={uebungsarten}
-      schluesselWahl={schluesselWahl}
+      haende={haende}
       aufAuswahl={() => setZeigeAuswahl(true)}
-      aufNeueRunde={() => setRunde((r) => r + 1)}
     />
   );
 }
@@ -136,17 +138,15 @@ function Runde({
   modus,
   umkehrungen,
   uebungsarten,
-  schluesselWahl,
+  haende,
   aufAuswahl,
-  aufNeueRunde,
 }: {
   akkord: Akkord;
   modus: "lernen" | "umkehrungen";
   umkehrungen: number[];
   uebungsarten: UebungsartId[];
-  schluesselWahl: ReturnType<typeof useEinstellungen.getState>["schluesselWahl"];
+  haende: Haende;
   aufAuswahl: () => void;
-  aufNeueRunde: () => void;
 }) {
   const merkeVersuch = useTricky((z) => z.merkeVersuch);
   const merkeFehler = useTricky((z) => z.merkeFehler);
@@ -162,8 +162,13 @@ function Runde({
   }, [akkord, modus, umkehrungen, uebungsarten]);
 
   const [stationIndex, setStationIndex] = useState(0);
-  const [vorbei, setVorbei] = useState(false);
+  /** Zaehlt die Durchgaenge — mit jedem werden die Rhythmen neu gewuerfelt. */
+  const [durchgang, setDurchgang] = useState(0);
   const station = stationen[stationIndex] ?? stationen[0];
+
+  // Beim Lernen zaehlt jede Uebung am Stueck; in den Umkehrungen darf die
+  // Hand den naechsten Griff in Ruhe suchen.
+  const lang = modus === "lernen";
 
   useEffect(() => {
     starteRunde();
@@ -172,8 +177,10 @@ function Runde({
   // Die Uebung wird einmal je Station gebaut — die Rhythmen sollen nicht bei
   // jedem Rendern neu gewuerfelt werden.
   const uebung = useMemo(
-    () => baueUebung(station.lage, station.art, schluesselWahl),
-    [station, schluesselWahl],
+    () => baueUebung(station.lage, station.art, haende, lang),
+    // `durchgang` wuerfelt sie zum Rundenbeginn absichtlich neu.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [station, haende, lang, durchgang],
   );
 
   useEffect(() => {
@@ -182,10 +189,34 @@ function Runde({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stationIndex]);
 
+  const uhren = useRef<number[]>([]);
+  useEffect(
+    () => () => {
+      for (const id of uhren.current) window.clearTimeout(id);
+    },
+    [],
+  );
+
+  const weiter = useCallback(() => {
+    if (stationIndex + 1 < stationen.length) {
+      setStationIndex(stationIndex + 1);
+      return;
+    }
+    // Die Runde ist herum: von vorn, mit frisch gewuerfelten Rhythmen.
+    setStationIndex(0);
+    setDurchgang((d) => d + 1);
+  }, [stationIndex, stationen.length]);
+
+  const aufFertig = useCallback(() => {
+    uhren.current.push(window.setTimeout(weiter, PAUSE_NACH_UEBUNG));
+  }, [weiter]);
+
   const lauf = useSchrittfolge({
     schritte: uebung.schritte,
-    aktiv: !vorbei,
+    aktiv: true,
+    zurueckBeiFehler: lang,
     aufFehler: () => merkeFehler(lageSchluessel(station.lage), lageBeschriftung(station.lage)),
+    aufFertig,
   });
 
   const klang = useMemo(
@@ -194,14 +225,14 @@ function Runde({
   );
   const vorspiel = useVorspielen(klang);
 
+  // Der gezeigte Tastaturausschnitt bleibt ueber die ganze Runde derselbe —
+  // sonst springt die Klaviatur bei jeder neuen Uebung.
   const bereich = useMemo(
     () =>
       klaviaturBereich(
-        stationen.flatMap((s) =>
-          midisDerUebung(baueUebung(s.lage, "griff", schluesselWahl).schritte),
-        ),
+        stationen.flatMap((s) => midisDerUebung(baueUebung(s.lage, "griff", haende).schritte)),
       ),
-    [stationen, schluesselWahl],
+    [stationen, haende],
   );
 
   const hervorgehoben = useMemo(() => {
@@ -212,32 +243,13 @@ function Runde({
   }, [lauf.gespielt, lauf.daneben]);
 
   const danebenNoten = useMemo(
-    () => danebenAlsNoten(lauf.daneben, uebung.schluessel),
-    [lauf.daneben, uebung.schluessel],
+    () =>
+      danebenAlsNoten(
+        lauf.daneben,
+        haende === "beide" ? null : haende === "links" ? "bass" : "violin",
+      ),
+    [lauf.daneben, haende],
   );
-
-  const weiter = useCallback(() => {
-    vorspiel.stoppen();
-    if (stationIndex + 1 < stationen.length) setStationIndex(stationIndex + 1);
-    else setVorbei(true);
-  }, [stationIndex, stationen.length, vorspiel]);
-
-  if (vorbei) {
-    return (
-      <RundenAbschluss
-        titel={
-          modus === "lernen"
-            ? `${akkord.symbol} von allen Seiten`
-            : `${akkord.symbol} in allen gewählten Stellungen`
-        }
-        aufNeueRunde={() => {
-          setVorbei(false);
-          setStationIndex(0);
-          aufNeueRunde();
-        }}
-      />
-    );
-  }
 
   const art = UEBUNGSART_NACH_ID.get(station.art);
   const aktuellerSchritt: UebungsSchritt | undefined = uebung.schritte[lauf.index];
@@ -264,9 +276,8 @@ function Runde({
 
         {/* Wie der Griff auf der Tastatur aussieht — beim Lernen der halbe Punkt. */}
         <Akkordbild
-          toene={baueUebung(station.lage, "griff", schluesselWahl).schritte[0].noten}
+          griff={uebung.griff}
           umkehrung={station.lage.umkehrung}
-          schluessel={uebung.schluessel}
           className="w-72"
         />
 
@@ -289,7 +300,7 @@ function Runde({
         notenbild={
           <SchrittReihe
             schritte={uebung.schritte}
-            schluessel={uebung.schluessel}
+            bassGrenze={uebung.bassGrenze}
             position={lauf.fertig ? uebung.schritte.length : lauf.index}
             daneben={danebenNoten}
             beschreibung={`${lageBeschriftung(station.lage)} — ${art?.titel}`}
@@ -297,21 +308,13 @@ function Runde({
         }
         hinweis={
           lauf.fertig ? (
-            <span className="flex items-center gap-4">
-              <span className="animate-auftauchen text-mint-tief">
-                {art?.titel} — sitzt.
-              </span>
-              <WeiterKnopf
-                text={
-                  stationIndex + 1 < stationen.length ? "nächste Übung" : "Runde abschließen"
-                }
-                onClick={weiter}
-              />
+            <span className="animate-auftauchen text-mint-tief">
+              {art?.titel} — sitzt. Gleich geht es weiter.
             </span>
           ) : lauf.daneben.size > 0 ? (
             <span className="text-flieder-tief">
-              Das war {[...lauf.daneben].map((m) => nameMitOktave(vonMidi(m))).join(", ")} —
-              lass die Hand ruhig suchen.
+              Das war {[...lauf.daneben].map((m) => nameMitOktave(vonMidi(m))).join(", ")}
+              {lang ? " — noch einmal von vorn." : " — lass die Hand ruhig suchen."}
             </span>
           ) : (
             <span className="text-tinte-leise">
@@ -331,28 +334,6 @@ function Runde({
 }
 
 // --- Auswahlbausteine -------------------------------------------------------
-
-function Auswahl({
-  titel,
-  gewaehlt,
-  aufWahl,
-}: {
-  titel: string;
-  gewaehlt: string | null;
-  aufWahl: (akkord: Akkord) => void;
-}) {
-  const niveau = useEinstellungen((z) => z.niveau);
-  return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
-      <AkkordWahl
-        niveau={niveau}
-        gewaehlt={gewaehlt ? [gewaehlt] : []}
-        aufWahl={aufWahl}
-        ueberschrift={titel}
-      />
-    </div>
-  );
-}
 
 /** Welche Stellungen kommen dran? */
 function StellungsWahl({ akkord }: { akkord: Akkord }) {

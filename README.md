@@ -7,33 +7,39 @@ Deutsche Notennamen durchgehend (C D E F G A **H**), keine Zeitmessung, kein
 Punktestand. Falsche Griffe kosten nichts: die Note pulsiert kurz in Flieder,
 und man darf weiter probieren, bis es sitzt.
 
-## Niveau: was überhaupt drankommt
+## Der Übungsplan
 
-**Anfänger**, **Fortgeschritten** oder **Profi** — kein Rang, sondern ein
-Vorrat. Anfänger bleiben auf den weißen Tasten: die Stammtöne rund um das
-mittlere C und die sechs Akkorde, die daraus entstehen (C, Dm, Em, F, G, Am).
-Ab Fortgeschritten kommen die schwarzen Tasten dazu, mit ihnen alle zwölf Dur-
-und Molldreiklänge und die Dominantseptakkorde; Profi öffnet den Rest.
+Unter *Übungsplan* stehen alle drei Stufen untereinander — **Anfänger**,
+**Fortgeschritten**, **Profi** —, jede mit ihren Noten und ihren Akkorden.
+Der Plan sperrt nichts und versteckt nichts: wer als Anfänger wissen möchte,
+was ein Nonakkord ist, findet ihn dort. Er teilt nur ein, was zusammengehört,
+und alles darin lässt sich abhaken. Das schaltet nichts frei — es ist eine
+Merkliste für einen selbst, damit man sieht, wo man steht, ohne dass irgendwo
+ein Punktestand mitläuft. Auf der Startseite steht der Stand aller drei Stufen
+in einer Zeile.
 
-Unter *Dein Stand* steht, was zum eigenen Niveau gehört — die Notenstufen und
-jeder einzelne Akkord —, und alles davon lässt sich abhaken. Das schaltet
-nichts frei und sperrt nichts: es ist eine Merkliste für einen selbst. Ist eine
-Liste voll, schlägt die App das nächste Niveau vor. Wechseln kann man jederzeit.
+Anfänger heißt: die weißen Tasten und die sechs Akkorde, die ohne ein einziges
+Vorzeichen auskommen. Fortgeschritten nimmt die schwarzen Tasten dazu, mit
+ihnen alle zwölf Dur- und Molldreiklänge und die Dominantseptakkorde; Profi
+den Rest.
 
 ## Die zwei Modi
 
 **Melodien** — Acht Töne, nach musikalischen Regeln gebaut statt gewürfelt:
-Schritte vor Sprüngen, Anfang und Ende möglichst auf einem Landmark. Der Vorrat
-folgt der Landmark-Methode — Violin- und Bassschlüssel wachsen gemeinsam von
-der Mitte nach außen, Start beim mittleren C, dann G4 und F3, dann C5 und C3,
-danach stufenweise.
+Schritte vor Sprüngen, Anfang und Ende möglichst auf einem festen Bezugspunkt.
+Der Vorrat reicht immer über zwei Oktaven je System, C4 bis C6 oben und C2 bis
+C4 unten, mit dem mittleren C als gemeinsamem Anker.
 
-Zwei Einstellungen bestimmen, wie schwer es wird:
+Drei Einstellungen bestimmen, wie schwer es wird:
 
 - *Welches System* — nur Violinschlüssel, nur Bassschlüssel oder beide. „Beide"
   heißt dabei nicht abwechselnd eine Melodie oben und eine unten, sondern beide
   Systeme in derselben Tonfolge: der Sprung zwischen den Händen ist genau das,
   was am Doppelsystem schwerfällt.
+- *Welche Tasten* — nur die weißen oder auch die schwarzen. Mehr
+  Unterscheidungen gibt es nicht. Kommen die schwarzen dazu, dann jede in
+  beiden Schreibweisen: Fis und Ges klingen gleich und stehen doch auf
+  verschiedenen Linien.
 - *Notenwerte* — aus bloßen Notenköpfen werden Ganze, Halbe, Viertel und Achtel
   im 4/4-Takt. Dann zählt auch die Länge mit, mit weiten Grenzen: erst wer eine
   Viertel doppelt so lang stehen lässt wie vorgesehen, macht einen Fehler.
@@ -47,28 +53,47 @@ sie am Stück sitzt — dann kommt ohne Zwischenbilanz die nächste.
   Tastatur anschauen und ihn von vier Seiten durchspielen: der ganze Griff,
   derselbe Griff im Takt, gebrochen von unten nach oben und zurück, und eine
   kleine Melodie aus seinen Tönen. Drei Tasten gleichzeitig zu drücken ist eben
-  noch kein Akkord, den man kennt.
+  noch kein Akkord, den man kennt. Hier sind die Übungen doppelt so lang wie
+  sonst, und ein Fehlgriff setzt sie an den Anfang zurück: können heißt am
+  Stück können.
 - *Umkehrungen* — dieselben Übungen, aber über die gewählten Stellungen: nur
-  die erste, nur die zweite, beide, oder alle drei mit der Grundstellung.
+  die erste, nur die zweite, beide, oder alle drei mit der Grundstellung. Hier
+  darf die Hand den nächsten Griff in Ruhe suchen, ohne dass die Übung von
+  vorn anfängt.
 - *Folgen* — entweder einen Akkord aussuchen und sich die harmonisch passenden
   Nachbarn dazu geben lassen (ein Durakkord wird als Grundstufe gelesen, ein
   Mollakkord als Parallele, ein Septakkord als Dominante), oder selbst anhaken,
-  welche Akkorde vorkommen sollen. Gespielt wird als Blöcke, gebrochen oder
-  gemischt. Vor dem Start steht der ganze Plan da: welcher Akkord in welcher
-  Stellung, mit möglichst ruhiger Fingerführung dazwischen.
+  welche Akkorde vorkommen sollen. Eine Variation sind immer vier Akkorde;
+  ist sie durch, kommt die nächste — andere Reihenfolge, andere Stellungen,
+  dieselbe Auswahl. Gespielt wird als Blöcke, gebrochen oder gemischt. Über der
+  Übung steht der ganze Plan: welcher Akkord in welcher Stellung, mit möglichst
+  ruhiger Fingerführung dazwischen.
 
-Innerhalb einer Übung rückt es von selbst weiter, sobald ein Schritt sitzt —
-man soll ja im Fluss bleiben. Erst am Ende wartet die Übung auf ein *weiter*,
-damit man den letzten Griff in Ruhe anschauen kann.
+Keiner der drei Wege hört von selbst auf. Sitzt eine Übung, geht es nach einem
+Augenblick zur nächsten weiter, und nach der letzten fängt die Runde mit
+frischen Rhythmen wieder an. Es gibt keine Zwischenbilanz und keinen Bildschirm
+mit einer Zahl darauf — aufgehört wird, wenn man aufhören möchte.
+
+## Mit welcher Hand?
+
+Bei den Akkorden ist zu entscheiden, wer greift:
+
+- **Nur rechte Hand** — der Griff steht im Violinschlüssel.
+- **Nur linke Hand** — derselbe Griff eine Lage tiefer, im Bassschlüssel.
+  C-Dur steht dort als C3–E3–G3 mitten im System statt auf drei Hilfslinien
+  darüber.
+- **Beide Hände** — links und rechts zusammen: die linke Hand greift denselben
+  Akkord eine Oktave tiefer, und er steht in beiden Systemen untereinander.
+  Reicht der Griff selbst weiter als eine Oktave — ein Cadd9 spannt bis zur
+  None —, überschnitte er sich mit seiner eigenen Verdopplung; dann übernimmt
+  die linke Hand nur den Basston, so wie es am Klavier ohnehin üblich ist.
 
 ## Nur ein System oder beide
 
-Die Wahl gilt für Melodien und Akkorde gleichermaßen. **Beide Systeme** ist die
-Voreinstellung, denn davon lebt die Landmark-Methode. **Nur Violinschlüssel**
-oder **nur Bassschlüssel** dient dem gezielten Üben einer Hand: Melodien werden
-auf dieses System eingeschränkt, Akkorde rutschen oktavweise dorthin, wo sie
-bequem liegen. C-Dur steht im Bassschlüssel deshalb als C3–E3–G3 mitten im
-System statt auf drei Hilfslinien darüber.
+Die Wahl gilt für die Melodien. **Beide Systeme** ist die Voreinstellung, denn
+davon lebt das Lesen am Doppelsystem. **Nur Violinschlüssel** oder **nur
+Bassschlüssel** dient dem gezielten Üben einer Hand. Bei den Akkorden
+entscheidet stattdessen die Handwahl.
 
 ## Einmal anhören
 
@@ -160,7 +185,7 @@ Browsers, es gibt also keinen Grund, sie nicht öffentlich zu stellen.
 ## Aufbau
 
 ```
-lib/music/       Tonhöhen, Curriculum, Niveaus, Melodien, Rhythmus,
+lib/music/       Tonhöhen, Notenvorrat, Übungsplan, Melodien, Rhythmus,
                  Akkorde, Akkordübungen, Akkordfolgen
 lib/notation/    Geometrie des Doppelsystems, Glyphen aus Bravura
 lib/input/       Web MIDI und Klaviatur hinter einem gemeinsamen Ereignisstrom
@@ -168,7 +193,7 @@ lib/audio/       Klangerzeugung und das Vorspielen ganzer Folgen
 lib/practice/    Auswahl der nächsten Aufgabe, Akkorderkennung, Übungsläufe
 lib/store/       Einstellungen und Fehlerstatistik im localStorage
 components/      Notenrenderer, Klaviatur, Übungsbausteine
-app/             Startseite, „Dein Stand" und die zwei Modi
+app/             Startseite, Übungsplan und die zwei Modi
 ```
 
 Drei Entscheidungen tragen den Rest:

@@ -4,16 +4,16 @@ import {
   NIVEAU_REIHE,
   type Niveau,
   akkordZiel,
-  akkordeNachPaket,
-  erlaubteAkkorde,
-  erlaubteNotenPakete,
+  akkordeBis,
+  akkordeNachNiveau,
+  akkordeVon,
+  alleAkkorde,
   fortschritt,
+  gesamtFortschritt,
   lernziele,
-  naechstesNiveau,
   notenZiel,
   nurWeisseTasten,
 } from "./niveau";
-import { NOTEN_PAKETE } from "./curriculum";
 
 describe("Aufbau der Niveaus", () => {
   it("kennt genau drei Stufen in aufsteigender Reihenfolge", () => {
@@ -21,138 +21,102 @@ describe("Aufbau der Niveaus", () => {
     expect(NIVEAUS.map((s) => s.id)).toEqual(NIVEAU_REIHE);
   });
 
-  it("fuehrt vom Anfaenger zum Profi und dort nicht weiter", () => {
-    expect(naechstesNiveau("anfaenger")).toBe("fortgeschritten");
-    expect(naechstesNiveau("fortgeschritten")).toBe("profi");
-    expect(naechstesNiveau("profi")).toBeNull();
-  });
-
-  it("verteilt jedes Notenpaket auf genau ein Niveau", () => {
-    const verteilt = NIVEAU_REIHE.flatMap((n) => NIVEAUS.find((s) => s.id === n)!.notenPakete);
-    expect(new Set(verteilt).size).toBe(verteilt.length);
-    expect(new Set(verteilt)).toEqual(new Set(NOTEN_PAKETE.map((p) => p.id)));
+  it("verteilt die Tastenwahl auf die beiden unteren Stufen", () => {
+    expect(NIVEAUS[0].noten.map((z) => z.tasten)).toEqual(["weiss"]);
+    expect(NIVEAUS[1].noten.map((z) => z.tasten)).toEqual(["alle"]);
+    // Der Profi bringt keine neuen Tasten mit — es gibt keine mehr.
+    expect(NIVEAUS[2].noten).toEqual([]);
   });
 });
 
-describe("Der Vorrat waechst mit dem Niveau", () => {
+describe("Der Plan waechst mit dem Niveau", () => {
   it("enthaelt auf jeder Stufe alles von der Stufe darunter", () => {
     for (let i = 1; i < NIVEAU_REIHE.length; i += 1) {
-      const unten = erlaubteAkkorde(NIVEAU_REIHE[i - 1]).map((a) => a.id);
-      const oben = new Set(erlaubteAkkorde(NIVEAU_REIHE[i]).map((a) => a.id));
-      for (const id of unten) expect(oben.has(id), id).toBe(true);
-
-      const notenUnten = erlaubteNotenPakete(NIVEAU_REIHE[i - 1]).map((p) => p.id);
-      const notenOben = new Set(erlaubteNotenPakete(NIVEAU_REIHE[i]).map((p) => p.id));
-      for (const id of notenUnten) expect(notenOben.has(id), id).toBe(true);
+      const unten = akkordeBis(NIVEAU_REIHE[i - 1]).map((a) => a.id);
+      const oben = new Set(akkordeBis(NIVEAU_REIHE[i]).map((a) => a.id));
+      for (const id of unten) expect(oben.has(id), `${id} fehlt oben`).toBe(true);
     }
   });
 
-  it("waechst bei jedem Schritt echt an", () => {
-    for (let i = 1; i < NIVEAU_REIHE.length; i += 1) {
-      expect(erlaubteAkkorde(NIVEAU_REIHE[i]).length).toBeGreaterThan(
-        erlaubteAkkorde(NIVEAU_REIHE[i - 1]).length,
-      );
-    }
+  it("legt jeden Akkord auf genau ein Niveau", () => {
+    const verteilt = NIVEAU_REIHE.flatMap((n) => akkordeVon(n).map((a) => a.id));
+    expect(new Set(verteilt).size).toBe(verteilt.length);
+    expect(new Set(verteilt)).toEqual(new Set(alleAkkorde().map((a) => a.id)));
   });
 
-  it("gibt dem Profi jeden Akkord aus jedem Paket", () => {
-    expect(erlaubteAkkorde("profi").length).toBeGreaterThan(80);
-  });
-});
-
-describe("Anfaenger bleiben auf den weissen Tasten", () => {
-  it("bietet keinen Akkord mit Vorzeichen an", () => {
-    for (const akkord of erlaubteAkkorde("anfaenger")) {
+  it("haelt den Anfaenger auf den weissen Tasten", () => {
+    for (const akkord of akkordeVon("anfaenger")) {
       expect(nurWeisseTasten(akkord), akkord.symbol).toBe(true);
     }
   });
 
-  it("bietet genau die sechs Stammton-Dreiklaenge an", () => {
-    expect(erlaubteAkkorde("anfaenger").map((a) => a.symbol).sort()).toEqual(
+  it("faengt mit den sechs Dreiklaengen ohne Vorzeichen an", () => {
+    expect(akkordeVon("anfaenger").map((a) => a.symbol).sort()).toEqual(
       ["Am", "C", "Dm", "Em", "F", "G"].sort(),
     );
   });
 
-  it("bietet keine Note mit Vorzeichen an", () => {
-    for (const paket of erlaubteNotenPakete("anfaenger")) {
-      for (const note of [...paket.violin, ...paket.bass]) {
-        expect(note.alteration, `${paket.id} ${note.stufe}${note.oktave}`).toBe(0);
-      }
-    }
+  it("bringt insgesamt reichlich Akkorde mit", () => {
+    expect(alleAkkorde().length).toBeGreaterThan(80);
+  });
+});
+
+describe("Alle Akkorde stehen zur Auswahl", () => {
+  it("zeigt jeden Akkord genau einmal, nach Niveau und Paket geordnet", () => {
+    const gezeigt = akkordeNachNiveau().flatMap((n) =>
+      n.pakete.flatMap((p) => p.akkorde.map((a) => a.id)),
+    );
+    expect(new Set(gezeigt).size).toBe(gezeigt.length);
+    expect(new Set(gezeigt)).toEqual(new Set(alleAkkorde().map((a) => a.id)));
   });
 
-  it("laesst die schwarzen Tasten erst ab Fortgeschritten zu", () => {
-    const alteriert = (niveau: Niveau) =>
-      erlaubteNotenPakete(niveau).some((p) =>
-        [...p.violin, ...p.bass].some((n) => n.alteration !== 0),
-      );
-    expect(alteriert("anfaenger")).toBe(false);
-    expect(alteriert("fortgeschritten")).toBe(true);
+  it("laesst keine leere Gruppe stehen", () => {
+    for (const niveau of akkordeNachNiveau()) {
+      expect(niveau.pakete.length, niveau.titel).toBeGreaterThan(0);
+      for (const paket of niveau.pakete) {
+        expect(paket.akkorde.length, paket.titel).toBeGreaterThan(0);
+      }
+    }
   });
 });
 
 describe("Lernziele", () => {
-  it("vergibt eindeutige IDs innerhalb eines Niveaus", () => {
-    for (const niveau of NIVEAU_REIHE) {
-      const ids = lernziele(niveau).map((z) => z.id);
-      expect(new Set(ids).size, niveau).toBe(ids.length);
-    }
-  });
-
-  it("zaehlt kein Ziel auf zwei Niveaus", () => {
+  it("nennt jedes Ziel nur auf seinem eigenen Niveau", () => {
     const alle = NIVEAU_REIHE.flatMap((n) => lernziele(n).map((z) => z.id));
     expect(new Set(alle).size).toBe(alle.length);
   });
 
-  it("nennt beim Anfaenger seine Notenpakete und seine Akkorde", () => {
+  it("stellt die Noten vor die Akkorde", () => {
+    for (const niveau of ["anfaenger", "fortgeschritten"] as Niveau[]) {
+      expect(lernziele(niveau)[0].art).toBe("noten");
+    }
+  });
+
+  it("zaehlt nur, was wirklich abgehakt ist", () => {
     const ziele = lernziele("anfaenger");
-    expect(ziele.filter((z) => z.art === "noten")).toHaveLength(
-      erlaubteNotenPakete("anfaenger").length,
-    );
-    expect(ziele.filter((z) => z.art === "akkord")).toHaveLength(
-      erlaubteAkkorde("anfaenger").length,
-    );
-    expect(ziele.map((z) => z.id)).toContain(notenZiel("mitte"));
-    expect(ziele.map((z) => z.id)).toContain(akkordZiel("C"));
+    expect(fortschritt("anfaenger", []).geschafft).toBe(0);
+    expect(fortschritt("anfaenger", [ziele[0].id]).geschafft).toBe(1);
+    // Ein Haken, den es im Plan nicht gibt, zaehlt nicht mit.
+    expect(fortschritt("anfaenger", ["akkord:gibtsnicht"]).geschafft).toBe(0);
   });
 
-  it("haelt die Anfaengerliste kurz genug zum Durchsehen", () => {
-    expect(lernziele("anfaenger").length).toBeLessThanOrEqual(15);
-  });
-});
-
-describe("Fortschritt", () => {
-  it("faengt bei nichts an", () => {
-    const stand = fortschritt("anfaenger", []);
-    expect(stand.geschafft).toBe(0);
-    expect(stand.vollstaendig).toBe(false);
-  });
-
-  it("ist voll, wenn alle Ziele abgehakt sind", () => {
+  it("meldet ein volles Niveau als vollstaendig", () => {
     const alle = lernziele("anfaenger").map((z) => z.id);
-    const stand = fortschritt("anfaenger", alle);
-    expect(stand.geschafft).toBe(stand.gesamt);
-    expect(stand.vollstaendig).toBe(true);
+    expect(fortschritt("anfaenger", alle).vollstaendig).toBe(true);
+    expect(fortschritt("anfaenger", alle.slice(1)).vollstaendig).toBe(false);
   });
 
-  it("zaehlt Haken anderer Niveaus nicht mit", () => {
-    const fremde = lernziele("profi").map((z) => z.id);
-    expect(fortschritt("anfaenger", fremde).geschafft).toBe(0);
-  });
-});
-
-describe("Nach Paketen gruppiert", () => {
-  it("zeigt jeden Akkord genau einmal", () => {
-    for (const niveau of NIVEAU_REIHE) {
-      const gezeigt = akkordeNachPaket(niveau).flatMap((g) => g.akkorde.map((a) => a.id));
-      expect(new Set(gezeigt).size, niveau).toBe(gezeigt.length);
-      expect(new Set(gezeigt)).toEqual(new Set(erlaubteAkkorde(niveau).map((a) => a.id)));
-    }
+  it("summiert alle drei Stufen zum Gesamtstand", () => {
+    const alle = NIVEAU_REIHE.flatMap((n) => lernziele(n).map((z) => z.id));
+    const gesamt = gesamtFortschritt(alle);
+    expect(gesamt.gesamt).toBe(alle.length);
+    expect(gesamt.vollstaendig).toBe(true);
   });
 
-  it("laesst leere Gruppen weg", () => {
-    for (const gruppe of akkordeNachPaket("anfaenger")) {
-      expect(gruppe.akkorde.length).toBeGreaterThan(0);
-    }
+  it("baut die Kennungen stabil auf", () => {
+    expect(notenZiel("weiss")).toBe("noten:weiss");
+    expect(akkordZiel("Am")).toBe("akkord:Am");
+    expect(lernziele("anfaenger").map((z) => z.id)).toContain("noten:weiss");
+    expect(lernziele("anfaenger").map((z) => z.id)).toContain(akkordZiel("C"));
   });
 });

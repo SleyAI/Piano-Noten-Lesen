@@ -2,12 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   AKKORD_PAKETE,
   akkordeImPaket,
-  griffImSystem,
+  griffFuerHaende,
+  schluesselAn,
   lageBeschriftung,
   lagen,
 } from "@/lib/music/akkorde";
-import { NOTEN_PAKETE } from "@/lib/music/curriculum";
-import { type Schluessel, n, passenderSchluesselFuer } from "@/lib/music/pitch";
+import { notenVorrat } from "@/lib/music/curriculum";
+import { n, passenderSchluesselFuer } from "@/lib/music/pitch";
 import {
   KOPF_HOEHE,
   SYSTEM_HOEHE,
@@ -76,37 +77,24 @@ describe("Das mittlere C steht zweimal an verschiedenen Stellen", () => {
   });
 });
 
-describe("Alle Curriculum-Noten passen ins Bild", () => {
+describe("Der ganze Notenvorrat passt ins Bild", () => {
   const halberKopf = KOPF_HOEHE / 2;
 
   it("schneidet keinen Notenkopf am oberen oder unteren Rand ab", () => {
-    for (const paket of NOTEN_PAKETE) {
-      for (const [schluessel, liste] of [
-        ["violin", paket.violin],
-        ["bass", paket.bass],
-      ] as [Schluessel, typeof paket.violin][]) {
-        for (const note of liste) {
-          const y = yVonNote(note, schluessel);
-          const wo = `${paket.id} ${schluessel} ${note.stufe}${note.oktave}`;
-          expect(y - halberKopf, wo).toBeGreaterThan(0);
-          expect(y + halberKopf, wo).toBeLessThan(SYSTEM_HOEHE);
-        }
-      }
+    for (const { note, schluessel } of notenVorrat("alle")) {
+      const y = yVonNote(note, schluessel);
+      const wo = `${schluessel} ${note.stufe}${note.alteration}${note.oktave}`;
+      expect(y - halberKopf, wo).toBeGreaterThan(0);
+      expect(y + halberKopf, wo).toBeLessThan(SYSTEM_HOEHE);
     }
   });
 
   it("laesst auch die aeussersten Hilfslinien im Bild", () => {
-    for (const paket of NOTEN_PAKETE) {
-      for (const [schluessel, liste] of [
-        ["violin", paket.violin],
-        ["bass", paket.bass],
-      ] as [Schluessel, typeof paket.violin][]) {
-        for (const note of liste) {
-          for (const y of hilfslinienY(note, schluessel)) {
-            expect(y, `${paket.id} ${note.stufe}${note.oktave}`).toBeGreaterThan(0);
-            expect(y, `${paket.id} ${note.stufe}${note.oktave}`).toBeLessThan(SYSTEM_HOEHE);
-          }
-        }
+    for (const { note, schluessel } of notenVorrat("alle")) {
+      for (const y of hilfslinienY(note, schluessel)) {
+        const wo = `${schluessel} ${note.stufe}${note.oktave}`;
+        expect(y, wo).toBeGreaterThan(0);
+        expect(y, wo).toBeLessThan(SYSTEM_HOEHE);
       }
     }
   });
@@ -152,57 +140,50 @@ describe("Alle Akkordgriffe passen ins Bild", () => {
   });
 });
 
-describe("Griffe bei fester Schluesselwahl", () => {
-  it("zeichnet jede Lage vollstaendig, egal welches System gewaehlt ist", () => {
-    for (const wahl of ["beide", "violin", "bass"] as const) {
-      for (const paket of AKKORD_PAKETE) {
-        for (const akkord of akkordeImPaket(paket)) {
-          for (const l of lagen(akkord)) {
-            const griff = griffImSystem(l.toene, wahl);
-            for (const ton of griff.toene) {
-              expect(
-                passtInsBild(ton, griff.schluessel),
-                `${wahl}: ${lageBeschriftung(l)} ${ton.stufe}${ton.oktave}`,
-              ).toBe(true);
-            }
-          }
+describe("Griffe bei fester Handwahl", () => {
+  const alleGriffe = (haende: "rechts" | "links" | "beide") =>
+    AKKORD_PAKETE.flatMap((paket) =>
+      akkordeImPaket(paket).flatMap((akkord) =>
+        lagen(akkord).map((l) => ({ l, haende, griff: griffFuerHaende(l.toene, haende) })),
+      ),
+    );
+
+  const HAENDE = ["rechts", "links", "beide"] as const;
+
+  it("zeichnet jede Lage vollstaendig, egal welche Hand spielt", () => {
+    for (const haende of HAENDE) {
+      for (const { l, griff } of alleGriffe(haende)) {
+        for (const ton of griff.noten) {
+          const schluessel = schluesselAn(ton.midi, griff.bassGrenze);
+          expect(
+            passtInsBild(ton, schluessel),
+            `${haende}: ${lageBeschriftung(l)} ${ton.stufe}${ton.oktave}`,
+          ).toBe(true);
         }
       }
     }
   });
 
-  it("bleibt auch im erzwungenen System bei hoechstens drei Hilfslinien", () => {
-    for (const wahl of ["violin", "bass"] as const) {
-      for (const paket of AKKORD_PAKETE) {
-        for (const akkord of akkordeImPaket(paket)) {
-          for (const l of lagen(akkord)) {
-            const griff = griffImSystem(l.toene, wahl);
-            for (const ton of griff.toene) {
-              expect(
-                hilfslinienY(ton, griff.schluessel).length,
-                `${wahl}: ${lageBeschriftung(l)} ${ton.stufe}${ton.oktave}`,
-              ).toBeLessThanOrEqual(3);
-            }
-          }
+  it("bleibt bei hoechstens drei Hilfslinien je Ton", () => {
+    for (const haende of HAENDE) {
+      for (const { l, griff } of alleGriffe(haende)) {
+        for (const ton of griff.noten) {
+          const schluessel = schluesselAn(ton.midi, griff.bassGrenze);
+          expect(
+            hilfslinienY(ton, schluessel).length,
+            `${haende}: ${lageBeschriftung(l)} ${ton.stufe}${ton.oktave}`,
+          ).toBeLessThanOrEqual(3);
         }
       }
     }
   });
 
   it("haelt die Griffe in einer spielbaren Lage", () => {
-    for (const wahl of ["violin", "bass"] as const) {
-      for (const paket of AKKORD_PAKETE) {
-        for (const akkord of akkordeImPaket(paket)) {
-          for (const l of lagen(akkord)) {
-            const griff = griffImSystem(l.toene, wahl);
-            // Innerhalb eines 88-Tasten-Klaviers, mit Luft nach beiden Seiten.
-            expect(griff.toene[0].midi, wahl).toBeGreaterThanOrEqual(28);
-            expect(
-              griff.toene[griff.toene.length - 1].midi,
-              wahl,
-            ).toBeLessThanOrEqual(100);
-          }
-        }
+    for (const haende of HAENDE) {
+      for (const { griff } of alleGriffe(haende)) {
+        // Innerhalb eines 88-Tasten-Klaviers, mit Luft nach beiden Seiten.
+        expect(griff.noten[0].midi, haende).toBeGreaterThanOrEqual(28);
+        expect(griff.noten[griff.noten.length - 1].midi, haende).toBeLessThanOrEqual(100);
       }
     }
   });

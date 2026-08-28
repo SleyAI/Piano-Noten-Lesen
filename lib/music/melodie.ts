@@ -4,11 +4,11 @@
  * Zufall allein ergibt Tonsalat. Drei Regeln machen daraus etwas, das sich
  * spielen laesst:
  *  - Schritte vor Spruengen, denn benachbarte Noten liest man als Bewegung
- *  - Anfang und Ende moeglichst auf einem Landmark, das gibt Halt
+ *  - Anfang und Ende moeglichst auf einem festen Bezugspunkt, das gibt Halt
  *  - keine direkte Tonwiederholung, sonst tippt man nur nach
  *
- * Gebaut wird ausschliesslich aus den freigeschalteten Noten — die Melodie
- * kann also nie ueber das hinausgehen, was schon geuebt wurde.
+ * Gebaut wird ausschliesslich aus dem uebergebenen Vorrat — wer auf den
+ * weissen Tasten bleibt, bekommt also nie ein Vorzeichen zu sehen.
  *
  * Wer beide Systeme uebt, bekommt sie in derselben Tonfolge gemischt: der
  * Wechsel zwischen den Haenden ist genau das, was am Doppelsystem schwerfaellt,

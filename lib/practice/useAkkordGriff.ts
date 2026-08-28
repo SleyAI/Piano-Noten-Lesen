@@ -7,6 +7,10 @@
  * nacheinander an. Beides soll zaehlen — deshalb werden richtige Toene
  * gesammelt, statt auf einen Moment zu warten, in dem alle zusammen gehalten
  * werden. Losgelassene Toene bleiben gesammelt, bis die naechste Aufgabe kommt.
+ *
+ * Was danebengeht, meldet dieser Haken nur; was damit geschieht, entscheidet
+ * die Uebung darueber — die eine laesst weitersuchen, die andere faengt von
+ * vorn an.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -23,6 +27,8 @@ export interface AkkordGriffOptionen {
    * zweimal hintereinander drankommt, etwa in einer Rhythmusuebung.
    */
   kennung?: string;
+  /** Vergisst ein Fehlgriff die schon gesammelten Toene? */
+  vergissBeiFehler?: boolean;
   aufTreffer: () => void;
   aufFehler: (midi: number) => void;
 }
@@ -30,21 +36,17 @@ export interface AkkordGriffOptionen {
 export interface AkkordGriff {
   /** Bereits richtig gespielte Toene. */
   gespielt: Set<number>;
-  /** Zuletzt daneben gegriffene Toene. */
-  daneben: Set<number>;
-  zuruecksetzen: () => void;
 }
 
 export function useAkkordGriff({
   erwartet,
   aktiv,
   kennung: kennungVon,
+  vergissBeiFehler = false,
   aufTreffer,
   aufFehler,
 }: AkkordGriffOptionen): AkkordGriff {
   const [gespielt, setGespielt] = useState<Set<number>>(() => new Set());
-  const [daneben, setDaneben] = useState<Set<number>>(() => new Set());
-  const uhr = useRef<number | null>(null);
 
   // Neue Aufgabe: alles auf Anfang. Das passiert bewusst waehrend des
   // Renderns und nicht in einem Effekt — sonst zeigt der erste Frame nach dem
@@ -54,41 +56,42 @@ export function useAkkordGriff({
   if (kennung !== letzteKennung) {
     setLetzteKennung(kennung);
     setGespielt(new Set());
-    setDaneben(new Set());
   }
-
-  useEffect(
-    () => () => {
-      if (uhr.current) window.clearTimeout(uhr.current);
-    },
-    [],
-  );
 
   useNoteneingabe((ereignis) => {
     if (!aktiv || ereignis.art !== "an") return;
 
     if (!erwartet.includes(ereignis.midi)) {
-      setDaneben((s) => new Set(s).add(ereignis.midi));
+      if (vergissBeiFehler) setGespielt(new Set());
       aufFehler(ereignis.midi);
-      if (uhr.current) window.clearTimeout(uhr.current);
-      uhr.current = window.setTimeout(() => setDaneben(new Set()), 1300);
       return;
     }
 
-    setGespielt((vorher) => {
-      if (vorher.has(ereignis.midi)) return vorher;
-      const neu = new Set(vorher).add(ereignis.midi);
-      if (neu.size === erwartet.length) aufTreffer();
-      return neu;
-    });
+    setGespielt((vorher) =>
+      vorher.has(ereignis.midi) ? vorher : new Set(vorher).add(ereignis.midi),
+    );
   });
 
-  return {
-    gespielt,
-    daneben,
-    zuruecksetzen: () => {
-      setGespielt(new Set());
-      setDaneben(new Set());
-    },
-  };
+  /**
+   * Der Treffer wird nach dem Rendern gemeldet, nicht mitten im Sammeln.
+   *
+   * Wer alle Toene eines Griffs gleichzeitig anschlaegt, loest damit mehrere
+   * Zustandsaenderungen auf einmal aus; React darf die zugehoerige Funktion
+   * dabei mehrfach durchrechnen. Stuende die Meldung darin, ruecke die Uebung
+   * gleich zwei Schritte weiter.
+   */
+  const fertig =
+    kennung === letzteKennung &&
+    erwartet.length > 0 &&
+    erwartet.every((midi) => gespielt.has(midi));
+
+  const melden = useRef(aufTreffer);
+  useEffect(() => {
+    melden.current = aufTreffer;
+  });
+  useEffect(() => {
+    if (fertig) melden.current();
+  }, [fertig]);
+
+  return { gespielt };
 }

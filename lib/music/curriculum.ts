@@ -1,10 +1,15 @@
 /**
- * Notenlese-Curriculum nach der Landmark-Methode.
+ * Der Notenvorrat: welche Tasten kommen ueberhaupt vor?
  *
- * Statt einen Schluessel nach dem anderen zu lernen, wachsen beide Systeme
- * gemeinsam von der Mitte nach aussen. Das mittlere C ist der gemeinsame
- * Ankerpunkt: es liegt im Violinschluessel eine Hilfslinie unter dem System
- * und im Bassschluessel eine darueber — spiegelbildlich zueinander.
+ * Frueher wuchs der Vorrat in kleinen Landmark-Stufen, eine nach der anderen
+ * anzuhaken. Das war viel Verwaltung fuer eine Frage, die sich beim Ueben
+ * ohnehin nur in zwei Varianten stellt: bleibe ich auf den weissen Tasten,
+ * oder kommen die schwarzen dazu? Genau diese beiden Vorraete gibt es hier.
+ *
+ * Der Umfang ist in beiden Faellen derselbe: zwei Oktaven im Violinschluessel
+ * (C4 bis C6) und zwei im Bassschluessel (C2 bis C4). Beide Systeme treffen
+ * sich im mittleren C — es haengt einmal unter dem oberen System und einmal
+ * ueber dem unteren, und ist damit zweimal zu lesen.
  */
 
 import {
@@ -12,136 +17,45 @@ import {
   type Schluessel,
   type SchluesselWahl,
   n,
-  noten,
-  passenderSchluessel,
+  vonMidi,
 } from "./pitch";
 
 export type { SchluesselWahl };
 
-export interface NotenPaket {
-  id: string;
-  stufe: number;
-  titel: string;
-  /** Ein Satz, der erklaert, warum diese Noten zusammengehoeren. */
-  hinweis: string;
-  /** Noten im Violinschluessel. */
-  violin: Note[];
-  /** Noten im Bassschluessel. */
-  bass: Note[];
+/** Nur die Stammtoene, oder auch die Halbtoene dazwischen? */
+export type Tastenwahl = "weiss" | "alle";
+
+export const TASTEN_WAHLEN: Array<{ wert: Tastenwahl; titel: string; hinweis: string }> = [
+  {
+    wert: "weiss",
+    titel: "Nur die weißen Tasten",
+    hinweis: "Die Stammtöne C bis H, ohne ein einziges Vorzeichen.",
+  },
+  {
+    wert: "alle",
+    titel: "Auch die schwarzen",
+    hinweis: "Kreuze und Be kommen dazu — jede schwarze Taste in beiden Schreibweisen.",
+  },
+];
+
+/** Der gezeichnete Umfang je System. */
+const BEREICH: Record<Schluessel, { von: number; bis: number }> = {
+  violin: { von: n("C4").midi, bis: n("C6").midi },
+  bass: { von: n("C2").midi, bis: n("C4").midi },
+};
+
+/**
+ * Wie wird diese Taste geschrieben?
+ *
+ * Weisse Tasten haben genau eine Schreibweise. Schwarze bekommen beide — Fis
+ * und Ges sind derselbe Klang, stehen aber auf verschiedenen Linien, und
+ * genau das ist beim Lesen der Unterschied.
+ */
+function schreibweisen(midi: number, wahl: Tastenwahl): Note[] {
+  const stammton = vonMidi(midi, "kreuz");
+  if (stammton.alteration === 0) return [stammton];
+  return wahl === "weiss" ? [] : [stammton, vonMidi(midi, "b")];
 }
-
-export const NOTEN_PAKETE: NotenPaket[] = [
-  {
-    id: "mitte",
-    stufe: 1,
-    titel: "Die Mitte",
-    hinweis:
-      "Das mittlere C — der Ankerpunkt. Oben hängt es unter dem System, unten sitzt es darüber.",
-    violin: noten("C4"),
-    bass: noten("C4"),
-  },
-  {
-    id: "landmarks",
-    stufe: 2,
-    titel: "Die Landmarks",
-    hinweis:
-      "G4 sitzt genau in der Windung des Violinschlüssels, F3 zwischen den beiden Punkten des Bassschlüssels.",
-    violin: noten("G4"),
-    bass: noten("F3"),
-  },
-  {
-    id: "aeussere-c",
-    stufe: 3,
-    titel: "Die äußeren C",
-    hinweis: "Eine Oktave über und unter der Mitte — drei feste Punkte pro System.",
-    violin: noten("C5"),
-    bass: noten("C3"),
-  },
-  {
-    id: "um-die-mitte",
-    stufe: 4,
-    titel: "Um die Mitte herum",
-    hinweis: "Die direkten Nachbarn des mittleren C, je einen Schritt nach oben und unten.",
-    violin: noten("D4 E4"),
-    bass: noten("H3 A3"),
-  },
-  {
-    id: "um-die-landmarks",
-    stufe: 5,
-    titel: "Um die Landmarks",
-    hinweis: "Nachbarn von G4 und F3 — von einem sicheren Punkt aus einen Schritt weit denken.",
-    violin: noten("F4 A4"),
-    bass: noten("E3 G3"),
-  },
-  {
-    id: "um-die-aeusseren-c",
-    stufe: 6,
-    titel: "Um die äußeren C",
-    hinweis: "Nachbarn von C5 und C3. Damit ist jeder Anker von beiden Seiten erschlossen.",
-    violin: noten("H4 D5"),
-    bass: noten("D3 H2"),
-  },
-  {
-    id: "oktave-voll",
-    stufe: 7,
-    titel: "Die Oktave ist voll",
-    hinweis: "Alle Stammtöne von C4 bis C5 oben und von C3 bis C4 unten — keine Lücken mehr.",
-    violin: noten("C4 D4 E4 F4 G4 A4 H4 C5"),
-    bass: noten("C3 D3 E3 F3 G3 A3 H3 C4"),
-  },
-  {
-    id: "nach-aussen",
-    stufe: 8,
-    titel: "Weiter nach außen",
-    hinweis: "Die restlichen Töne im System und knapp daneben — noch ohne Hilfslinien.",
-    violin: noten("E5 F5 G5"),
-    bass: noten("A2 G2 F2"),
-  },
-  {
-    id: "hilfslinien",
-    stufe: 9,
-    titel: "Über die Linien hinaus",
-    hinweis: "Die Töne mit Hilfslinien am oberen und unteren Rand.",
-    violin: noten("A5 H5 C6"),
-    bass: noten("E2 D2 C2"),
-  },
-  {
-    id: "kreuze",
-    stufe: 10,
-    titel: "Die ersten Kreuze",
-    hinweis: "Fis und Cis — die beiden schwarzen Tasten, die am häufigsten vorkommen.",
-    violin: noten("Fis4 Cis5"),
-    bass: noten("Fis3 Cis3"),
-  },
-  {
-    id: "be-vorzeichen",
-    stufe: 11,
-    titel: "Die ersten Be",
-    hinweis: "B und Es — dieselben schwarzen Tasten von der anderen Seite gedacht.",
-    violin: noten("B4 Es5"),
-    bass: noten("B2 Es3"),
-  },
-  {
-    id: "alle-halbtoene",
-    stufe: 12,
-    titel: "Die restlichen Halbtöne",
-    hinweis: "Gis und Dis — damit ist jede Taste der Oktave einmal dran gewesen.",
-    violin: noten("Gis4 Dis5"),
-    bass: noten("Gis3 Dis3"),
-  },
-];
-
-export const PAKET_NACH_ID = new Map(NOTEN_PAKETE.map((p) => [p.id, p]));
-
-export const SCHLUESSEL_WAHLEN: Array<{ wert: SchluesselWahl; titel: string; hinweis: string }> = [
-  {
-    wert: "beide",
-    titel: "Beide Systeme",
-    hinweis: "Gemischt in derselben Tonfolge — mit dem Sprung zwischen den Händen.",
-  },
-  { wert: "violin", titel: "Nur Violinschlüssel", hinweis: "Das obere System, meist die rechte Hand." },
-  { wert: "bass", titel: "Nur Bassschlüssel", hinweis: "Das untere System, meist die linke Hand." },
-];
 
 /** Eine Note zusammen mit dem System, in dem sie geuebt wird. */
 export interface UebungsNote {
@@ -155,36 +69,40 @@ export function uebungsSchluessel(u: UebungsNote): string {
 }
 
 /**
- * Alle Uebungsnoten der gewaehlten Pakete, ohne Doppelte.
+ * Der ganze Vorrat zu einer Tastenwahl.
  *
- * C4 erscheint bewusst zweimal — einmal je System. Die beiden Systeme stehen
- * mit Abstand untereinander, das mittlere C haengt also einmal unter dem
- * oberen und einmal ueber dem unteren. Zwei Notenbilder, zwei Uebungskarten.
+ * C4 erscheint bewusst zweimal — einmal je System. Zwei Notenbilder, zwei
+ * Lesevorgaenge, also auch zwei Uebungskarten.
  */
-export function notenAusPaketen(paketIds: readonly string[]): UebungsNote[] {
-  const gesehen = new Set<string>();
+export function notenVorrat(wahl: Tastenwahl): UebungsNote[] {
   const ergebnis: UebungsNote[] = [];
 
-  for (const id of paketIds) {
-    const paket = PAKET_NACH_ID.get(id);
-    if (!paket) continue;
-
-    for (const [schluessel, liste] of [
-      ["violin", paket.violin],
-      ["bass", paket.bass],
-    ] as const) {
-      for (const note of liste) {
-        const u: UebungsNote = { note, schluessel };
-        const key = uebungsSchluessel(u);
-        if (gesehen.has(key)) continue;
-        gesehen.add(key);
-        ergebnis.push(u);
+  for (const schluessel of ["violin", "bass"] as const) {
+    const { von, bis } = BEREICH[schluessel];
+    for (let midi = von; midi <= bis; midi += 1) {
+      for (const note of schreibweisen(midi, wahl)) {
+        ergebnis.push({ note, schluessel });
       }
     }
   }
 
   return ergebnis;
 }
+
+/** Wie viele Noten bringt eine Tastenwahl mit? Fuer die Anzeige auf der Kachel. */
+export function vorratUmfang(wahl: Tastenwahl): number {
+  return notenVorrat(wahl).length;
+}
+
+export const SCHLUESSEL_WAHLEN: Array<{ wert: SchluesselWahl; titel: string; hinweis: string }> = [
+  {
+    wert: "beide",
+    titel: "Beide Systeme",
+    hinweis: "Gemischt in derselben Tonfolge — mit dem Sprung zwischen den Händen.",
+  },
+  { wert: "violin", titel: "Nur Violinschlüssel", hinweis: "Das obere System, meist die rechte Hand." },
+  { wert: "bass", titel: "Nur Bassschlüssel", hinweis: "Das untere System, meist die linke Hand." },
+];
 
 /**
  * Auf ein System einschraenken.
@@ -201,19 +119,13 @@ export function nachSchluessel(
   return gefiltert.length > 0 ? gefiltert : [...noten];
 }
 
-/** Wie viele Noten bringt ein Paket mit? Fuer die Anzeige auf der Kachel. */
-export function paketUmfang(paket: NotenPaket): number {
-  return paket.violin.length + paket.bass.length;
-}
-
-/** Ordnet freie MIDI-Eingaben einem System zu — fuer Melodien ohne festes Paket. */
-export function alsUebungsNote(note: Note): UebungsNote {
-  return { note, schluessel: passenderSchluessel(note) };
-}
-
 /**
- * Die festen Bezugspunkte der Methode. Melodien fangen bevorzugt hier an und
- * hoeren hier auf — das gibt einer gewuerfelten Tonfolge einen Rahmen.
+ * Die festen Bezugspunkte im Notenbild: die beiden mittleren C, das G in der
+ * Windung des Violinschluessels, das F zwischen den Punkten des
+ * Bassschluessels und die aeusseren C.
+ *
+ * Sie schneiden den Vorrat nicht mehr zu — aber Melodien fangen bevorzugt
+ * hier an und hoeren hier auf. Das gibt einer gewuerfelten Tonfolge Halt.
  */
 export const LANDMARKS = new Set([
   n("C4").midi,
@@ -226,6 +138,3 @@ export const LANDMARKS = new Set([
 export function istLandmark(u: UebungsNote): boolean {
   return LANDMARKS.has(u.note.midi);
 }
-
-/** Voreinstellung beim allerersten Start: nur die Mitte. */
-export const START_PAKETE = [NOTEN_PAKETE[0].id];

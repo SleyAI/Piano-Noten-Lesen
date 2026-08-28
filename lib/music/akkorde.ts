@@ -15,14 +15,12 @@ import {
   type Alteration,
   type Note,
   type Schluessel,
-  type SchluesselWahl,
   type Stufe,
   ausDiatonicUndMidi,
   hilfslinien,
   linienPosition,
   name,
   note,
-  passenderSchluesselFuer,
 } from "./pitch";
 
 /** Ein Akkordton: so viele Stufen und so viele Halbtoene ueber dem Grundton. */
@@ -315,20 +313,78 @@ export function inSystem(toene: readonly Note[], schluessel: Schluessel): Note[]
   return beste;
 }
 
+// --- Haende -----------------------------------------------------------------
+
+/** Mit welcher Hand wird gegriffen? */
+export type Haende = "rechts" | "links" | "beide";
+
+export const HAENDE_WAHLEN: Array<{ wert: Haende; titel: string; hinweis: string }> = [
+  {
+    wert: "rechts",
+    titel: "Nur rechte Hand",
+    hinweis: "Der Griff steht im Violinschlüssel, oben.",
+  },
+  {
+    wert: "links",
+    titel: "Nur linke Hand",
+    hinweis: "Derselbe Griff eine Lage tiefer, im Bassschlüssel.",
+  },
+  {
+    wert: "beide",
+    titel: "Beide Hände",
+    hinweis: "Links und rechts zusammen — der Griff steht in beiden Systemen.",
+  },
+];
+
 /**
- * In welchem System wird dieser Griff gezeigt, und in welcher Lage?
+ * Ein Griff, auf die Haende verteilt.
  *
- * Bei "beide" entscheidet der Akkord selbst, bei einer festen Wahl wird er
- * dorthin gelegt.
+ * `bassGrenze` sagt dem Notenbild, wo die Trennlinie liegt: alles darunter
+ * gehoert ins untere System. Damit braucht kein einzelner Ton zu wissen, in
+ * welchem Schluessel er steht.
  */
-export function griffImSystem(
-  toene: readonly Note[],
-  wahl: SchluesselWahl,
-): { schluessel: Schluessel; toene: Note[] } {
-  if (wahl === "beide") {
-    return { schluessel: passenderSchluesselFuer(toene), toene: [...toene] };
+export interface Griff {
+  /** Alle klingenden Toene, aufsteigend. */
+  noten: Note[];
+  links: Note[];
+  rechts: Note[];
+  bassGrenze: number;
+}
+
+/** In welchem System steht dieser Ton? */
+export function schluesselAn(midi: number, bassGrenze: number): Schluessel {
+  return midi < bassGrenze ? "bass" : "violin";
+}
+
+/**
+ * Verteilt einen Griff auf die gewaehlten Haende.
+ *
+ * Eine Hand allein bekommt den ganzen Griff, oktavweise dorthin geschoben,
+ * wo er in ihrem System bequem liegt. Bei beiden Haenden greift die linke
+ * denselben Akkord eine Oktave tiefer — das ist die Art, wie man einen neuen
+ * Akkord beidhaendig einuebt.
+ *
+ * Reicht der Griff selbst weiter als eine Oktave — ein Cadd9 spannt bis zur
+ * None —, wuerde er sich mit seiner eigenen Verdopplung ueberschneiden. Dann
+ * uebernimmt die linke Hand nur den Basston, so wie es am Klavier ohnehin
+ * ueblich ist.
+ */
+export function griffFuerHaende(toene: readonly Note[], haende: Haende): Griff {
+  if (haende === "links") {
+    const links = inSystem(toene, "bass");
+    return { noten: links, links, rechts: [], bassGrenze: Number.POSITIVE_INFINITY };
   }
-  return { schluessel: wahl, toene: inSystem(toene, wahl) };
+
+  const rechts = inSystem(toene, "violin");
+  if (haende === "rechts") {
+    return { noten: rechts, links: [], rechts, bassGrenze: Number.NEGATIVE_INFINITY };
+  }
+
+  const spanne = rechts[rechts.length - 1].midi - rechts[0].midi;
+  const tiefer = (t: Note) => note(t.stufe, t.alteration, t.oktave - 1);
+  const links = spanne < 12 ? rechts.map(tiefer) : [tiefer(rechts[0])];
+
+  return { noten: [...links, ...rechts], links, rechts, bassGrenze: rechts[0].midi };
 }
 
 // --- Stimmfuehrung ----------------------------------------------------------
@@ -547,20 +603,4 @@ export function grundtonIndex(akkord: Akkord): number {
 export function akkordVon(index: number, typ: AkkordTypId): Akkord | undefined {
   const gebaut = baueAkkord(((index % 12) + 12) % 12, AKKORD_TYPEN[typ], "");
   return gebaut ? ALLE_AKKORDE.get(gebaut.symbol) : undefined;
-}
-
-/**
- * Die tatsaechlich geuebten Akkorde: alles aus den gewaehlten Paketen, minus
- * das, was einzeln abgewaehlt wurde.
- *
- * Bleibt dabei nichts uebrig, gewinnen die Pakete — eine leere Uebung waere
- * kein hilfreiches Ergebnis einer Auswahl.
- */
-export function gewaehlteAkkorde(
-  paketIds: readonly string[],
-  abgewaehlt: readonly string[],
-): Akkord[] {
-  const ausPaketen = akkordeAusPaketen(paketIds);
-  const uebrig = ausPaketen.filter((a) => !abgewaehlt.includes(a.id));
-  return uebrig.length > 0 ? uebrig : ausPaketen;
 }

@@ -1,13 +1,11 @@
 /**
- * Anfaenger, Fortgeschritten, Profi.
+ * Anfaenger, Fortgeschritten, Profi — der Uebungsplan.
  *
- * Das Niveau ist kein Rang, sondern ein Vorrat: es legt fest, welche Noten
- * und welche Akkorde ueberhaupt angeboten werden. Anfaenger bleiben auf den
- * weissen Tasten, ab Fortgeschritten kommen die schwarzen dazu.
- *
- * Jedes Niveau bringt seine eigene Liste an Lernzielen mit — was dieses
- * Niveau ausmacht, zum Durchsehen und Abhaken. Dass eine Liste voll ist,
- * schaltet nichts frei: gewechselt wird, wann man moechte.
+ * Die Niveaus sperren nichts mehr. Frueher bekam ein Anfaenger die Akkorde
+ * der oberen Stufen gar nicht zu sehen; das half niemandem, der wissen
+ * wollte, was noch kommt. Jetzt steht alles da, nur eben eingeteilt: was
+ * gehoert zum Anfang, was kommt danach, was ist der Rest. Abgehakt wird
+ * selbst, und das schaltet weiterhin nichts frei — es ist eine Merkliste.
  */
 
 import {
@@ -16,25 +14,34 @@ import {
   akkordeAusPaketen,
   akkordeImPaket,
 } from "./akkorde";
-import { NOTEN_PAKETE, type NotenPaket, PAKET_NACH_ID } from "./curriculum";
+import type { Tastenwahl } from "./curriculum";
 import { name } from "./pitch";
 
 export type Niveau = "anfaenger" | "fortgeschritten" | "profi";
 
-/** Von leicht nach schwer — jedes Niveau enthaelt die vorigen. */
+/** Von leicht nach schwer. */
 export const NIVEAU_REIHE: Niveau[] = ["anfaenger", "fortgeschritten", "profi"];
+
+/** Was ein Niveau an Noten mitbringt — oder nichts, wenn es nur Akkorde sind. */
+interface NotenZiel {
+  id: string;
+  tasten: Tastenwahl;
+  titel: string;
+  hinweis: string;
+}
 
 interface NiveauStufe {
   id: Niveau;
   titel: string;
   hinweis: string;
-  /** Was dieses Niveau an Notenpaketen hinzufuegt. */
-  notenPakete: string[];
+  /** Die Notenziele, die dieses Niveau ausmachen. */
+  noten: NotenZiel[];
   /** Was dieses Niveau an Akkordpaketen hinzufuegt. */
   akkordPakete: string[];
   /**
    * Nur Akkorde ohne Vorzeichen. Greift innerhalb der genannten Pakete und
-   * ist der Grund, warum D-Dur beim Anfaenger noch fehlt: es braucht ein Fis.
+   * ist der Grund, warum D-Dur erst beim Fortgeschrittenen steht: es braucht
+   * ein Fis, und dafuer muss die Hand auf eine schwarze Taste.
    */
   nurWeisseTasten: boolean;
 }
@@ -44,15 +51,15 @@ const STUFEN: Record<Niveau, NiveauStufe> = {
     id: "anfaenger",
     titel: "Anfänger",
     hinweis:
-      "Nur weiße Tasten. Die Stammtöne rund um das mittlere C und die sechs Akkorde, die daraus entstehen.",
-    notenPakete: [
-      "mitte",
-      "landmarks",
-      "aeussere-c",
-      "um-die-mitte",
-      "um-die-landmarks",
-      "um-die-aeusseren-c",
-      "oktave-voll",
+      "Nur weiße Tasten. Die Stammtöne über beide Systeme und die sechs Akkorde, die ohne ein einziges Vorzeichen auskommen.",
+    noten: [
+      {
+        id: "weiss",
+        tasten: "weiss",
+        titel: "Die weißen Tasten",
+        hinweis:
+          "Alle Stammtöne von C2 bis C6 — im Bassschlüssel wie im Violinschlüssel, mit dem mittleren C als gemeinsamem Anker.",
+      },
     ],
     akkordPakete: ["dreiklaenge-erste"],
     nurWeisseTasten: true,
@@ -62,7 +69,15 @@ const STUFEN: Record<Niveau, NiveauStufe> = {
     titel: "Fortgeschritten",
     hinweis:
       "Die schwarzen Tasten kommen dazu — mit ihnen alle zwölf Dur- und Molldreiklänge und die Dominantseptakkorde.",
-    notenPakete: ["nach-aussen", "hilfslinien", "kreuze", "be-vorzeichen"],
+    noten: [
+      {
+        id: "schwarz",
+        tasten: "alle",
+        titel: "Die schwarzen Tasten",
+        hinweis:
+          "Kreuze und Be, jede schwarze Taste in beiden Schreibweisen — Fis und Ges klingen gleich und stehen doch auf verschiedenen Linien.",
+      },
+    ],
     akkordPakete: ["dur-moll-komplett", "dominantsept"],
     nurWeisseTasten: false,
   },
@@ -70,8 +85,8 @@ const STUFEN: Record<Niveau, NiveauStufe> = {
     id: "profi",
     titel: "Profi",
     hinweis:
-      "Alles: die restlichen Halbtöne, Sus- und Add-Akkorde, große und kleine Septakkorde, Optionstöne.",
-    notenPakete: ["alle-halbtoene"],
+      "Alles Übrige: Sus- und Add-Akkorde, große und kleine Septakkorde, verminderte und übermäßige Griffe, Optionstöne.",
+    noten: [],
     akkordPakete: [
       "sus-add",
       "maj7-m7",
@@ -85,37 +100,13 @@ const STUFEN: Record<Niveau, NiveauStufe> = {
 
 export const NIVEAUS: NiveauStufe[] = NIVEAU_REIHE.map((id) => STUFEN[id]);
 
-export function niveauTitel(niveau: Niveau): string {
-  return STUFEN[niveau].titel;
-}
-
-export function niveauHinweis(niveau: Niveau): string {
-  return STUFEN[niveau].hinweis;
-}
-
-/** Das naechsthoehere Niveau, oder null beim obersten. */
-export function naechstesNiveau(niveau: Niveau): Niveau | null {
-  const i = NIVEAU_REIHE.indexOf(niveau);
-  return i >= 0 && i + 1 < NIVEAU_REIHE.length ? NIVEAU_REIHE[i + 1] : null;
-}
-
 /** Dieses Niveau und alle darunter. */
 function bisEinschliesslich(niveau: Niveau): NiveauStufe[] {
   const grenze = NIVEAU_REIHE.indexOf(niveau);
   return NIVEAU_REIHE.slice(0, grenze + 1).map((id) => STUFEN[id]);
 }
 
-// --- Was steht zur Verfuegung? ----------------------------------------------
-
-/** Alle Notenpakete bis zu diesem Niveau, in Curriculum-Reihenfolge. */
-export function erlaubteNotenPakete(niveau: Niveau): NotenPaket[] {
-  const ids = new Set(bisEinschliesslich(niveau).flatMap((s) => s.notenPakete));
-  return NOTEN_PAKETE.filter((p) => ids.has(p.id));
-}
-
-export function notenPaketErlaubt(id: string, niveau: Niveau): boolean {
-  return erlaubteNotenPakete(niveau).some((p) => p.id === id);
-}
+// --- Akkorde, nach Niveaus eingeteilt ---------------------------------------
 
 /** Ein Akkord ohne jedes Vorzeichen — also rein auf weissen Tasten greifbar. */
 export function nurWeisseTasten(akkord: Akkord): boolean {
@@ -123,7 +114,7 @@ export function nurWeisseTasten(akkord: Akkord): boolean {
 }
 
 /** Alle Akkorde bis zu diesem Niveau, ohne Doppelte. */
-export function erlaubteAkkorde(niveau: Niveau): Akkord[] {
+export function akkordeBis(niveau: Niveau): Akkord[] {
   const gesehen = new Set<string>();
   const ergebnis: Akkord[] = [];
 
@@ -139,26 +130,64 @@ export function erlaubteAkkorde(niveau: Niveau): Akkord[] {
   return ergebnis;
 }
 
-/**
- * Dieselben Akkorde, nach Paketen gruppiert — so wie die Auswahl sie zeigt.
- * Leere Gruppen fallen weg.
- */
-export function akkordeNachPaket(
-  niveau: Niveau,
-): Array<{ paket: string; titel: string; akkorde: Akkord[] }> {
-  const erlaubt = new Set(erlaubteAkkorde(niveau).map((a) => a.id));
-  const gesehen = new Set<string>();
-  const gruppen: Array<{ paket: string; titel: string; akkorde: Akkord[] }> = [];
+/** Was auf diesem Niveau neu dazukommt. */
+export function akkordeVon(niveau: Niveau): Akkord[] {
+  const vorher = new Set(
+    bisEinschliesslich(niveau)
+      .filter((s) => s.id !== niveau)
+      .flatMap((s) => akkordeBis(s.id).map((a) => a.id)),
+  );
+  return akkordeBis(niveau).filter((a) => !vorher.has(a.id));
+}
 
-  for (const paket of AKKORD_PAKETE) {
-    const akkorde = akkordeImPaket(paket).filter((a) => {
-      if (!erlaubt.has(a.id) || gesehen.has(a.id)) return false;
-      gesehen.add(a.id);
-      return true;
-    });
-    if (akkorde.length > 0) {
-      gruppen.push({ paket: paket.id, titel: paket.titel, akkorde });
+/** Der ganze Vorrat — jeder Akkord genau einmal, in Plan-Reihenfolge. */
+export function alleAkkorde(): Akkord[] {
+  return akkordeBis("profi");
+}
+
+export interface AkkordPaketGruppe {
+  paket: string;
+  titel: string;
+  akkorde: Akkord[];
+}
+
+export interface AkkordNiveauGruppe {
+  niveau: Niveau;
+  titel: string;
+  hinweis: string;
+  pakete: AkkordPaketGruppe[];
+}
+
+/**
+ * Alle Akkorde, nach Niveau und darin nach Paket gruppiert — so wie die
+ * Auswahl und der Uebungsplan sie zeigen. Jeder Akkord steht genau einmal,
+ * naemlich auf dem Niveau, auf dem er zum ersten Mal vorkommt.
+ */
+export function akkordeNachNiveau(): AkkordNiveauGruppe[] {
+  const gruppen: AkkordNiveauGruppe[] = [];
+
+  for (const niveau of NIVEAU_REIHE) {
+    const neu = new Set(akkordeVon(niveau).map((a) => a.id));
+    const gesehen = new Set<string>();
+    const pakete: AkkordPaketGruppe[] = [];
+
+    for (const paket of AKKORD_PAKETE) {
+      const akkorde = akkordeImPaket(paket).filter((a) => {
+        if (!neu.has(a.id) || gesehen.has(a.id)) return false;
+        gesehen.add(a.id);
+        return true;
+      });
+      if (akkorde.length > 0) {
+        pakete.push({ paket: paket.id, titel: paket.titel, akkorde });
+      }
     }
+
+    gruppen.push({
+      niveau,
+      titel: STUFEN[niveau].titel,
+      hinweis: STUFEN[niveau].hinweis,
+      pakete,
+    });
   }
 
   return gruppen;
@@ -167,15 +196,15 @@ export function akkordeNachPaket(
 // --- Lernziele --------------------------------------------------------------
 
 export interface Lernziel {
-  /** Stabile Kennung, auch fuer den Speicher: "noten:mitte", "akkord:Am". */
+  /** Stabile Kennung, auch fuer den Speicher: "noten:weiss", "akkord:Am". */
   id: string;
   art: "noten" | "akkord";
   titel: string;
   hinweis: string;
 }
 
-export function notenZiel(paketId: string): string {
-  return `noten:${paketId}`;
+export function notenZiel(id: string): string {
+  return `noten:${id}`;
 }
 
 export function akkordZiel(akkordId: string): string {
@@ -188,44 +217,32 @@ export function akkordZiel(akkordId: string): string {
  */
 export function lernziele(niveau: Niveau): Lernziel[] {
   const stufe = STUFEN[niveau];
-  const ziele: Lernziel[] = [];
 
-  for (const id of stufe.notenPakete) {
-    const paket = PAKET_NACH_ID.get(id);
-    if (!paket) continue;
-    ziele.push({
-      id: notenZiel(paket.id),
-      art: "noten",
-      titel: paket.titel,
-      hinweis: paket.hinweis,
-    });
-  }
+  const noten: Lernziel[] = stufe.noten.map((ziel) => ({
+    id: notenZiel(ziel.id),
+    art: "noten",
+    titel: ziel.titel,
+    hinweis: ziel.hinweis,
+  }));
 
-  // Nur die Akkorde, die es auf den Stufen darunter noch nicht gab.
-  const vorher = new Set(
-    bisEinschliesslich(niveau)
-      .filter((s) => s.id !== niveau)
-      .flatMap((s) => erlaubteAkkorde(s.id).map((a) => a.id)),
-  );
+  const akkorde: Lernziel[] = akkordeVon(niveau).map((akkord) => ({
+    id: akkordZiel(akkord.id),
+    art: "akkord",
+    titel: akkord.symbol,
+    hinweis: `${akkord.typ.bezeichnung} auf ${name(akkord.grundton)}`,
+  }));
 
-  for (const akkord of erlaubteAkkorde(niveau)) {
-    if (vorher.has(akkord.id)) continue;
-    ziele.push({
-      id: akkordZiel(akkord.id),
-      art: "akkord",
-      titel: akkord.symbol,
-      hinweis: `${akkord.typ.bezeichnung} auf ${name(akkord.grundton)}`,
-    });
-  }
+  return [...noten, ...akkorde];
+}
 
-  return ziele;
+export interface Stand {
+  geschafft: number;
+  gesamt: number;
+  vollstaendig: boolean;
 }
 
 /** Wie weit ist dieses Niveau durchgearbeitet? */
-export function fortschritt(
-  niveau: Niveau,
-  beherrscht: readonly string[],
-): { geschafft: number; gesamt: number; vollstaendig: boolean } {
+export function fortschritt(niveau: Niveau, beherrscht: readonly string[]): Stand {
   const ziele = lernziele(niveau);
   const menge = new Set(beherrscht);
   const geschafft = ziele.filter((z) => menge.has(z.id)).length;
@@ -234,4 +251,13 @@ export function fortschritt(
     gesamt: ziele.length,
     vollstaendig: ziele.length > 0 && geschafft === ziele.length,
   };
+}
+
+/** Derselbe Stand ueber alle drei Niveaus zusammen. */
+export function gesamtFortschritt(beherrscht: readonly string[]): Stand {
+  const summe = NIVEAU_REIHE.map((n) => fortschritt(n, beherrscht)).reduce(
+    (a, b) => ({ geschafft: a.geschafft + b.geschafft, gesamt: a.gesamt + b.gesamt }),
+    { geschafft: 0, gesamt: 0 },
+  );
+  return { ...summe, vollstaendig: summe.gesamt > 0 && summe.geschafft === summe.gesamt };
 }

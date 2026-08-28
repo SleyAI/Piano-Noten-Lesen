@@ -8,14 +8,15 @@
  *  - *Umkehrungen*: dieselben Uebungen, aber ueber die gewaehlten Stellungen
  *  - *Folgen*: mehrere Akkorde hintereinander, als Bloecke oder gebrochen
  *
- * Welche Akkorde ueberhaupt zur Auswahl stehen, entscheidet das Niveau.
+ * Zur Auswahl steht der ganze Vorrat. Er ist nach Niveaus eingeteilt, damit
+ * man sieht, was zusammengehoert — versteckt wird nichts.
  */
 
 import { useState } from "react";
 import { Kopfzeile } from "@/components/ui/Kopfzeile";
 import { type AkkordModus, useEinstellungen } from "@/lib/store/einstellungen";
 import { useHydriert } from "@/lib/store/hydriert";
-import { erlaubteAkkorde, niveauTitel } from "@/lib/music/niveau";
+import { alleAkkorde } from "@/lib/music/niveau";
 import { AkkordLernen } from "./AkkordLernen";
 import { AkkordfolgenUebung } from "./AkkordfolgenUebung";
 
@@ -27,7 +28,6 @@ const REITER: Array<{ wert: AkkordModus; titel: string }> = [
 
 export function AkkordSeite() {
   const hydriert = useHydriert();
-  const niveau = useEinstellungen((z) => z.niveau);
   const modus = useEinstellungen((z) => z.akkordModus);
   const setzeModus = useEinstellungen((z) => z.setzeAkkordModus);
   // Der Zaehler setzt den laufenden Modus zurueck, wenn man den Reiter
@@ -37,13 +37,13 @@ export function AkkordSeite() {
 
   if (!hydriert) return <div className="h-full bg-papier" />;
 
-  const anzahl = erlaubteAkkorde(niveau).length;
+  const anzahl = alleAkkorde().length;
 
   return (
     <div className="flex h-full flex-col bg-papier">
       <Kopfzeile
         titel="Akkorde"
-        unterzeile={`${anzahl} Akkorde als ${niveauTitel(niveau)}`}
+        unterzeile={`${anzahl} Akkorde, vom ersten Dreiklang bis zum Optionston`}
         rechts={
           <div className="flex gap-1 rounded-full bg-papier-tief p-1">
             {REITER.map((reiter) => (

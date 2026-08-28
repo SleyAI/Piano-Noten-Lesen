@@ -3,18 +3,11 @@ import { MELODIE_LAENGE, melodieSchluessel, wuerfleMelodie } from "./melodie";
 import {
   type UebungsNote,
   istLandmark,
-  notenAusPaketen,
+  notenVorrat,
   uebungsSchluessel,
 } from "./curriculum";
 
-const VORRAT = notenAusPaketen([
-  "mitte",
-  "landmarks",
-  "aeussere-c",
-  "um-die-mitte",
-  "um-die-landmarks",
-  "oktave-voll",
-]);
+const VORRAT = notenVorrat("weiss");
 
 /** Viele Wuerfe, damit seltene Ausreisser auffallen. */
 function vieleMelodien(anzahl: number, vorrat: readonly UebungsNote[] = VORRAT) {
@@ -43,7 +36,7 @@ describe("Vorrat", () => {
   });
 
   it("kommt auch mit einer einzigen Note klar", () => {
-    const winzig = notenAusPaketen(["mitte"]);
+    const winzig = VORRAT.slice(0, 1);
     const melodie = wuerfleMelodie(winzig, { laenge: 5 });
     expect(melodie).toHaveLength(5);
   });

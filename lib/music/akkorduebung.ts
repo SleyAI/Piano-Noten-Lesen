@@ -12,8 +12,8 @@
  * gleichermassen zeichnen, vorspielen und abpruefen.
  */
 
-import { type Lage, griffImSystem } from "./akkorde";
-import { type Note, type Schluessel, type SchluesselWahl, note } from "./pitch";
+import { type Griff, type Haende, type Lage, griffFuerHaende } from "./akkorde";
+import { type Note, type Schluessel, note } from "./pitch";
 import {
   type NotenwertId,
   TAKT,
@@ -74,21 +74,35 @@ function schritte(gruppen: Note[][], werte: NotenwertId[]): UebungsSchritt[] {
   }));
 }
 
+/**
+ * Wie viele Schritte eine Uebung bekommt.
+ *
+ * Beim Lernen eines neuen Akkords wird laenger geuebt: ein Griff sitzt nicht,
+ * weil man ihn zweimal getroffen hat, sondern weil die Hand ihn ueber ein
+ * paar Takte hinweg wiederfindet.
+ */
+const TAKT_SCHRITTE = { kurz: 6, lang: 10 };
+const MELODIE_TOENE = { kurz: 7, lang: 11 };
+
 /** Der ganze Griff, einmal als ganze Note. */
-function griffUebung(toene: readonly Note[]): UebungsSchritt[] {
-  return schritte([[...toene]], ["ganze"]);
+function griffUebung(griff: Griff): UebungsSchritt[] {
+  return schritte([[...griff.noten]], ["ganze"]);
 }
 
 /**
- * Derselbe Griff ueber zwei Takte in gewuerfelten Notenwerten.
+ * Derselbe Griff ueber mehrere Takte in gewuerfelten Notenwerten.
  *
  * Ohne Achtel: einen vollen Akkord im Achtelabstand zu wiederholen ist eine
  * Handgelenksuebung, keine Akkorduebung.
  */
-function taktUebung(toene: readonly Note[]): UebungsSchritt[] {
-  const werte = wuerfleRhythmus(6, ["ganze", "halbe", "viertel"]);
+function taktUebung(griff: Griff, lang: boolean): UebungsSchritt[] {
+  const werte = wuerfleRhythmus(lang ? TAKT_SCHRITTE.lang : TAKT_SCHRITTE.kurz, [
+    "ganze",
+    "halbe",
+    "viertel",
+  ]);
   return schritte(
-    werte.map(() => [...toene]),
+    werte.map(() => [...griff.noten]),
     werte,
   );
 }
@@ -100,9 +114,18 @@ function taktUebung(toene: readonly Note[]): UebungsSchritt[] {
  * sie gleichmaessig ist. Nur der letzte Ton wird so lang, dass der Takt
  * aufgeht; bei einem Dreiklang ist das eine ganze Note, bei einem Vierklang
  * eine halbe. Die Figur endet damit immer auf einer Eins.
+ *
+ * Beim Lernen laeuft sie zweimal durch, solange das Bild dabei lesbar bleibt.
+ * Bei beiden Haenden sind schon einmal hin und zurueck genug Noten.
  */
-function gebrochenUebung(toene: readonly Note[]): UebungsSchritt[] {
-  const linie = [...toene, ...[...toene].reverse().slice(1)];
+function gebrochenUebung(griff: Griff, lang: boolean): UebungsSchritt[] {
+  const toene = griff.noten;
+  const hinUndZurueck = [...toene, ...[...toene].reverse().slice(1)];
+  const durchgaenge = lang && toene.length <= 4 ? 2 : 1;
+
+  const linie: Note[] = [...hinUndZurueck];
+  for (let i = 1; i < durchgaenge; i += 1) linie.push(...hinUndZurueck.slice(1));
+
   const viertel = linie.length - 1;
   const rest = TAKT - (viertel % TAKT);
 
@@ -118,17 +141,21 @@ function gebrochenUebung(toene: readonly Note[]): UebungsSchritt[] {
 }
 
 /**
- * Eine kleine Melodie aus den Akkordtoenen.
+ * Eine kleine Melodie aus den Akkordtoenen, am Schluss der ganze Griff — so
+ * hoert man, dass die Linie und der Akkord dasselbe Material sind.
  *
- * Sieben Toene nach dem Naeheprinzip, dann der ganze Griff als Schlusspunkt —
- * so hoert man, dass die Linie und der Akkord dasselbe Material sind.
+ * Die Linie bleibt in einer Hand; gegriffen wird am Ende mit beiden. Eine
+ * Melodie, die zwischen den Haenden hin und her springt, waere eine andere
+ * Uebung als die, um die es hier geht.
  */
-function melodieUebung(toene: readonly Note[]): UebungsSchritt[] {
-  // Der Grundton eine Oktave hoeher gibt der Linie Raum nach oben.
-  const material = [...toene, note(toene[0].stufe, toene[0].alteration, toene[0].oktave + 1)];
+function melodieUebung(griff: Griff, lang: boolean): UebungsSchritt[] {
+  const hand = griff.rechts.length > 0 ? griff.rechts : griff.links;
+  // Der tiefste Ton eine Oktave hoeher gibt der Linie Raum nach oben.
+  const material = [...hand, note(hand[0].stufe, hand[0].alteration, hand[0].oktave + 1)];
+  const laenge = lang ? MELODIE_TOENE.lang : MELODIE_TOENE.kurz;
 
-  const linie: Note[] = [toene[0]];
-  for (let i = 1; i < 7; i += 1) {
+  const linie: Note[] = [hand[0]];
+  for (let i = 1; i < laenge; i += 1) {
     const vorherige = linie[i - 1];
     const naechste = gewichteteWahl(material, (kandidat) => {
       const abstand = Math.abs(kandidat.diatonic - vorherige.diatonic);
@@ -138,38 +165,52 @@ function melodieUebung(toene: readonly Note[]): UebungsSchritt[] {
     linie.push(naechste ?? material[0]);
   }
 
-  const werte = wuerfleRhythmus(7, ["halbe", "viertel", "achtel"]);
+  const werte = wuerfleRhythmus(laenge, ["halbe", "viertel", "achtel"]);
   const gruppen = linie.map((t) => [t]);
 
   // Der Schlussakkord fuellt den angebrochenen Takt auf.
   const rest = (TAKT - (dauerSumme(werte) % TAKT)) % TAKT;
-  gruppen.push([...toene]);
+  gruppen.push([...griff.noten]);
   werte.push(rest === 0 ? "ganze" : rest >= 2 ? "halbe" : "viertel");
 
   return schritte(gruppen, werte);
 }
 
+export interface Uebung {
+  /** Wie der Griff auf die Haende verteilt ist. */
+  griff: Griff;
+  /** Alles unterhalb dieser MIDI-Nummer steht im Bassschluessel. */
+  bassGrenze: number;
+  schritte: UebungsSchritt[];
+}
+
 /**
  * Baut eine Uebung zu einer Lage.
  *
- * Der Griff wird vorher in das gewuenschte System gelegt — sonst uebt man im
- * Bassschluessel einen Akkord, der drei Hilfslinien ueber dem System steht.
+ * Der Griff wird vorher auf die gewaehlten Haende verteilt — sonst uebt man
+ * mit der linken Hand einen Akkord, der drei Hilfslinien ueber dem
+ * Bassschluessel steht.
+ *
+ * `lang` verdoppelt ungefaehr den Umfang. Beim Lernen eines neuen Akkords ist
+ * das der Punkt der Uebung; in einer Akkordfolge waere es nur Wartezeit
+ * zwischen zwei Griffen.
  */
 export function baueUebung(
   lage: Lage,
   art: UebungsartId,
-  wahl: SchluesselWahl,
-): { schluessel: Schluessel; schritte: UebungsSchritt[] } {
-  const { schluessel, toene } = griffImSystem(lage.toene, wahl);
+  haende: Haende,
+  lang = false,
+): Uebung {
+  const griff = griffFuerHaende(lage.toene, haende);
 
-  const bauer: Record<UebungsartId, (t: readonly Note[]) => UebungsSchritt[]> = {
+  const bauer: Record<UebungsartId, (g: Griff, lang: boolean) => UebungsSchritt[]> = {
     griff: griffUebung,
     takt: taktUebung,
     gebrochen: gebrochenUebung,
     melodie: melodieUebung,
   };
 
-  return { schluessel, schritte: bauer[art](toene) };
+  return { griff, bassGrenze: griff.bassGrenze, schritte: bauer[art](griff, lang) };
 }
 
 /** Alle MIDI-Nummern, die in einer Uebung vorkommen. */

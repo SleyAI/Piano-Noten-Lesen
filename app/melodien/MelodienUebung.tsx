@@ -7,27 +7,27 @@
  * musikalischen Regeln gebaut. Ohne Runden und ohne Zaehlung: ist eine Melodie
  * durch, kommt die naechste. Man hoert auf, wenn man aufhoeren moechte.
  *
- * Zwei Einstellungen bestimmen, wie schwer es wird: welches System (oder beide
- * gemischt) und ob die Notenwerte mitzaehlen. Ein Fehlgriff setzt die Melodie
- * an den Anfang zurueck — durch ist sie erst, wenn sie am Stueck sitzt.
+ * Drei Einstellungen bestimmen, wie schwer es wird: welches System (oder beide
+ * gemischt), ob nur die weissen Tasten vorkommen und ob die Notenwerte
+ * mitzaehlen. Ein Fehlgriff setzt die Melodie an den Anfang zurueck — durch
+ * ist sie erst, wenn sie am Stueck sitzt.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Kopfzeile } from "@/components/ui/Kopfzeile";
 import { NotenReihe } from "@/components/practice/NotenReihe";
-import { NotenPaketWahl } from "@/components/practice/NotenPaketWahl";
+import { NotenWahl } from "@/components/practice/NotenWahl";
 import { PlayKnopf } from "@/components/practice/PlayKnopf";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
 import {
   type SchluesselWahl,
+  type Tastenwahl,
   type UebungsNote,
   nachSchluessel,
-  notenAusPaketen,
+  notenVorrat,
   uebungsSchluessel,
 } from "@/lib/music/curriculum";
 import { melodieSchluessel, wuerfleMelodie } from "@/lib/music/melodie";
-import { erlaubteNotenPakete } from "@/lib/music/niveau";
-import type { Niveau } from "@/lib/music/niveau";
 import { nameMitOktave, vonMidi } from "@/lib/music/pitch";
 import { type NotenwertId, wuerfleRhythmus } from "@/lib/music/rhythmus";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
@@ -47,8 +47,7 @@ interface Aufgabe {
 
 export function MelodienUebung() {
   const hydriert = useHydriert();
-  const niveau = useEinstellungen((z) => z.niveau);
-  const pakete = useEinstellungen((z) => z.notenPakete);
+  const tastenwahl = useEinstellungen((z) => z.tastenwahl);
   const schluesselWahl = useEinstellungen((z) => z.schluesselWahl);
   const notenwerteAn = useEinstellungen((z) => z.notenwerteAn);
   const [zeigeAuswahl, setZeigeAuswahl] = useState(false);
@@ -58,9 +57,8 @@ export function MelodienUebung() {
   // Geaenderte Auswahl heisst frischer Vorrat — das erledigt der Key.
   return (
     <Endlos
-      key={`${pakete.join("|")}#${schluesselWahl}#${notenwerteAn}#${niveau}`}
-      niveau={niveau}
-      pakete={pakete}
+      key={`${tastenwahl}#${schluesselWahl}#${notenwerteAn}`}
+      tastenwahl={tastenwahl}
       schluesselWahl={schluesselWahl}
       notenwerteAn={notenwerteAn}
       zeigeAuswahl={zeigeAuswahl}
@@ -70,15 +68,13 @@ export function MelodienUebung() {
 }
 
 function Endlos({
-  niveau,
-  pakete,
+  tastenwahl,
   schluesselWahl,
   notenwerteAn,
   zeigeAuswahl,
   aufAuswahl,
 }: {
-  niveau: Niveau;
-  pakete: string[];
+  tastenwahl: Tastenwahl;
   schluesselWahl: SchluesselWahl;
   notenwerteAn: boolean;
   zeigeAuswahl: boolean;
@@ -86,15 +82,10 @@ function Endlos({
 }) {
   const merkeVersuch = useTricky((z) => z.merkeVersuch);
 
-  // Das Niveau begrenzt den Vorrat, auch wenn ein Paket von frueher noch
-  // angehakt ist — sonst tauchen im Anfaengermodus schwarze Tasten auf.
-  const vorrat = useMemo(() => {
-    const erlaubt = new Set(erlaubteNotenPakete(niveau).map((p) => p.id));
-    return nachSchluessel(
-      notenAusPaketen(pakete.filter((id) => erlaubt.has(id))),
-      schluesselWahl,
-    );
-  }, [niveau, pakete, schluesselWahl]);
+  const vorrat = useMemo(
+    () => nachSchluessel(notenVorrat(tastenwahl), schluesselWahl),
+    [tastenwahl, schluesselWahl],
+  );
 
   const bereich = useMemo(() => klaviaturBereich(vorrat.map((u) => u.note.midi)), [vorrat]);
 
@@ -195,7 +186,7 @@ function Endlos({
 
       {zeigeAuswahl ? (
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
-          <NotenPaketWahl />
+          <NotenWahl />
         </div>
       ) : (
         <Uebungsflaeche

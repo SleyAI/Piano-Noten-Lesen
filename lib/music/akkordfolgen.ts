@@ -216,8 +216,13 @@ export function passendeAkkorde(akkord: Akkord): Akkord[] {
   return ergebnis;
 }
 
-/** Wie viele Akkorde eine selbst gebaute Folge hat. */
-const FOLGEN_LAENGE = 4;
+/**
+ * Wie viele Akkorde eine Variation hat.
+ *
+ * Vier — das ist die Laenge, auf die die halbe Popmusik passt, und kurz
+ * genug, dass man die Folge im Kopf behaelt, waehrend die Haende sie suchen.
+ */
+export const FOLGEN_LAENGE = 4;
 
 /**
  * Bewaehrte Stufenfolgen, aus denen sich eine Kette bauen laesst.
@@ -262,27 +267,30 @@ export function folgeUm(akkord: Akkord, erlaubt?: ReadonlySet<string>): Akkord[]
 }
 
 /**
- * Baut eine Folge aus frei gewaehlten Akkorden.
+ * Baut eine Variation aus frei gewaehlten Akkorden.
  *
- * Ohne Tonart-Wissen bleibt nur eines uebrig, das trotzdem hilft: jeder
- * gewaehlte Akkord soll drankommen, und keiner zweimal hintereinander. Wer
- * eine wirklich harmonische Kette moechte, waehlt einen Akkord und laesst sich
- * die Nachbarn dazu geben.
+ * Es geht nicht darum, jeden angehakten Akkord einmal unterzubringen — dann
+ * waere die Folge bei gleicher Auswahl jedes Mal dieselbe, nur anders
+ * sortiert. Gezogen werden immer vier, aus allen gewaehlten, ohne dass
+ * derselbe Akkord zweimal hintereinander steht. Wer eine wirklich harmonische
+ * Kette moechte, waehlt einen Akkord und laesst sich die Nachbarn dazu geben.
  */
 export function wuerfleFolge(
   vorrat: readonly Akkord[],
   laenge = FOLGEN_LAENGE,
 ): Akkord[] {
   if (vorrat.length === 0) return [];
-  if (vorrat.length === 1) return [vorrat[0]];
+  if (vorrat.length === 1) return Array.from({ length: laenge }, () => vorrat[0]);
 
-  const kette = gemischt(vorrat).slice(0, laenge);
+  const kette: Akkord[] = [];
   while (kette.length < laenge) {
     const vorherige = kette[kette.length - 1];
     const naechster = gewichteteWahl(
       vorrat,
-      () => 1,
-      (a) => a.id === vorherige.id,
+      // Was noch nicht drin war, kommt bevorzugt dran — so bleibt eine kleine
+      // Auswahl trotzdem abwechslungsreich, ohne dass Wiederholungen wegfallen.
+      (a) => (kette.some((k) => k.id === a.id) ? 1 : 3),
+      (a) => vorherige !== undefined && a.id === vorherige.id,
     );
     if (!naechster) break;
     kette.push(naechster);

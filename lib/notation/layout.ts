@@ -7,8 +7,8 @@
  *
  * Das mittlere C erscheint dadurch zweimal an verschiedenen Stellen: einmal
  * auf einer Hilfslinie unter dem Violinsystem und einmal auf einer Hilfslinie
- * ueber dem Basssystem. Genau so steht es im Notensatz — und genau das sind
- * die zwei Lesevorgaenge, die die Landmark-Methode trainiert.
+ * ueber dem Basssystem. Genau so steht es im Notensatz — und es sind zwei
+ * verschiedene Lesevorgaenge, die beide geuebt werden wollen.
  */
 
 import { type Note, type Schluessel, hilfslinien, linienPosition } from "@/lib/music/pitch";

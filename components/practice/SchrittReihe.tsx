@@ -6,16 +6,21 @@
  *
  * Das ist die Ansicht, die eine Akkorduebung von der blossen Griffkarte
  * unterscheidet — man sieht die ganze Figur und weiss, wo man drin steht.
+ *
+ * In welches System ein Ton kommt, entscheidet allein seine Tonhoehe: alles
+ * unterhalb der Bassgrenze steht unten. Bei einer Hand liegt die Grenze
+ * ausserhalb, dann landet alles im selben System; bei beiden Haenden genau
+ * zwischen ihnen.
  */
 
 import { Notensystem, type NotenSpalte } from "@/components/notation/Notensystem";
+import { schluesselAn } from "@/lib/music/akkorde";
 import type { UebungsSchritt } from "@/lib/music/akkorduebung";
-import type { Schluessel } from "@/lib/music/pitch";
 import type { DanebenNote } from "@/lib/practice/danebenNote";
 
 export function SchrittReihe({
   schritte,
-  schluessel,
+  bassGrenze,
   position,
   daneben,
   /** Notenwerte zeigen? Ohne das bleiben blosse Koepfe stehen. */
@@ -23,7 +28,7 @@ export function SchrittReihe({
   beschreibung,
 }: {
   schritte: readonly UebungsSchritt[];
-  schluessel: Schluessel;
+  bassGrenze: number;
   position: number;
   daneben: readonly DanebenNote[];
   mitWerten?: boolean;
@@ -31,7 +36,10 @@ export function SchrittReihe({
 }) {
   const spalten: NotenSpalte[] = schritte.map((schritt, i) => ({
     id: `${i}-${schritt.noten.map((n) => n.midi).join(".")}`,
-    noten: schritt.noten.map((note) => ({ note, schluessel })),
+    noten: schritt.noten.map((note) => ({
+      note,
+      schluessel: schluesselAn(note.midi, bassGrenze),
+    })),
     zustand: i < position ? "richtig" : i === position ? "aktiv" : "ruhend",
     wert: mitWerten ? schritt.wert : undefined,
     taktEnde: mitWerten ? schritt.taktEnde : undefined,

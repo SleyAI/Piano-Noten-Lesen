@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   AKKORDFOLGEN,
+  FOLGEN_LAENGE,
   akkordeDerFolge,
   benoetigteAkkorde,
   fehlendeAkkorde,
@@ -193,11 +194,31 @@ describe("Folge aus frei gewaehlten Akkorden", () => {
     }
   });
 
-  it("bringt jeden gewaehlten Akkord unter, wenn sie in die Laenge passen", () => {
-    for (let i = 0; i < 50; i += 1) {
-      const folge = wuerfleFolge(vorrat);
-      expect(new Set(folge.map((a) => a.id)).size).toBe(vorrat.length);
+  it("hat immer vier Akkorde, egal wie gross die Auswahl ist", () => {
+    for (const auswahl of [vorrat.slice(0, 2), vorrat.slice(0, 3), vorrat]) {
+      for (let i = 0; i < 50; i += 1) {
+        expect(wuerfleFolge(auswahl), `${auswahl.length} zur Wahl`).toHaveLength(
+          FOLGEN_LAENGE,
+        );
+      }
     }
+  });
+
+  it("wuerfelt bei gleicher Auswahl verschiedene Variationen", () => {
+    const gesehen = new Set(
+      Array.from({ length: 50 }, () => wuerfleFolge(vorrat).map((a) => a.id).join("-")),
+    );
+    expect(gesehen.size).toBeGreaterThan(1);
+  });
+
+  it("bevorzugt Akkorde, die noch nicht drin sind", () => {
+    // Wiederholungen sind erlaubt, sollen aber die Ausnahme bleiben: fast
+    // jede Variation bringt mindestens drei verschiedene Akkorde mit.
+    const abwechslungsreich = Array.from(
+      { length: 200 },
+      () => new Set(wuerfleFolge(vorrat).map((a) => a.id)).size,
+    ).filter((n) => n >= 3).length;
+    expect(abwechslungsreich).toBeGreaterThan(180);
   });
 
   it("wiederholt keinen Akkord direkt hintereinander", () => {
@@ -210,7 +231,9 @@ describe("Folge aus frei gewaehlten Akkorden", () => {
   });
 
   it("kommt mit einem einzigen Akkord und mit gar keinem klar", () => {
-    expect(wuerfleFolge([vorrat[0]])).toHaveLength(1);
+    const einzeln = wuerfleFolge([vorrat[0]]);
+    expect(einzeln).toHaveLength(FOLGEN_LAENGE);
+    expect(einzeln.every((a) => a.id === vorrat[0].id)).toBe(true);
     expect(wuerfleFolge([])).toEqual([]);
   });
 });

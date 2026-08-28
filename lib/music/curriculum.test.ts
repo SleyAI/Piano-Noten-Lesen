@@ -1,95 +1,100 @@
 import { describe, expect, it } from "vitest";
 import {
-  NOTEN_PAKETE,
+  type Tastenwahl,
+  TASTEN_WAHLEN,
+  istLandmark,
   nachSchluessel,
-  notenAusPaketen,
+  notenVorrat,
   uebungsSchluessel,
+  vorratUmfang,
 } from "./curriculum";
-import { darstellbar, hilfslinien, linienPosition, nameMitOktave } from "./pitch";
+import { darstellbar, nameMitOktave } from "./pitch";
 
-describe("Paketaufbau", () => {
-  it("nummeriert die Stufen luecklos aufsteigend", () => {
-    expect(NOTEN_PAKETE.map((p) => p.stufe)).toEqual(
-      NOTEN_PAKETE.map((_, i) => i + 1),
-    );
+const WAHLEN: Tastenwahl[] = ["weiss", "alle"];
+
+describe("Aufbau des Vorrats", () => {
+  it("kennt genau zwei Unterscheidungen", () => {
+    expect(TASTEN_WAHLEN.map((w) => w.wert)).toEqual(["weiss", "alle"]);
   });
 
-  it("vergibt eindeutige IDs", () => {
-    const ids = NOTEN_PAKETE.map((p) => p.id);
-    expect(new Set(ids).size).toBe(ids.length);
-  });
-
-  it("belegt beide Systeme in jeder Stufe", () => {
-    for (const paket of NOTEN_PAKETE) {
-      expect(paket.violin.length, paket.id).toBeGreaterThan(0);
-      expect(paket.bass.length, paket.id).toBeGreaterThan(0);
+  it("belegt beide Systeme", () => {
+    for (const wahl of WAHLEN) {
+      const vorrat = notenVorrat(wahl);
+      expect(vorrat.some((u) => u.schluessel === "violin"), wahl).toBe(true);
+      expect(vorrat.some((u) => u.schluessel === "bass"), wahl).toBe(true);
     }
   });
 
-  it("haelt beide Systeme pro Stufe im Gleichgewicht", () => {
-    for (const paket of NOTEN_PAKETE) {
-      expect(Math.abs(paket.violin.length - paket.bass.length), paket.id).toBeLessThanOrEqual(1);
+  it("haelt beide Systeme im Gleichgewicht", () => {
+    for (const wahl of WAHLEN) {
+      const vorrat = notenVorrat(wahl);
+      const violin = vorrat.filter((u) => u.schluessel === "violin").length;
+      const bass = vorrat.filter((u) => u.schluessel === "bass").length;
+      expect(violin, wahl).toBe(bass);
     }
+  });
+
+  it("vergibt jede Uebungsnote nur einmal", () => {
+    for (const wahl of WAHLEN) {
+      const schluessel = notenVorrat(wahl).map(uebungsSchluessel);
+      expect(new Set(schluessel).size, wahl).toBe(schluessel.length);
+    }
+  });
+
+  it("liefert das mittlere C fuer beide Systeme getrennt", () => {
+    // Die Systeme stehen mit Abstand untereinander: C4 haengt einmal unter
+    // dem oberen und einmal ueber dem unteren. Zwei Lesevorgaenge.
+    const mittleresC = notenVorrat("weiss").filter((u) => u.note.midi === 60);
+    expect(mittleresC).toHaveLength(2);
+    expect(mittleresC.map((u) => u.schluessel).sort()).toEqual(["bass", "violin"]);
+  });
+});
+
+describe("Weisse und schwarze Tasten", () => {
+  it("laesst bei den weissen Tasten jedes Vorzeichen weg", () => {
+    for (const u of notenVorrat("weiss")) {
+      expect(u.note.alteration, nameMitOktave(u.note)).toBe(0);
+    }
+  });
+
+  it("nimmt jede schwarze Taste in beiden Schreibweisen dazu", () => {
+    const weiss = new Set(notenVorrat("weiss").map(uebungsSchluessel));
+    const dazu = notenVorrat("alle").filter((u) => !weiss.has(uebungsSchluessel(u)));
+
+    expect(dazu.every((u) => u.note.alteration !== 0)).toBe(true);
+    // Fis und Ges sind derselbe Klang auf verschiedenen Linien.
+    for (const u of dazu) {
+      const gegenstueck = dazu.filter(
+        (x) => x.schluessel === u.schluessel && x.note.midi === u.note.midi,
+      );
+      expect(gegenstueck, nameMitOktave(u.note)).toHaveLength(2);
+    }
+  });
+
+  it("bringt mit den schwarzen Tasten mehr mit als ohne", () => {
+    expect(vorratUmfang("alle")).toBeGreaterThan(vorratUmfang("weiss"));
+  });
+
+  it("enthaelt alle Landmarks", () => {
+    const vorrat = notenVorrat("weiss");
+    expect(vorrat.filter(istLandmark).length).toBeGreaterThanOrEqual(5);
   });
 });
 
 describe("Darstellbarkeit im jeweiligen System", () => {
   it("haelt jede Note in ihrem System lesbar", () => {
-    for (const paket of NOTEN_PAKETE) {
-      for (const note of paket.violin) {
-        expect(darstellbar(note, "violin", 3), `${paket.id} ${nameMitOktave(note)}`).toBe(true);
-      }
-      for (const note of paket.bass) {
-        expect(darstellbar(note, "bass", 3), `${paket.id} ${nameMitOktave(note)}`).toBe(true);
+    for (const wahl of WAHLEN) {
+      for (const u of notenVorrat(wahl)) {
+        expect(darstellbar(u.note, u.schluessel, 3), nameMitOktave(u.note)).toBe(true);
       }
     }
-  });
-
-  it("beginnt spiegelbildlich mit je einer Hilfslinie", () => {
-    const mitte = NOTEN_PAKETE[0];
-    expect(hilfslinien(linienPosition(mitte.violin[0], "violin"))).toHaveLength(1);
-    expect(hilfslinien(linienPosition(mitte.bass[0], "bass"))).toHaveLength(1);
-  });
-
-  it("setzt die Landmarks ohne Hilfslinie mitten ins System", () => {
-    const landmarks = NOTEN_PAKETE[1];
-    expect(hilfslinien(linienPosition(landmarks.violin[0], "violin"))).toEqual([]);
-    expect(hilfslinien(linienPosition(landmarks.bass[0], "bass"))).toEqual([]);
-  });
-});
-
-describe("Noten aus Paketen sammeln", () => {
-  it("liefert das mittlere C fuer beide Systeme getrennt", () => {
-    // Die Systeme stehen mit Abstand untereinander: C4 haengt einmal unter
-    // dem oberen und einmal ueber dem unteren. Zwei Lesevorgaenge.
-    const gesammelt = notenAusPaketen(["mitte"]);
-    expect(gesammelt).toHaveLength(2);
-    expect(gesammelt.map((u) => u.schluessel).sort()).toEqual(["bass", "violin"]);
-    expect(gesammelt.every((u) => u.note.midi === 60)).toBe(true);
-  });
-
-  it("entfernt Doppelte ueber Paketgrenzen hinweg", () => {
-    const gesammelt = notenAusPaketen(["mitte", "um-die-mitte", "oktave-voll"]);
-    const schluessel = gesammelt.map(uebungsSchluessel);
-    expect(new Set(schluessel).size).toBe(schluessel.length);
-  });
-
-  it("ignoriert unbekannte Paket-IDs, statt zu scheitern", () => {
-    expect(notenAusPaketen(["gibtsnicht"])).toEqual([]);
-    expect(notenAusPaketen(["gibtsnicht", "mitte"])).toHaveLength(2);
-  });
-
-  it("waechst mit jeder zusaetzlichen Stufe", () => {
-    const klein = notenAusPaketen(["mitte"]).length;
-    const gross = notenAusPaketen(["mitte", "landmarks", "aeussere-c"]).length;
-    expect(gross).toBeGreaterThan(klein);
   });
 });
 
 describe("Auf ein System einschraenken", () => {
-  const alles = notenAusPaketen(NOTEN_PAKETE.map((p) => p.id));
+  const alles = notenVorrat("alle");
 
-  it("laesst bei \"beide\" alles stehen", () => {
+  it('laesst bei "beide" alles stehen', () => {
     expect(nachSchluessel(alles, "beide")).toHaveLength(alles.length);
   });
 
@@ -107,14 +112,8 @@ describe("Auf ein System einschraenken", () => {
     expect(violin + bass).toBe(alles.length);
   });
 
-  it("laesst auch das kleinste Paket in beiden Systemen ueben", () => {
-    const mitte = notenAusPaketen(["mitte"]);
-    expect(nachSchluessel(mitte, "violin")).toHaveLength(1);
-    expect(nachSchluessel(mitte, "bass")).toHaveLength(1);
-  });
-
   it("faellt auf den vollen Vorrat zurueck, statt nichts zu liefern", () => {
-    const nurViolin = nachSchluessel(notenAusPaketen(["mitte"]), "violin");
+    const nurViolin = nachSchluessel(alles, "violin");
     // In dieser Auswahl gibt es keine Bassnote mehr — dann gewinnt der Vorrat.
     expect(nachSchluessel(nurViolin, "bass")).toEqual(nurViolin);
   });

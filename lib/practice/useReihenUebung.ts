@@ -9,25 +9,22 @@
  * trotzdem sichtbar: die gespielte Note steht blass neben der erwarteten.
  *
  * Zaehlen die Notenwerte mit, wird ausserdem der Abstand zwischen zwei
- * Anschlaegen gemessen. Die Grenzen sind bewusst weit — es geht darum, eine
- * Halbe von einer Viertel zu unterscheiden, nicht darum, ein Metronom zu
- * treffen.
+ * Anschlaegen gemessen — dieselben Grenzen wie bei den Akkorden. Sie sind
+ * weit genug, dass niemand ein Metronom braucht, und eng genug, dass eine
+ * Halbe nicht als Viertel durchgeht. Wer es genauer moechte, schaltet das
+ * Metronom dazu.
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type UebungsNote, uebungsSchluessel } from "@/lib/music/curriculum";
 import { nameMitOktave } from "@/lib/music/pitch";
-import { type NotenwertId, TEMPO, millisekunden } from "@/lib/music/rhythmus";
+import { type NotenwertId, TEMPO, taktFehler } from "@/lib/music/rhythmus";
 import { useNoteneingabe } from "@/lib/input/useNoteneingabe";
 import { useTricky } from "@/lib/store/tricky";
 import { type DanebenNote, danebenAlsNote } from "./danebenNote";
 
 /** Wie lange ein Fehlgriff nachklingt. */
 const PULS_DAUER = 1600;
-
-/** Ab wann eine Note als zu kurz beziehungsweise zu lang gilt. */
-const ZU_KURZ = 0.55;
-const ZU_LANG = 1.9;
 
 export type FehlerArt = "ton" | "zu-kurz" | "zu-lang";
 
@@ -126,14 +123,9 @@ export function useReihenUebung({
     // Der Ton stimmt — wie lange stand der vorherige?
     const jetzt = performance.now();
     if (werte && position > 0 && letzterAnschlag != null) {
-      const soll = millisekunden(werte[position - 1], tempo);
-      const ist = jetzt - letzterAnschlag;
-      if (ist < soll * ZU_KURZ) {
-        zurueckAufAnfang("zu-kurz", ereignis.midi, position - 1);
-        return;
-      }
-      if (ist > soll * ZU_LANG) {
-        zurueckAufAnfang("zu-lang", ereignis.midi, position - 1);
+      const schief = taktFehler(werte[position - 1], jetzt - letzterAnschlag, tempo);
+      if (schief) {
+        zurueckAufAnfang(schief, ereignis.midi, position - 1);
         return;
       }
     }

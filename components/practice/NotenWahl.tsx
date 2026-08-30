@@ -3,14 +3,18 @@
 /**
  * Was steckt in einer Melodie?
  *
- * Drei Einstellungen: welches System, ob die Notenwerte mitzaehlen und ob es
- * bei den weissen Tasten bleibt. Mehr Unterscheidungen gibt es nicht — der
+ * Drei Einstellungen: welches System, ob es bei den weissen Tasten bleibt und
+ * ob die Notenwerte mitzaehlen. Mehr Unterscheidungen gibt es nicht — der
  * Umfang selbst ist immer derselbe, zwei Oktaven je System.
+ *
+ * Zaehlen die Notenwerte mit, kommt das Tempo dazu: daran wird gemessen, und
+ * wer mag, laesst das Metronom mitklicken.
  */
 
 import { TASTEN_WAHLEN, vorratUmfang } from "@/lib/music/curriculum";
 import { useEinstellungen } from "@/lib/store/einstellungen";
 import { SchluesselWahlBand } from "./SchluesselWahlBand";
+import { TaktBand } from "./TaktBand";
 
 export function NotenWahl() {
   const tastenwahl = useEinstellungen((z) => z.tastenwahl);
@@ -55,6 +59,8 @@ export function NotenWahl() {
           />
         </div>
       </section>
+
+      {notenwerteAn && <TaktBand />}
     </div>
   );
 }

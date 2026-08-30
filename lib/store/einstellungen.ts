@@ -10,8 +10,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { type SchluesselWahl, type Tastenwahl } from "@/lib/music/curriculum";
-import type { Haende } from "@/lib/music/akkorde";
+import type { Haende, Stellung } from "@/lib/music/akkorde";
 import type { UebungsartId } from "@/lib/music/akkorduebung";
+import { TEMPO, begrenzeTempo } from "@/lib/music/rhythmus";
 
 /** Woher kommen die Toene und wohin geht die Eingabe? */
 export type Spielweise =
@@ -33,6 +34,9 @@ export type FolgenQuelle =
 /** Wie eine Folge gespielt wird. */
 export type Spielart = "block" | "gebrochen" | "gemischt";
 
+/** Die Stellungswahl gehoert zur Musik, nicht zu den Einstellungen. */
+export type { Stellung };
+
 export interface EinstellungsZustand {
   spielweise: Spielweise;
   /** Auch im Piano-Modus die Klaviatur einblenden — als Spickzettel. */
@@ -49,13 +53,22 @@ export interface EinstellungsZustand {
   /** Zaehlen die Notenwerte mit, oder geht es nur um die Tonhoehen? */
   notenwerteAn: boolean;
 
+  /** Uebungstempo in Schlaegen pro Minute — Metronom, Vorspielen und Takt. */
+  tempo: number;
+  /** Klickt das Metronom mit? */
+  metronomAn: boolean;
+
   akkordModus: AkkordModus;
   /** Mit welcher Hand gegriffen wird — oder mit beiden zusammen. */
   akkordHaende: Haende;
   /** Der Akkord, der gerade gelernt oder umgekehrt wird. */
   lernAkkord: string | null;
-  /** Welche Stellungen geuebt werden: 0 = Grundstellung, 1..3 = Umkehrungen. */
-  umkehrungen: number[];
+  /** Welche Stellung im Reiter "neu lernen" drankommt. */
+  stellungLernen: Stellung;
+  /** Welche Stellung im Reiter "Umkehrungen" drankommt. */
+  stellungUmkehrung: Stellung;
+  /** Zaehlen die Notenwerte bei den Akkorduebungen mit? */
+  taktGenau: boolean;
   /** Uebungsarten, die im Lern- und Umkehrungsmodus drankommen. */
   uebungsarten: UebungsartId[];
 
@@ -75,11 +88,14 @@ export interface EinstellungsZustand {
   setzeTastenwahl: (w: Tastenwahl) => void;
   schalteNotenwerte: () => void;
 
+  setzeTempo: (bpm: number) => void;
+  schalteMetronom: () => void;
+
   setzeAkkordModus: (m: AkkordModus) => void;
   setzeAkkordHaende: (h: Haende) => void;
   setzeLernAkkord: (id: string | null) => void;
-  setzeUmkehrungen: (stufen: number[]) => void;
-  schalteUmkehrung: (stufe: number) => void;
+  setzeStellung: (modus: "lernen" | "umkehrungen", stellung: Stellung) => void;
+  schalteTaktGenau: () => void;
   schalteUebungsart: (id: UebungsartId) => void;
 
   setzeFolgenQuelle: (q: FolgenQuelle) => void;
@@ -110,10 +126,15 @@ export const useEinstellungen = create<EinstellungsZustand>()(
       tastenwahl: "weiss",
       notenwerteAn: false,
 
+      tempo: TEMPO,
+      metronomAn: false,
+
       akkordModus: "lernen",
       akkordHaende: "rechts",
       lernAkkord: null,
-      umkehrungen: [0, 1, 2],
+      stellungLernen: 0,
+      stellungUmkehrung: 1,
+      taktGenau: true,
       uebungsarten: ["griff", "takt", "gebrochen", "melodie"],
 
       folgenQuelle: "passend",
@@ -133,19 +154,15 @@ export const useEinstellungen = create<EinstellungsZustand>()(
       setzeTastenwahl: (tastenwahl) => set({ tastenwahl }),
       schalteNotenwerte: () => set((z) => ({ notenwerteAn: !z.notenwerteAn })),
 
+      setzeTempo: (bpm) => set({ tempo: begrenzeTempo(bpm) }),
+      schalteMetronom: () => set((z) => ({ metronomAn: !z.metronomAn })),
+
       setzeAkkordModus: (akkordModus) => set({ akkordModus }),
       setzeAkkordHaende: (akkordHaende) => set({ akkordHaende }),
       setzeLernAkkord: (lernAkkord) => set({ lernAkkord }),
-      setzeUmkehrungen: (umkehrungen) =>
-        set(() => (umkehrungen.length === 0 ? {} : { umkehrungen })),
-
-      schalteUmkehrung: (stufe) =>
-        set((z) => {
-          const drin = z.umkehrungen.includes(stufe);
-          const neu = drin ? z.umkehrungen.filter((s) => s !== stufe) : [...z.umkehrungen, stufe];
-          // Ganz ohne Stellung gaebe es nichts zu ueben.
-          return neu.length === 0 ? z : { umkehrungen: neu.sort((a, b) => a - b) };
-        }),
+      setzeStellung: (modus, stellung) =>
+        set(modus === "lernen" ? { stellungLernen: stellung } : { stellungUmkehrung: stellung }),
+      schalteTaktGenau: () => set((z) => ({ taktGenau: !z.taktGenau })),
 
       schalteUebungsart: (id) =>
         set((z) => {
@@ -161,13 +178,14 @@ export const useEinstellungen = create<EinstellungsZustand>()(
     }),
     {
       name: "noten-einstellungen",
-      // Version 4: weisse/schwarze Tasten statt Landmark-Stufen, Handwahl bei
-      // den Akkorden, kein Niveau mehr als Vorratsgrenze.
-      version: 4,
+      // Version 5: Stellung als einzelne Wahl statt Liste, dazu Tempo,
+      // Metronom und die Taktpruefung bei den Akkorden.
+      version: 5,
       /**
-       * Was es weiter gibt, wird uebernommen; die Landmark-Stufen und das
-       * Niveau fallen weg. Wer schon einmal ueber den Anfaenger hinaus war,
-       * hatte die schwarzen Tasten im Vorrat — das bleibt so.
+       * Was es weiter gibt, wird uebernommen; die Landmark-Stufen, das Niveau
+       * und die angehakte Stellungsliste fallen weg. Wer schon einmal ueber
+       * den Anfaenger hinaus war, hatte die schwarzen Tasten im Vorrat — das
+       * bleibt so.
        *
        * Alles Uebrige kommt aus den Voreinstellungen: zustand legt das
        * Ergebnis ueber den Anfangszustand.
@@ -175,6 +193,8 @@ export const useEinstellungen = create<EinstellungsZustand>()(
       migrate: (gespeichert) => {
         const alt = (gespeichert ?? {}) as Partial<EinstellungsZustand> & {
           niveau?: string;
+          /** Bis Version 4 eine Liste zum Anhaken; die Wahl faengt neu an. */
+          umkehrungen?: number[];
         };
         const uebernommen: Partial<EinstellungsZustand> = {};
 
@@ -186,8 +206,8 @@ export const useEinstellungen = create<EinstellungsZustand>()(
         if (alt.spielweise) uebernommen.spielweise = alt.spielweise;
         if (alt.schluesselWahl) uebernommen.schluesselWahl = alt.schluesselWahl;
         if (alt.akkordHaende) uebernommen.akkordHaende = alt.akkordHaende;
-        if (alt.umkehrungen?.length) uebernommen.umkehrungen = alt.umkehrungen;
         if (alt.beherrscht?.length) uebernommen.beherrscht = alt.beherrscht;
+        if (typeof alt.tempo === "number") uebernommen.tempo = begrenzeTempo(alt.tempo);
         if (typeof alt.klangAn === "boolean") uebernommen.klangAn = alt.klangAn;
         if (typeof alt.notenwerteAn === "boolean") {
           uebernommen.notenwerteAn = alt.notenwerteAn;

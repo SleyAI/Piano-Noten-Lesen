@@ -11,6 +11,7 @@ import { verbinde } from "@/lib/input/midi";
 import { useMidiZustand } from "@/lib/input/useNoteneingabe";
 import { useEinstellungen } from "@/lib/store/einstellungen";
 import { useHydriert } from "@/lib/store/hydriert";
+import { Karte } from "./Karte";
 
 export function SpielweiseWahl({ className }: { className?: string }) {
   const hydriert = useHydriert();
@@ -22,51 +23,53 @@ export function SpielweiseWahl({ className }: { className?: string }) {
   const schalteKlaviatur = useEinstellungen((z) => z.schalteKlaviatur);
   const midi = useMidiZustand();
 
-  if (!hydriert) return <div className={`h-[4.5rem] ${className ?? ""}`} />;
+  if (!hydriert) return <div className={`h-[4.25rem] ${className ?? ""}`} />;
 
   const midiUnmoeglich = midi.art === "nicht-verfuegbar" || midi.art === "unsicherer-kontext";
 
   return (
-    <section className={`flex items-center gap-3 rounded-[1.75rem] bg-papier-tief px-5 py-4 ${className ?? ""}`}>
-      <div className="flex gap-2">
-        <Knopf
-          aktiv={spielweise === "tippen"}
-          onClick={() => setzeSpielweise("tippen")}
-          titel="Unterwegs"
-          text="Klaviatur auf dem Bildschirm"
-        />
-        <Knopf
-          aktiv={spielweise === "piano"}
-          onClick={() => {
-            setzeSpielweise("piano");
-            void verbinde();
-          }}
-          titel="Am Klavier"
-          text="Yamaha per USB"
-          gedaempft={midiUnmoeglich}
-        />
-      </div>
-
-      <div className="ml-auto flex items-center gap-2 text-sm">
-        {spielweise === "tippen" ? (
-          <Schalter an={klangAn} onClick={schalteKlang} beschriftung="Klang aus der App" />
-        ) : (
-          <Schalter
-            an={klaviaturImmerZeigen}
-            onClick={schalteKlaviatur}
-            beschriftung="Klaviatur trotzdem zeigen"
+    <Karte akzent="rose" className={`px-5 py-3 ${className ?? ""}`}>
+      <div className="flex items-center gap-3">
+        <div className="flex gap-2">
+          <Knopf
+            aktiv={spielweise === "tippen"}
+            onClick={() => setzeSpielweise("tippen")}
+            titel="Unterwegs"
+            text="Klaviatur auf dem Bildschirm"
           />
+          <Knopf
+            aktiv={spielweise === "piano"}
+            onClick={() => {
+              setzeSpielweise("piano");
+              void verbinde();
+            }}
+            titel="Am Klavier"
+            text="Yamaha per USB"
+            gedaempft={midiUnmoeglich}
+          />
+        </div>
+
+        <div className="ml-auto flex items-center gap-2 text-sm">
+          {spielweise === "tippen" ? (
+            <Schalter an={klangAn} onClick={schalteKlang} beschriftung="Klang aus der App" />
+          ) : (
+            <Schalter
+              an={klaviaturImmerZeigen}
+              onClick={schalteKlaviatur}
+              beschriftung="Klaviatur trotzdem zeigen"
+            />
+          )}
+        </div>
+
+          {midiUnmoeglich && spielweise === "piano" && (
+            <p className="max-w-xs text-xs leading-snug text-tinte-leise">
+            {midi.art === "nicht-verfuegbar"
+              ? "Dieser Browser gibt kein MIDI frei — auf iPad und iPhone ist das so. Ein Android-Tablet mit Chrome erkennt das Klavier."
+              : "MIDI braucht eine sichere Verbindung. Über die veröffentlichte Seite oder localhost aufrufen."}
+          </p>
         )}
       </div>
-
-      {midiUnmoeglich && spielweise === "piano" && (
-        <p className="max-w-xs text-xs leading-snug text-tinte-leise">
-          {midi.art === "nicht-verfuegbar"
-            ? "Dieser Browser gibt kein MIDI frei — auf iPad und iPhone ist das so. Ein Android-Tablet mit Chrome erkennt das Klavier."
-            : "MIDI braucht eine sichere Verbindung. Über die veröffentlichte Seite oder localhost aufrufen."}
-        </p>
-      )}
-    </section>
+    </Karte>
   );
 }
 

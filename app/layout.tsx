@@ -1,11 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito } from "next/font/google";
+import { Fraunces, Nunito } from "next/font/google";
 import "./globals.css";
 
 const nunito = Nunito({
   variable: "--font-nunito",
   subsets: ["latin"],
   display: "swap",
+});
+
+/**
+ * Fuer Ueberschriften und grosse Zahlen. `SOFT` rundet die Serifen ab, `opsz`
+ * bleibt klein — so steht neben der runden Grotesk ein warmer Serif und keine
+ * Zeitungsschrift.
+ */
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  display: "swap",
+  // Variabel geladen: die Gewichte kommen aus der Achse, `SOFT` rundet die
+  // Serifen. Beides zusammen mit festen Gewichten geht nicht.
+  axes: ["SOFT", "opsz"],
 });
 
 export const metadata: Metadata = {
@@ -23,7 +37,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="de" className={`${nunito.variable} h-full antialiased`}>
+    <html lang="de" className={`${nunito.variable} ${fraunces.variable} h-full antialiased`}>
       <body className="keine-auswahl h-full overflow-hidden">{children}</body>
     </html>
   );

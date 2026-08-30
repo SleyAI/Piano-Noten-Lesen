@@ -163,7 +163,45 @@ export function wuerfleRhythmus(
 /** Ruhiges Uebungstempo in Schlaegen pro Minute. */
 export const TEMPO = 76;
 
+/** Zwischen diesen Grenzen laesst sich das Tempo stellen. */
+export const TEMPO_MIN = 40;
+export const TEMPO_MAX = 160;
+export const TEMPO_SCHRITT = 4;
+
+export function begrenzeTempo(tempo: number): number {
+  return Math.min(TEMPO_MAX, Math.max(TEMPO_MIN, Math.round(tempo)));
+}
+
 /** Wie lange dauert dieser Wert in Millisekunden? */
 export function millisekunden(wert: NotenwertId, tempo = TEMPO): number {
   return (schlaege(wert) * 60_000) / tempo;
+}
+
+/**
+ * Wie weit darf ein Anschlag danebenliegen?
+ *
+ * Gemessen wird der Abstand von einem Anschlag zum naechsten, nicht wie lange
+ * eine Taste unten bleibt — auf dem Tablet tippt man, da gibt es kein Halten.
+ * Der Rahmen ist weit genug, dass niemand ein Metronom braucht, und eng genug,
+ * dass eine Halbe nicht als Viertel durchgeht: zwischen den beiden liegt der
+ * Faktor zwei, hier sind es hoechstens 0,6 bis 1,7.
+ */
+export const ZU_KURZ = 0.6;
+export const ZU_LANG = 1.7;
+
+export type TaktFehler = "zu-kurz" | "zu-lang";
+
+/**
+ * War der Abstand zum vorigen Anschlag brauchbar?
+ * Liefert null, wenn alles in Ordnung ist.
+ */
+export function taktFehler(
+  wert: NotenwertId,
+  gemessen: number,
+  tempo = TEMPO,
+): TaktFehler | null {
+  const soll = millisekunden(wert, tempo);
+  if (gemessen < soll * ZU_KURZ) return "zu-kurz";
+  if (gemessen > soll * ZU_LANG) return "zu-lang";
+  return null;
 }

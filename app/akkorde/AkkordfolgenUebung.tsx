@@ -23,6 +23,8 @@ import { AkkordWahl } from "@/components/practice/AkkordWahl";
 import { HandWahl } from "@/components/practice/HandWahl";
 import { PlayKnopf } from "@/components/practice/PlayKnopf";
 import { SchrittReihe } from "@/components/practice/SchrittReihe";
+import { StartLeiste } from "@/components/practice/StartLeiste";
+import { MetronomKnopf, TaktBand } from "@/components/practice/TaktBand";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
 import {
   type Akkord,
@@ -39,6 +41,7 @@ import { folgeUm, wuerfleFolge } from "@/lib/music/akkordfolgen";
 import { nameMitOktave, vonMidi } from "@/lib/music/pitch";
 import { danebenAlsNoten } from "@/lib/practice/danebenNote";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
+import { useMetronom } from "@/lib/practice/useMetronom";
 import { useSchrittfolge } from "@/lib/practice/useSchrittfolge";
 import { useVorspielen } from "@/lib/practice/useVorspielen";
 import { type Spielart, useEinstellungen } from "@/lib/store/einstellungen";
@@ -102,7 +105,8 @@ export function AkkordfolgenUebung() {
   const spielart = useEinstellungen((z) => z.folgenSpielart);
   const setzeSpielart = useEinstellungen((z) => z.setzeFolgenSpielart);
   const haende = useEinstellungen((z) => z.akkordHaende);
-  const umkehrungen = useEinstellungen((z) => z.umkehrungen);
+  const tempo = useEinstellungen((z) => z.tempo);
+  const taktGenau = useEinstellungen((z) => z.taktGenau);
 
   const [folge, setFolge] = useState<Akkord[] | null>(null);
   /** Zaehlt die Variationen mit — auch zwei gleiche sollen frisch anfangen. */
@@ -145,11 +149,12 @@ export function AkkordfolgenUebung() {
 
   return (
     <Lauf
-      key={`${variation}#${spielart}#${haende}#${umkehrungen.join("|")}`}
+      key={`${variation}#${spielart}#${haende}`}
       folge={folge}
       spielart={spielart}
       haende={haende}
-      umkehrungen={umkehrungen}
+      tempo={tempo}
+      taktGenau={taktGenau}
       aufAndere={() => setFolge(null)}
       aufNaechste={bauen}
     />
@@ -160,24 +165,30 @@ function Lauf({
   folge,
   spielart,
   haende,
-  umkehrungen,
+  tempo,
+  taktGenau,
   aufAndere,
   aufNaechste,
 }: {
   folge: Akkord[];
   spielart: Spielart;
   haende: Haende;
-  umkehrungen: number[];
+  tempo: number;
+  taktGenau: boolean;
   aufAndere: () => void;
   aufNaechste: () => void;
 }) {
   const merkeVersuch = useTricky((z) => z.merkeVersuch);
   const merkeFehler = useTricky((z) => z.merkeFehler);
   const starteRunde = useTricky((z) => z.starteRunde);
+  const metronomAn = useEinstellungen((z) => z.metronomAn);
 
-  // Die Stimmfuehrung waehlt die Lagen so, dass die Finger moeglichst wenig
-  // wandern — genau das macht eine Folge spielbar.
-  const plan = useMemo(() => flottePlanung(folge, umkehrungen), [folge, umkehrungen]);
+  useMetronom(metronomAn, tempo);
+
+  // Die Stimmfuehrung darf jede Stellung nehmen: sie waehlt die Lagen so, dass
+  // die Finger moeglichst wenig wandern — genau das macht eine Folge spielbar,
+  // und welche Umkehrung dabei herauskommt, steht ueber der Uebung.
+  const plan = useMemo(() => flottePlanung(folge), [folge]);
   const { schritte, bassGrenze } = useMemo(
     () => schritteAusPlan(plan, spielart, haende),
     [plan, spielart, haende],
@@ -205,6 +216,8 @@ function Lauf({
   const lauf = useSchrittfolge({
     schritte,
     aktiv: true,
+    taktGenau,
+    tempo,
     aufFehler: (index) => {
       const lage = plan[schritte[index]?.akkordIndex ?? 0];
       if (lage) merkeFehler(lageSchluessel(lage), lageBeschriftung(lage));
@@ -216,7 +229,7 @@ function Lauf({
     () => schritte.map((s) => ({ midis: s.noten.map((n) => n.midi), wert: s.wert })),
     [schritte],
   );
-  const vorspiel = useVorspielen(klang);
+  const vorspiel = useVorspielen(klang, tempo);
 
   const bereich = useMemo(
     () => klaviaturBereich(schritte.flatMap((s) => s.noten.map((n) => n.midi))),
@@ -251,6 +264,7 @@ function Lauf({
           onClick={vorspiel.umschalten}
           titel="Folge einmal anhören"
         />
+        <MetronomKnopf />
         {plan.map((l, i) => (
           <span
             key={`${i}-${l.akkord.id}`}
@@ -301,6 +315,13 @@ function Lauf({
               Das war {[...lauf.daneben].map((m) => nameMitOktave(vonMidi(m))).join(", ")} —
               die Folge wartet.
             </span>
+          ) : lauf.takt ? (
+            <span className="text-flieder-tief">
+              {lauf.takt === "zu-kurz"
+                ? "Der Akkord davor stand zu kurz"
+                : "Der Akkord davor stand zu lange"}{" "}
+              — achte auf die Notenwerte.
+            </span>
           ) : (
             <span className="text-tinte-leise">
               {plan[aktuellerAkkord]?.akkord.symbol} · Schritt {lauf.index + 1} von{" "}
@@ -344,9 +365,10 @@ function FolgenWahl({
   const passend = quelle === "passend";
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pb-2">
       <div className="flex flex-col gap-6">
         <HandWahl />
+        <TaktBand mitTaktpruefung />
 
         <section className="flex flex-col gap-2">
           <h2 className="text-sm font-semibold text-tinte">Woher kommen die Akkorde?</h2>
@@ -392,19 +414,22 @@ function FolgenWahl({
           mehrfach={!passend}
         />
 
-        <button
-          type="button"
-          disabled={!bereit}
-          onClick={aufStart}
-          className="self-start rounded-full bg-mint px-8 py-3 font-semibold text-tinte transition-colors hover:bg-mint-tief disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {bereit
-            ? "los geht’s"
-            : passend
-              ? "erst einen Akkord aussuchen"
-              : "mindestens zwei Akkorde anhaken"}
-        </button>
       </div>
+
+      <StartLeiste
+        text="Los geht’s!"
+        bereit={bereit}
+        onClick={aufStart}
+        links={
+          <span className="text-sm text-tinte-leise">
+            {bereit
+              ? "Vier Akkorde je Variation, endlos neue"
+              : passend
+                ? "Erst einen Akkord aussuchen"
+                : "Mindestens zwei Akkorde anhaken"}
+          </span>
+        }
+      />
     </div>
   );
 }

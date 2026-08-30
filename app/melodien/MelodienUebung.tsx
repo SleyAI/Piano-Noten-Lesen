@@ -17,6 +17,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Kopfzeile } from "@/components/ui/Kopfzeile";
 import { NotenReihe } from "@/components/practice/NotenReihe";
 import { NotenWahl } from "@/components/practice/NotenWahl";
+import { StartLeiste } from "@/components/practice/StartLeiste";
+import { MetronomKnopf } from "@/components/practice/TaktBand";
 import { PlayKnopf } from "@/components/practice/PlayKnopf";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
 import {
@@ -31,6 +33,7 @@ import { melodieSchluessel, wuerfleMelodie } from "@/lib/music/melodie";
 import { nameMitOktave, vonMidi } from "@/lib/music/pitch";
 import { type NotenwertId, wuerfleRhythmus } from "@/lib/music/rhythmus";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
+import { useMetronom } from "@/lib/practice/useMetronom";
 import { useReihenUebung } from "@/lib/practice/useReihenUebung";
 import { useVorspielen } from "@/lib/practice/useVorspielen";
 import { useEinstellungen } from "@/lib/store/einstellungen";
@@ -50,6 +53,7 @@ export function MelodienUebung() {
   const tastenwahl = useEinstellungen((z) => z.tastenwahl);
   const schluesselWahl = useEinstellungen((z) => z.schluesselWahl);
   const notenwerteAn = useEinstellungen((z) => z.notenwerteAn);
+  const tempo = useEinstellungen((z) => z.tempo);
   const [zeigeAuswahl, setZeigeAuswahl] = useState(false);
 
   if (!hydriert) return <div className="h-full bg-papier" />;
@@ -61,6 +65,7 @@ export function MelodienUebung() {
       tastenwahl={tastenwahl}
       schluesselWahl={schluesselWahl}
       notenwerteAn={notenwerteAn}
+      tempo={tempo}
       zeigeAuswahl={zeigeAuswahl}
       aufAuswahl={() => setZeigeAuswahl((z) => !z)}
     />
@@ -71,16 +76,21 @@ function Endlos({
   tastenwahl,
   schluesselWahl,
   notenwerteAn,
+  tempo,
   zeigeAuswahl,
   aufAuswahl,
 }: {
   tastenwahl: Tastenwahl;
   schluesselWahl: SchluesselWahl;
   notenwerteAn: boolean;
+  tempo: number;
   zeigeAuswahl: boolean;
   aufAuswahl: () => void;
 }) {
   const merkeVersuch = useTricky((z) => z.merkeVersuch);
+  const metronomAn = useEinstellungen((z) => z.metronomAn);
+
+  useMetronom(metronomAn, tempo);
 
   const vorrat = useMemo(
     () => nachSchluessel(notenVorrat(tastenwahl), schluesselWahl),
@@ -128,6 +138,7 @@ function Endlos({
   const uebung = useReihenUebung({
     reihe: melodie,
     werte,
+    tempo,
     aktiv: !zeigeAuswahl,
     aufFertig,
   });
@@ -140,7 +151,7 @@ function Endlos({
       })),
     [melodie, werte],
   );
-  const vorspiel = useVorspielen(klang);
+  const vorspiel = useVorspielen(klang, tempo);
 
   return (
     <div className="flex h-full flex-col bg-papier">
@@ -154,39 +165,55 @@ function Endlos({
         rechts={
           <>
             {!zeigeAuswahl && (
-              <PlayKnopf
-                laeuft={vorspiel.laeuft}
-                onClick={vorspiel.umschalten}
-                titel="Melodie einmal anhören"
-              />
+              <>
+                <PlayKnopf
+                  laeuft={vorspiel.laeuft}
+                  onClick={vorspiel.umschalten}
+                  titel="Melodie einmal anhören"
+                />
+                <MetronomKnopf />
+                <button
+                  type="button"
+                  onClick={() => {
+                    vorspiel.stoppen();
+                    neuWuerfeln();
+                  }}
+                  className="rounded-full bg-himmel px-4 py-1.5 text-sm font-semibold text-tinte transition-colors hover:bg-himmel-tief"
+                >
+                  neu würfeln
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    vorspiel.stoppen();
+                    aufAuswahl();
+                  }}
+                  className="rounded-full bg-papier-tief px-4 py-1.5 text-sm text-tinte transition-colors hover:bg-mint"
+                >
+                  Auswahl
+                </button>
+              </>
             )}
-            <button
-              type="button"
-              onClick={() => {
-                vorspiel.stoppen();
-                neuWuerfeln();
-              }}
-              className="rounded-full bg-himmel px-4 py-1.5 text-sm font-semibold text-tinte transition-colors hover:bg-himmel-tief"
-            >
-              neu würfeln
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                vorspiel.stoppen();
-                aufAuswahl();
-              }}
-              className="rounded-full bg-papier-tief px-4 py-1.5 text-sm text-tinte transition-colors hover:bg-mint"
-            >
-              {zeigeAuswahl ? "weiter üben" : "Auswahl"}
-            </button>
           </>
         }
       />
 
       {zeigeAuswahl ? (
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pb-2">
           <NotenWahl />
+          <StartLeiste
+            text="Los geht’s!"
+            onClick={() => {
+              vorspiel.stoppen();
+              neuWuerfeln();
+              aufAuswahl();
+            }}
+            links={
+              <span className="text-sm text-tinte-leise">
+                Acht Töne{notenwerteAn ? ", im 4/4-Takt" : ""}
+              </span>
+            }
+          />
         </div>
       ) : (
         <Uebungsflaeche

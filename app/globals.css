@@ -17,8 +17,14 @@
   --color-himmel-tief: #b5d4ec;
   --color-creme: #faf3dc;
   --color-creme-tief: #f0e3b8;
+  --color-pfirsich: #fce4d3;
+  --color-pfirsich-tief: #f4c0a0;
 
+  /* Nunito traegt die Bedienung, Fraunces die Ueberschriften und die grossen
+     Zahlen. Ein weicher Serif neben einer runden Grotesk — Notentitel sind
+     seit jeher Serif, und die weiche Achse nimmt ihm das Steife. */
   --font-sans: var(--font-nunito), ui-rounded, system-ui, sans-serif;
+  --font-titel: var(--font-fraunces), Georgia, serif;
 
   --animate-puls-sanft: puls-sanft 1.4s ease-in-out infinite;
   --animate-aufbluehen: aufbluehen 0.5s ease-out;

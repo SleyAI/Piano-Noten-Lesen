@@ -16,6 +16,8 @@ import {
   lageBeschriftung,
   lagen,
   schluesselAn,
+  stellungenVon,
+  wirksameStellung,
   stimmabstand,
   umkehrungName,
 } from "./akkorde";
@@ -382,5 +384,34 @@ describe("Griff auf die Haende verteilen", () => {
         }
       }
     }
+  });
+});
+
+describe("Stellungswahl", () => {
+  it("nimmt genau die gewaehlte Stellung, nicht mehr", () => {
+    const dreiklang = hole("C");
+    expect(stellungenVon(dreiklang, 0)).toEqual([0]);
+    expect(stellungenVon(dreiklang, 1)).toEqual([1]);
+    expect(stellungenVon(dreiklang, 2)).toEqual([2]);
+  });
+
+  it("geht bei \"alle\" der Reihe nach durch", () => {
+    expect(stellungenVon(hole("C"), "alle")).toEqual([0, 1, 2]);
+    expect(stellungenVon(hole("G7"), "alle")).toEqual([0, 1, 2, 3]);
+  });
+
+  it("stutzt eine Stellung, die es bei diesem Akkord nicht gibt", () => {
+    // Ein Dreiklang hat keine dritte Umkehrung — dann eben die hoechste, die
+    // er hat, statt eines Sprungs zurueck auf die Grundstellung.
+    expect(wirksameStellung(hole("C"), 3)).toBe(2);
+    expect(stellungenVon(hole("C"), 3)).toEqual([2]);
+    expect(wirksameStellung(hole("G7"), 3)).toBe(3);
+  });
+
+  it("laesst gueltige Wahlen unangetastet", () => {
+    for (const stellung of [0, 1, 2] as const) {
+      expect(wirksameStellung(hole("C"), stellung)).toBe(stellung);
+    }
+    expect(wirksameStellung(hole("C"), "alle")).toBe("alle");
   });
 });

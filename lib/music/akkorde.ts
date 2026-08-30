@@ -265,6 +265,41 @@ export function lage(akkord: Akkord, umkehrung: number): Lage {
   return { akkord, umkehrung, toene: inBequemeLage(toene) };
 }
 
+/**
+ * Welche Stellung geuebt wird: eine bestimmte, oder alle nacheinander.
+ *
+ * Bewusst eine einzige Wahl und keine Liste zum Anhaken. Wer die erste
+ * Umkehrung aussucht, moechte die erste Umkehrung ueben — und nicht vorher
+ * noch vier Uebungen lang die Grundstellung, nur weil die auch angehakt war.
+ * Wer beides moechte, nimmt "alle".
+ */
+export type Stellung = number | "alle";
+
+/** Alle Stellungen, die dieser Akkord ueberhaupt kennt. */
+export function alleStellungen(akkord: Akkord): number[] {
+  return Array.from({ length: anzahlUmkehrungen(akkord) + 1 }, (_, i) => i);
+}
+
+/**
+ * Die Stellung, die dieser Akkord daraus machen kann.
+ *
+ * Ein Dreiklang hat keine dritte Umkehrung. Wer eine gewaehlt hatte und dann
+ * zu einem Dreiklang wechselt, bekommt die naechstniedrigere statt eines
+ * Sprungs zurueck auf die Grundstellung — das ist naeher an dem, was er
+ * ueben wollte.
+ */
+export function wirksameStellung(akkord: Akkord, stellung: Stellung): Stellung {
+  if (stellung === "alle") return "alle";
+  const hoechste = anzahlUmkehrungen(akkord);
+  return Math.min(Math.max(0, stellung), hoechste);
+}
+
+/** Die Wahl in die Liste der Umkehrungen uebersetzen, die drankommen. */
+export function stellungenVon(akkord: Akkord, stellung: Stellung): number[] {
+  const wirksam = wirksameStellung(akkord, stellung);
+  return wirksam === "alle" ? alleStellungen(akkord) : [wirksam];
+}
+
 /** Alle Lagen eines Akkords, gefiltert auf die gewuenschten Umkehrungen. */
 export function lagen(akkord: Akkord, erlaubt?: readonly number[]): Lage[] {
   const alle = Array.from({ length: anzahlUmkehrungen(akkord) + 1 }, (_, i) => i);

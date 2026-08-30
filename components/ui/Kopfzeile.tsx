@@ -8,6 +8,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { MidiStatus } from "./MidiStatus";
+import { Sessionuhr } from "./SessionBand";
 
 export function Kopfzeile({
   titel,
@@ -29,7 +30,9 @@ export function Kopfzeile({
       </Link>
 
       <div className="min-w-0">
-        <h1 className="truncate text-lg leading-tight font-bold text-tinte">{titel}</h1>
+        <h1 className="truncate font-titel text-lg leading-tight font-bold text-tinte">
+          {titel}
+        </h1>
         {unterzeile && (
           <p className="truncate text-xs text-tinte-leise">{unterzeile}</p>
         )}
@@ -37,6 +40,7 @@ export function Kopfzeile({
 
       <div className="ml-auto flex items-center gap-2">
         {rechts}
+        <Sessionuhr />
         <MidiStatus />
       </div>
     </header>

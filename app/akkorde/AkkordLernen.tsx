@@ -9,11 +9,15 @@
  * oben, und eine kleine Melodie aus seinen Toenen. Drei Tasten gleichzeitig zu
  * druecken ist eben noch kein Akkord, den man kennt.
  *
- * Der Unterschied zwischen den Modi liegt allein darin, welche Stellungen
- * drankommen: beim Lernen nur die Grundstellung, sonst die gewaehlten
- * Umkehrungen. Beim Lernen sind die Uebungen ausserdem laenger, und ein
- * Fehlgriff setzt sie an den Anfang zurueck — durch ist eine Uebung erst,
- * wenn sie am Stueck sitzt.
+ * Der Unterschied zwischen den Modi liegt allein darin, welche Stellung zur
+ * Wahl steht: beim Lernen auch die Grundstellung, im Umkehrungsreiter nur die
+ * Umkehrungen. Beide Male ist es eine einzige Wahl — wer die erste Umkehrung
+ * aussucht, uebt die erste Umkehrung und nicht vorher noch die Grundstellung.
+ * "Alle zusammen" geht der Reihe nach durch.
+ *
+ * Beim Lernen sind die Uebungen ausserdem laenger, und ein Fehler setzt sie
+ * an den Anfang zurueck — durch ist eine Uebung erst, wenn sie am Stueck
+ * sitzt. Zaehlen die Notenwerte mit, gilt das auch fuer den Takt.
  *
  * Zwischen den Uebungen wird nicht gewartet: sitzt eine, kommt nach einem
  * Augenblick die naechste, und nach der letzten faengt die Runde mit frischen
@@ -26,19 +30,23 @@ import { Fortschrittspunkte } from "@/components/practice/Fortschrittspunkte";
 import { HandWahl } from "@/components/practice/HandWahl";
 import { PlayKnopf } from "@/components/practice/PlayKnopf";
 import { SchrittReihe } from "@/components/practice/SchrittReihe";
+import { StartLeiste } from "@/components/practice/StartLeiste";
+import { StellungsWahl } from "@/components/practice/StellungsWahl";
 import { AkkordWahl } from "@/components/practice/AkkordWahl";
+import { MetronomKnopf, TaktBand } from "@/components/practice/TaktBand";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
 import {
   type Akkord,
   type Haende,
   type Lage,
+  type Stellung,
   akkordNachSymbol,
-  anzahlUmkehrungen,
-  lage as lageVon,
   lageBeschriftung,
   lageSchluessel,
   lagen as lagenVon,
+  stellungenVon,
   umkehrungName,
+  wirksameStellung,
 } from "@/lib/music/akkorde";
 import {
   type UebungsSchritt,
@@ -48,9 +56,10 @@ import {
   baueUebung,
   midisDerUebung,
 } from "@/lib/music/akkorduebung";
-import { nameMitOktave, vonMidi } from "@/lib/music/pitch";
+import { name, nameMitOktave, vonMidi } from "@/lib/music/pitch";
 import { danebenAlsNoten } from "@/lib/practice/danebenNote";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
+import { useMetronom } from "@/lib/practice/useMetronom";
 import { useSchrittfolge } from "@/lib/practice/useSchrittfolge";
 import { useVorspielen } from "@/lib/practice/useVorspielen";
 import { useEinstellungen } from "@/lib/store/einstellungen";
@@ -58,6 +67,11 @@ import { useTricky } from "@/lib/store/tricky";
 
 /** Wie lange eine fertige Uebung stehen bleibt, bevor die naechste kommt. */
 const PAUSE_NACH_UEBUNG = 1100;
+
+/** Wie die Stellung in einem Satz heisst. */
+function stellungText(stellung: Stellung): string {
+  return stellung === "alle" ? "alle Stellungen" : umkehrungName(stellung);
+}
 
 /** Eine Station der Runde: diese Stellung, diese Uebungsart. */
 interface Station {
@@ -68,53 +82,54 @@ interface Station {
 export function AkkordLernen({ modus }: { modus: "lernen" | "umkehrungen" }) {
   const lernAkkord = useEinstellungen((z) => z.lernAkkord);
   const setzeLernAkkord = useEinstellungen((z) => z.setzeLernAkkord);
-  const umkehrungen = useEinstellungen((z) => z.umkehrungen);
+  const stellung = useEinstellungen((z) =>
+    modus === "lernen" ? z.stellungLernen : z.stellungUmkehrung,
+  );
   const uebungsarten = useEinstellungen((z) => z.uebungsarten);
   const haende = useEinstellungen((z) => z.akkordHaende);
+  const tempo = useEinstellungen((z) => z.tempo);
+  const taktGenau = useEinstellungen((z) => z.taktGenau);
 
   const [zeigeAuswahl, setZeigeAuswahl] = useState(false);
 
   const akkord = lernAkkord ? akkordNachSymbol(lernAkkord) : undefined;
 
   // Ohne Akkord gibt es nichts zu üben — dann steht die Auswahl da.
-  if (!akkord) {
+  if (!akkord || zeigeAuswahl) {
     return (
-      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
-        <AkkordWahl
-          gewaehlt={[]}
-          aufWahl={(a) => setzeLernAkkord(a.id)}
-          ueberschrift={
-            modus === "lernen"
-              ? "Welchen Akkord möchtest du lernen?"
-              : "Von welchem Akkord die Umkehrungen?"
-          }
-        />
-      </div>
-    );
-  }
-
-  if (zeigeAuswahl) {
-    return (
-      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
-        <div className="mb-4 flex justify-end">
-          <button
-            type="button"
-            onClick={() => setZeigeAuswahl(false)}
-            className="rounded-full bg-mint px-5 py-1.5 text-sm font-semibold text-tinte transition-colors hover:bg-mint-tief"
-          >
-            weiter üben
-          </button>
-        </div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pb-2">
         <div className="flex flex-col gap-6">
+          {akkord && <StellungsWahl akkord={akkord} modus={modus} />}
           <HandWahl />
-          {modus === "umkehrungen" && <StellungsWahl akkord={akkord} />}
           <UebungsartWahl />
+          <TaktBand mitTaktpruefung />
           <AkkordWahl
-            gewaehlt={[akkord.id]}
+            gewaehlt={akkord ? [akkord.id] : []}
             aufWahl={(a) => setzeLernAkkord(a.id)}
-            ueberschrift="Ein anderer Akkord?"
+            ueberschrift={
+              akkord
+                ? "Ein anderer Akkord?"
+                : modus === "lernen"
+                  ? "Welchen Akkord möchtest du lernen?"
+                  : "Von welchem Akkord die Umkehrungen?"
+            }
           />
         </div>
+
+        <StartLeiste
+          text="Los geht’s!"
+          bereit={akkord !== undefined}
+          onClick={() => setZeigeAuswahl(false)}
+          links={
+            akkord ? (
+              <span className="text-sm text-tinte-leise">
+                {akkord.symbol} · {stellungText(wirksameStellung(akkord, stellung))}
+              </span>
+            ) : (
+              <span className="text-sm text-tinte-leise">Erst einen Akkord aussuchen</span>
+            )
+          }
+        />
       </div>
     );
   }
@@ -122,12 +137,14 @@ export function AkkordLernen({ modus }: { modus: "lernen" | "umkehrungen" }) {
   return (
     <Runde
       // Neue Auswahl heisst frische Runde — das erledigt der Key.
-      key={`${akkord.id}#${modus}#${umkehrungen.join("|")}#${uebungsarten.join("|")}#${haende}`}
+      key={`${akkord.id}#${modus}#${stellung}#${uebungsarten.join("|")}#${haende}`}
       akkord={akkord}
       modus={modus}
-      umkehrungen={umkehrungen}
+      stellung={stellung}
       uebungsarten={uebungsarten}
       haende={haende}
+      tempo={tempo}
+      taktGenau={taktGenau}
       aufAuswahl={() => setZeigeAuswahl(true)}
     />
   );
@@ -136,30 +153,36 @@ export function AkkordLernen({ modus }: { modus: "lernen" | "umkehrungen" }) {
 function Runde({
   akkord,
   modus,
-  umkehrungen,
+  stellung,
   uebungsarten,
   haende,
+  tempo,
+  taktGenau,
   aufAuswahl,
 }: {
   akkord: Akkord;
   modus: "lernen" | "umkehrungen";
-  umkehrungen: number[];
+  stellung: Stellung;
   uebungsarten: UebungsartId[];
   haende: Haende;
+  tempo: number;
+  taktGenau: boolean;
   aufAuswahl: () => void;
 }) {
   const merkeVersuch = useTricky((z) => z.merkeVersuch);
   const merkeFehler = useTricky((z) => z.merkeFehler);
   const starteRunde = useTricky((z) => z.starteRunde);
+  const metronomAn = useEinstellungen((z) => z.metronomAn);
 
-  // Beim Lernen bleibt es bei der Grundstellung; erst der Umkehrungsmodus
-  // faechert auf. Die Reihenfolge ist Stellung fuer Stellung, damit man einen
-  // Griff ganz durchhat, bevor der naechste kommt.
+  useMetronom(metronomAn, tempo);
+
+  // Stellung fuer Stellung, damit man einen Griff ganz durchhat, bevor der
+  // naechste kommt. Bei einer einzelnen Stellung ist es genau eine.
   const stationen: Station[] = useMemo(() => {
-    const lagen = modus === "lernen" ? [lageVon(akkord, 0)] : lagenVon(akkord, umkehrungen);
+    const lagen = lagenVon(akkord, stellungenVon(akkord, stellung));
     const arten = uebungsarten.length > 0 ? uebungsarten : ["griff" as UebungsartId];
     return lagen.flatMap((lage) => arten.map((art) => ({ lage, art })));
-  }, [akkord, modus, umkehrungen, uebungsarten]);
+  }, [akkord, stellung, uebungsarten]);
 
   const [stationIndex, setStationIndex] = useState(0);
   /** Zaehlt die Durchgaenge — mit jedem werden die Rhythmen neu gewuerfelt. */
@@ -215,15 +238,19 @@ function Runde({
     schritte: uebung.schritte,
     aktiv: true,
     zurueckBeiFehler: lang,
+    taktGenau,
+    tempo,
     aufFehler: () => merkeFehler(lageSchluessel(station.lage), lageBeschriftung(station.lage)),
     aufFertig,
   });
+
+
 
   const klang = useMemo(
     () => uebung.schritte.map((s) => ({ midis: s.noten.map((n) => n.midi), wert: s.wert })),
     [uebung],
   );
-  const vorspiel = useVorspielen(klang);
+  const vorspiel = useVorspielen(klang, tempo);
 
   // Der gezeigte Tastaturausschnitt bleibt ueber die ganze Runde derselbe —
   // sonst springt die Klaviatur bei jeder neuen Uebung.
@@ -260,11 +287,29 @@ function Runde({
           bleibt statt mit der Textlaenge hin und her zu rutschen. */}
       <div className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-5 px-6 pt-1 pb-2">
         <span className="flex min-w-0 items-center gap-3">
-          <span className="text-3xl leading-none font-bold text-tinte">{akkord.symbol}</span>
-          <span className="flex flex-col">
-            <span className="text-sm leading-tight font-semibold text-tinte">{art?.titel}</span>
-            <span className="text-xs leading-tight text-tinte-leise">
-              {umkehrungName(station.lage.umkehrung)} · {art?.hinweis}
+          <span className="flex min-w-0 flex-col gap-1">
+            {/* Welcher Griff dran ist, steht ganz vorn — beim Ueben von
+                Umkehrungen ist genau das die Aufgabe. */}
+            <span className="flex flex-wrap items-baseline gap-2">
+              <span className="text-3xl leading-none font-bold text-tinte">
+                {akkord.symbol}
+              </span>
+              <span className="rounded-full bg-flieder px-3 py-1 text-xs leading-none font-semibold text-tinte">
+                {umkehrungName(station.lage.umkehrung)}
+              </span>
+              <span className="text-xs text-tinte-leise">
+                {uebung.griff.rechts.length > 0
+                  ? uebung.griff.rechts.map(name).join("–")
+                  : uebung.griff.links.map(name).join("–")}
+              </span>
+            </span>
+            <span className="flex items-baseline gap-2">
+              <span className="text-sm leading-tight font-semibold text-tinte">
+                {art?.titel}
+              </span>
+              <span className="truncate text-xs leading-tight text-tinte-leise">
+                {art?.hinweis}
+              </span>
             </span>
           </span>
           <PlayKnopf
@@ -282,6 +327,7 @@ function Runde({
         />
 
         <span className="flex items-center justify-end gap-3">
+          <MetronomKnopf />
           <Fortschrittspunkte gesamt={stationen.length} erledigt={stationIndex} />
           <button
             type="button"
@@ -316,6 +362,13 @@ function Runde({
               Das war {[...lauf.daneben].map((m) => nameMitOktave(vonMidi(m))).join(", ")}
               {lang ? " — noch einmal von vorn." : " — lass die Hand ruhig suchen."}
             </span>
+          ) : lauf.takt ? (
+            <span className="text-flieder-tief">
+              {lauf.takt === "zu-kurz"
+                ? "Der Griff davor stand zu kurz"
+                : "Der Griff davor stand zu lange"}
+              {lang ? " — noch einmal von vorn." : " — achte auf die Notenwerte."}
+            </span>
           ) : (
             <span className="text-tinte-leise">
               Schritt {lauf.index + 1} von {uebung.schritte.length}
@@ -334,59 +387,6 @@ function Runde({
 }
 
 // --- Auswahlbausteine -------------------------------------------------------
-
-/** Welche Stellungen kommen dran? */
-function StellungsWahl({ akkord }: { akkord: Akkord }) {
-  const umkehrungen = useEinstellungen((z) => z.umkehrungen);
-  const schalten = useEinstellungen((z) => z.schalteUmkehrung);
-  const setzen = useEinstellungen((z) => z.setzeUmkehrungen);
-
-  const moeglich = Array.from({ length: anzahlUmkehrungen(akkord) + 1 }, (_, i) => i);
-  const nurUmkehrungen = moeglich.filter((s) => s > 0);
-
-  return (
-    <section className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-sm font-semibold text-tinte">Welche Stellungen?</h2>
-        <div className="flex gap-2 text-xs">
-          <button
-            type="button"
-            onClick={() => setzen(nurUmkehrungen)}
-            className="rounded-full bg-papier-tief px-3 py-1 text-tinte-leise transition-colors hover:bg-mint"
-          >
-            nur die Umkehrungen
-          </button>
-          <button
-            type="button"
-            onClick={() => setzen(moeglich)}
-            className="rounded-full bg-papier-tief px-3 py-1 text-tinte-leise transition-colors hover:bg-mint"
-          >
-            alle, mit Grundstellung
-          </button>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {moeglich.map((stufe) => (
-          <button
-            key={stufe}
-            type="button"
-            role="checkbox"
-            aria-checked={umkehrungen.includes(stufe)}
-            onClick={() => schalten(stufe)}
-            className={`rounded-2xl px-4 py-2 text-sm transition-colors duration-200 ${
-              umkehrungen.includes(stufe)
-                ? "bg-mint text-tinte"
-                : "bg-papier-tief text-tinte-leise hover:bg-mint/40"
-            }`}
-          >
-            {umkehrungName(stufe)}
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
 
 /** Welche Uebungen kommen zu jeder Stellung? */
 function UebungsartWahl() {

@@ -111,3 +111,17 @@ export function spieleBestaetigung(grundton = 72) {
 export function alleToeneAus() {
   for (const midi of [...klingend.keys()]) stoppeTon(midi, 0.12);
 }
+
+/**
+ * Der laufende Audiokontext, oder null, solange es keinen gibt.
+ * Das Metronom taktet daran, statt sich einen zweiten aufzumachen.
+ */
+export function holeKontext(): AudioContext | null {
+  return hole();
+}
+
+/** Wohin alles klingt — damit das Metronom denselben Pegel benutzt. */
+export function holeSumme(): GainNode | null {
+  hole();
+  return summe;
+}

@@ -7,6 +7,25 @@ Deutsche Notennamen durchgehend (C D E F G A **H**), keine Zeitmessung, kein
 Punktestand. Falsche Griffe kosten nichts: die Note pulsiert kurz in Flieder,
 und man darf weiter probieren, bis es sitzt.
 
+## Die Übungssession
+
+Auf der Startseite steht ein Knopf, der die Uhr startet. Sie läuft, bis man sie
+anhält — kein Ziel, kein Countdown, keine Erinnerung. Danach steht da, wie
+lange heute zusammengekommen ist. Die Uhr überlebt den Wechsel zwischen den
+Modi und einen Neustart der Seite; in der Kopfzeile jeder Übungsseite zeigt sie
+mit, und ein Tipp darauf beendet die Session.
+
+Unter *Statistik* steht, was daraus geworden ist: insgesamt geübte Zeit, die
+Tage mit Übung, die Tage am Stück und Tag für Tag die Minuten. Die Woche steht
+dort — und in klein auch auf der Startseite — als Notenzeile: je Tag ein
+Notenkopf, und je länger geübt wurde, desto höher sitzt er. Ein Tag ohne Übung
+bekommt einen blassen Ring unter der Zeile.
+
+Gezählt wird nach Kalendertagen der Gerätezeitzone. Eine Session über
+Mitternacht zählt ganz zu dem Tag, an dem sie begonnen hat; wer den Tab einen
+halben Tag offen vergisst, bekommt keine Nachtschicht gutgeschrieben, denn
+Sessions über vier Stunden werden verworfen.
+
 ## Der Übungsplan
 
 Unter *Übungsplan* stehen alle drei Stufen untereinander — **Anfänger**,
@@ -54,12 +73,11 @@ sie am Stück sitzt — dann kommt ohne Zwischenbilanz die nächste.
   derselbe Griff im Takt, gebrochen von unten nach oben und zurück, und eine
   kleine Melodie aus seinen Tönen. Drei Tasten gleichzeitig zu drücken ist eben
   noch kein Akkord, den man kennt. Hier sind die Übungen doppelt so lang wie
-  sonst, und ein Fehlgriff setzt sie an den Anfang zurück: können heißt am
-  Stück können.
-- *Umkehrungen* — dieselben Übungen, aber über die gewählten Stellungen: nur
-  die erste, nur die zweite, beide, oder alle drei mit der Grundstellung. Hier
-  darf die Hand den nächsten Griff in Ruhe suchen, ohne dass die Übung von
-  vorn anfängt.
+  sonst, und ein Fehler setzt sie an den Anfang zurück: können heißt am Stück
+  können.
+- *Umkehrungen* — dieselben Übungen über eine Umkehrung statt über den
+  Grundakkord. Hier darf die Hand den nächsten Griff in Ruhe suchen, ohne dass
+  die Übung von vorn anfängt.
 - *Folgen* — entweder einen Akkord aussuchen und sich die harmonisch passenden
   Nachbarn dazu geben lassen (ein Durakkord wird als Grundstufe gelesen, ein
   Mollakkord als Parallele, ein Septakkord als Dominante), oder selbst anhaken,
@@ -73,6 +91,19 @@ Keiner der drei Wege hört von selbst auf. Sitzt eine Übung, geht es nach einem
 Augenblick zur nächsten weiter, und nach der letzten fängt die Runde mit
 frischen Rhythmen wieder an. Es gibt keine Zwischenbilanz und keinen Bildschirm
 mit einer Zahl darauf — aufgehört wird, wenn man aufhören möchte.
+
+### Welche Stellung?
+
+Beide Reiter fragen zuerst, welche Stellung drankommt, und das ist **eine
+einzige Wahl**: Grundstellung, erste Umkehrung, zweite — oder *alle zusammen*,
+dann geht es der Reihe nach durch. Wer die erste Umkehrung aussucht, übt die
+erste Umkehrung und nicht vorher noch viermal den Grundakkord. Über jeder
+Übung steht, was gerade gilt: das Symbol, die Stellung und die Töne in ihrer
+Reihenfolge, etwa „C · 1. Umkehrung · E–G–C".
+
+Der Lernreiter bietet die Grundstellung mit an, der Umkehrungsreiter nicht —
+sonst wäre er nicht der Umkehrungsreiter. In den *Folgen* wählt die
+Stimmführung die Stellungen selbst; über der Übung steht, welche.
 
 ## Mit welcher Hand?
 
@@ -94,6 +125,25 @@ Die Wahl gilt für die Melodien. **Beide Systeme** ist die Voreinstellung, denn
 davon lebt das Lesen am Doppelsystem. **Nur Violinschlüssel** oder **nur
 Bassschlüssel** dient dem gezielten Üben einer Hand. Bei den Akkorden
 entscheidet stattdessen die Handwahl.
+
+## Tempo, Takt und Metronom
+
+Ein Tempo gilt für alles: das Metronom klickt danach, der Play-Knopf spielt
+danach vor, und daran wird gemessen, ob eine Halbe eine Halbe war. Es steht
+zwischen 40 und 160 Schlägen und liegt in den Auswahlbildschirmen, das Metronom
+selbst ist aus jeder Übung heraus einen Tipp weit entfernt. Der erste Schlag
+jedes Taktes klingt heller, damit man die Eins hört.
+
+Gemessen wird der Abstand von einem Anschlag zum nächsten, nicht wie lange eine
+Taste unten bleibt — auf dem Tablet tippt man, da gibt es kein Halten. Bei
+einem Griff zählt der erste Ton als Anschlag, nicht der letzte: die drei Finger
+nacheinander zu setzen ist kein Notenwert. Der Rahmen reicht von 0,6 bis 1,7
+der vorgesehenen Länge, also weit genug ohne Metronom und eng genug, dass eine
+Halbe nicht als Viertel durchgeht.
+
+Bei den Melodien schaltet *Auch die Notenwerte* das Messen ein, bei den
+Akkorden der Haken *Die Notenwerte zählen mit*. Ohne sie geht es allein um die
+richtigen Töne.
 
 ## Einmal anhören
 
@@ -189,11 +239,12 @@ lib/music/       Tonhöhen, Notenvorrat, Übungsplan, Melodien, Rhythmus,
                  Akkorde, Akkordübungen, Akkordfolgen
 lib/notation/    Geometrie des Doppelsystems, Glyphen aus Bravura
 lib/input/       Web MIDI und Klaviatur hinter einem gemeinsamen Ereignisstrom
-lib/audio/       Klangerzeugung und das Vorspielen ganzer Folgen
-lib/practice/    Auswahl der nächsten Aufgabe, Akkorderkennung, Übungsläufe
-lib/store/       Einstellungen und Fehlerstatistik im localStorage
+lib/audio/       Klangerzeugung, Metronom und das Vorspielen ganzer Folgen
+lib/practice/    Auswahl der nächsten Aufgabe, Akkorderkennung, Übungsläufe,
+                 geübte Zeit
+lib/store/       Einstellungen, Übungszeit und Fehlerstatistik im localStorage
 components/      Notenrenderer, Klaviatur, Übungsbausteine
-app/             Startseite, Übungsplan und die zwei Modi
+app/             Startseite, Übungsplan, Statistik und die zwei Modi
 ```
 
 Drei Entscheidungen tragen den Rest:
@@ -215,5 +266,5 @@ eine Arpeggio-Figur oder eine ganze Akkordfolge steckt.
 ## Nicht enthalten
 
 Balken über Achtelgruppen — jede Achtel bekommt ihre eigene Fahne —,
-punktierte Noten, Pausen, andere Taktarten als 4/4, Benutzerkonten und
-geräteübergreifende Synchronisation.
+punktierte Noten, Pausen, andere Taktarten als 4/4, Übungsziele und
+Erinnerungen, Benutzerkonten und geräteübergreifende Synchronisation.

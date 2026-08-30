@@ -29,6 +29,12 @@ export interface AkkordGriffOptionen {
   kennung?: string;
   /** Vergisst ein Fehlgriff die schon gesammelten Toene? */
   vergissBeiFehler?: boolean;
+  /**
+   * Der erste richtige Ton dieses Griffs — der Anschlag. Daran misst die
+   * Uebung darueber die Notenlaengen; wann der Griff vollstaendig ist, sagt
+   * `aufTreffer`.
+   */
+  aufErstemTon?: () => void;
   aufTreffer: () => void;
   aufFehler: (midi: number) => void;
 }
@@ -43,10 +49,13 @@ export function useAkkordGriff({
   aktiv,
   kennung: kennungVon,
   vergissBeiFehler = false,
+  aufErstemTon,
   aufTreffer,
   aufFehler,
 }: AkkordGriffOptionen): AkkordGriff {
   const [gespielt, setGespielt] = useState<Set<number>>(() => new Set());
+  /** Zu welcher Aufgabe der Anschlag schon gemeldet wurde. */
+  const angeschlagen = useRef<string | null>(null);
 
   // Neue Aufgabe: alles auf Anfang. Das passiert bewusst waehrend des
   // Renderns und nicht in einem Effekt — sonst zeigt der erste Frame nach dem
@@ -65,6 +74,14 @@ export function useAkkordGriff({
       if (vergissBeiFehler) setGespielt(new Set());
       aufFehler(ereignis.midi);
       return;
+    }
+
+    // Der Anschlag zaehlt einmal je Griff, auch wenn drei Finger folgen —
+    // und auch dann, wenn sie im selben Augenblick kommen und React noch
+    // nichts neu gerechnet hat. Deshalb eine Ref und nicht `gespielt`.
+    if (angeschlagen.current !== kennung) {
+      angeschlagen.current = kennung;
+      aufErstemTon?.();
     }
 
     setGespielt((vorher) =>

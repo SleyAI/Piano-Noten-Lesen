@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Nunito } from "next/font/google";
 import "./globals.css";
+import { Wachhalter } from "@/components/ui/Wachhalter";
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -38,7 +39,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="de" className={`${nunito.variable} ${fraunces.variable} h-full antialiased`}>
-      <body className="keine-auswahl h-full overflow-hidden">{children}</body>
+      <body className="keine-auswahl h-full overflow-hidden">
+        <Wachhalter />
+        {children}
+      </body>
     </html>
   );
 }

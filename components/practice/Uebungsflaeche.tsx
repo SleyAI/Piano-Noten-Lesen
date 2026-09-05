@@ -11,7 +11,6 @@
 import type { ReactNode } from "react";
 import { Klaviatur } from "@/components/keyboard/Klaviatur";
 import { useEinstellungen } from "@/lib/store/einstellungen";
-import { useWachHalten } from "@/lib/practice/useWachHalten";
 
 export interface UebungsflaecheProps {
   notenbild: ReactNode;
@@ -35,9 +34,6 @@ export function Uebungsflaeche({
   const spielweise = useEinstellungen((z) => z.spielweise);
   const klaviaturImmerZeigen = useEinstellungen((z) => z.klaviaturImmerZeigen);
   const klangAn = useEinstellungen((z) => z.klangAn);
-
-  // Solange eine Uebung offen ist, soll der Tablet-Bildschirm anbleiben.
-  useWachHalten();
 
   // Am E-Piano ist die Klaviatur auf dem Bildschirm nur Beiwerk.
   const zeigeKlaviatur = spielweise === "tippen" || klaviaturImmerZeigen;

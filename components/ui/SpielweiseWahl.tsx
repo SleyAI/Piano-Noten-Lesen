@@ -28,9 +28,9 @@ export function SpielweiseWahl({ className }: { className?: string }) {
   const midiUnmoeglich = midi.art === "nicht-verfuegbar" || midi.art === "unsicherer-kontext";
 
   return (
-    <Karte akzent="rose" className={`px-5 py-3 ${className ?? ""}`}>
-      <div className="flex items-center gap-3">
-        <div className="flex gap-2">
+    <Karte akzent="flieder" className={`px-6 py-4 ${className ?? ""}`}>
+      <div className="flex items-center gap-4">
+        <div className="flex gap-2.5">
           <Knopf
             aktiv={spielweise === "tippen"}
             onClick={() => setzeSpielweise("tippen")}
@@ -61,8 +61,8 @@ export function SpielweiseWahl({ className }: { className?: string }) {
           )}
         </div>
 
-          {midiUnmoeglich && spielweise === "piano" && (
-            <p className="max-w-xs text-xs leading-snug text-tinte-leise">
+        {midiUnmoeglich && spielweise === "piano" && (
+          <p className="max-w-xs text-xs leading-snug text-tinte-leise">
             {midi.art === "nicht-verfuegbar"
               ? "Dieser Browser gibt kein MIDI frei — auf iPad und iPhone ist das so. Ein Android-Tablet mit Chrome erkennt das Klavier."
               : "MIDI braucht eine sichere Verbindung. Über die veröffentlichte Seite oder localhost aufrufen."}
@@ -91,12 +91,14 @@ function Knopf({
       type="button"
       onClick={onClick}
       aria-pressed={aktiv}
-      className={`rounded-2xl px-5 py-2.5 text-left transition-colors duration-200 ${
-        aktiv ? "bg-mint text-tinte" : "bg-white/70 text-tinte-leise hover:bg-mint/40"
+      className={`rounded-2xl px-5 py-2.5 text-left transition-all duration-200 ${
+        aktiv
+          ? "bg-[#785BA3] text-white shadow-[0_2px_12px_rgba(120,91,163,0.25)]"
+          : "bg-[#F4EFF8] text-tinte-leise hover:bg-[#EADCF5] hover:text-tinte"
       } ${gedaempft && !aktiv ? "opacity-60" : ""}`}
     >
       <span className="block text-sm font-semibold">{titel}</span>
-      <span className="block text-xs opacity-75">{text}</span>
+      <span className={`block text-xs ${aktiv ? "text-white/80" : "opacity-75"}`}>{text}</span>
     </button>
   );
 }
@@ -116,15 +118,15 @@ function Schalter({
       role="switch"
       aria-checked={an}
       onClick={onClick}
-      className="flex items-center gap-2 rounded-full px-3 py-1.5 text-tinte transition-colors hover:bg-white/60"
+      className="flex items-center gap-2.5 rounded-full px-3 py-1.5 text-tinte font-medium transition-colors hover:bg-papier-tief"
     >
       <span
         className={`flex h-5 w-9 items-center rounded-full p-0.5 transition-colors duration-200 ${
-          an ? "bg-mint-tief" : "bg-white"
+          an ? "bg-[#785BA3]" : "bg-papier-tief"
         }`}
       >
         <span
-          className={`h-4 w-4 rounded-full bg-papier shadow-sm transition-transform duration-200 ${
+          className={`h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
             an ? "translate-x-4" : ""
           }`}
         />

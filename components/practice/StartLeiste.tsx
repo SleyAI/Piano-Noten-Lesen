@@ -2,10 +2,7 @@
 
 /**
  * Der Knopf, der die Uebung startet — festgenagelt am unteren Rand.
- *
- * Die Auswahlbildschirme sind lang geworden, seit alle Akkorde darin stehen.
- * Ein Startknopf ganz unten hiesse: jedes Mal durch neunzig Akkorde scrollen,
- * nur um loszulegen. Also bleibt er stehen, wo der Daumen ohnehin ist.
+ * Jetzt im samtigen Lavendel-Ton mit weißer Schrift.
  */
 
 import type { ReactNode } from "react";
@@ -33,7 +30,7 @@ export function StartLeiste({
           type="button"
           disabled={!bereit}
           onClick={onClick}
-          className="ml-auto rounded-full bg-mint px-8 py-3 font-semibold text-tinte shadow-[0_6px_20px_rgba(92,84,112,0.14)] transition-colors hover:bg-mint-tief disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+          className="ml-auto rounded-full bg-[#785BA3] px-8 py-3 font-semibold text-white shadow-[0_6px_20px_rgba(120,91,163,0.25)] transition-all duration-200 hover:bg-[#654B8D] hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:translate-y-0"
         >
           {text}
         </button>

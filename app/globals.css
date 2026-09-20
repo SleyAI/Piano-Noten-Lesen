@@ -1,16 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  /* Cozy-Pastellpalette. Bewusst kein Rot, kein Schwarz. */
-  --color-papier: #fdfbf7;
-  --color-papier-tief: #f6f1e8;
-  --color-tinte: #5c5470;
-  --color-tinte-leise: #9a92ad;
+  /* Cozy Lilac & Lavender Palette */
+  --color-papier: #F4EFF8;
+  --color-papier-tief: #EAE3F2;
+  --color-tinte: #382F45;
+  --color-tinte-leise: #7B7289;
+
+  --color-lavendel: #785BA3;
+  --color-lavendel-dunkel: #654B8D;
+  --color-flieder: #EADCF5;
+  --color-flieder-tief: #C4B5E0;
 
   --color-mint: #d9f0e3;
   --color-mint-tief: #a8dcc0;
-  --color-flieder: #e4dcf2;
-  --color-flieder-tief: #c4b5e0;
   --color-rose: #f7dde4;
   --color-rose-tief: #ebbfce;
   --color-himmel: #dcebf7;
@@ -20,11 +23,9 @@
   --color-pfirsich: #fce4d3;
   --color-pfirsich-tief: #f4c0a0;
 
-  /* Nunito traegt die Bedienung, Fraunces die Ueberschriften und die grossen
-     Zahlen. Ein weicher Serif neben einer runden Grotesk — Notentitel sind
-     seit jeher Serif, und die weiche Achse nimmt ihm das Steife. */
+  /* Fredoka für runde, gemütliche Titel; Nunito für Fließtext & Bedienung */
   --font-sans: var(--font-nunito), ui-rounded, system-ui, sans-serif;
-  --font-titel: var(--font-fraunces), Georgia, serif;
+  --font-titel: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
 
   --animate-puls-sanft: puls-sanft 1.4s ease-in-out infinite;
   --animate-aufbluehen: aufbluehen 0.5s ease-out;

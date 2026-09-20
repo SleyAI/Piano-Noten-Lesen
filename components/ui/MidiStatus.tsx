@@ -3,8 +3,8 @@
 /**
  * Unaufdringlicher Verbindungsstatus des E-Pianos im Header.
  *
- * Ein Punkt und ein kurzer Text. Nur wenn tatsaechlich etwas zu tun ist,
- * wird daraus ein Knopf.
+ * Ein Piano-Icon 🎹 und ein kurzer Text als sauberes Pill-Badge ohne Statuspunkte.
+ * Nur wenn tatsächlich etwas zu tun ist, wird daraus ein interaktiver Knopf.
  */
 
 import { verbinde } from "@/lib/input/midi";
@@ -13,19 +13,18 @@ import { useMidiZustand } from "@/lib/input/useNoteneingabe";
 export function MidiStatus({ className }: { className?: string }) {
   const zustand = useMidiZustand();
 
-  const { punkt, text, aktion, titel } = beschreibe(zustand);
+  const { text, aktion, titel } = beschreibe(zustand);
 
   const inhalt = (
     <>
-      <span
-        aria-hidden
-        className={`h-2.5 w-2.5 rounded-full ${punkt}`}
-      />
-      <span className="text-sm">{text}</span>
+      <span aria-hidden className="text-sm">
+        🎹
+      </span>
+      <span className="text-sm font-medium">{text}</span>
     </>
   );
 
-  const gemeinsam = `flex items-center gap-2 rounded-full px-3 py-1.5 text-tinte ${className ?? ""}`;
+  const gemeinsam = `flex items-center gap-2 rounded-full px-3.5 py-1.5 bg-white shadow-[0_2px_10px_rgba(120,91,163,0.06)] text-tinte ${className ?? ""}`;
 
   if (aktion) {
     return (
@@ -33,7 +32,7 @@ export function MidiStatus({ className }: { className?: string }) {
         type="button"
         onClick={() => void verbinde()}
         title={titel}
-        className={`${gemeinsam} bg-himmel transition-colors hover:bg-himmel-tief`}
+        className={`${gemeinsam} transition-colors hover:bg-[#EADCF5]`}
       >
         {inhalt}
       </button>
@@ -41,7 +40,7 @@ export function MidiStatus({ className }: { className?: string }) {
   }
 
   return (
-    <span className={`${gemeinsam} bg-papier-tief`} title={titel}>
+    <span className={gemeinsam} title={titel}>
       {inhalt}
     </span>
   );
@@ -51,35 +50,30 @@ function beschreibe(zustand: ReturnType<typeof useMidiZustand>) {
   switch (zustand.art) {
     case "verbunden":
       return {
-        punkt: "bg-mint-tief",
         text: zustand.geraete[0] ?? "Klavier verbunden",
         aktion: false,
         titel: zustand.geraete.join(", "),
       };
     case "verbindet":
       return {
-        punkt: "bg-himmel-tief animate-puls-sanft",
         text: "verbinde …",
         aktion: false,
         titel: undefined,
       };
     case "kein-geraet":
       return {
-        punkt: "bg-creme-tief",
         text: "kein Klavier gefunden",
         aktion: true,
         titel: "Kabel prüfen und erneut versuchen",
       };
     case "abgelehnt":
       return {
-        punkt: "bg-creme-tief",
         text: "Zugriff nicht erlaubt",
         aktion: true,
         titel: "Erneut nach der Berechtigung fragen",
       };
     case "unsicherer-kontext":
       return {
-        punkt: "bg-creme-tief",
         text: "nur über HTTPS",
         aktion: false,
         titel:
@@ -87,7 +81,6 @@ function beschreibe(zustand: ReturnType<typeof useMidiZustand>) {
       };
     case "nicht-verfuegbar":
       return {
-        punkt: "bg-tinte-leise",
         text: "Tippen",
         aktion: false,
         titel:
@@ -95,7 +88,6 @@ function beschreibe(zustand: ReturnType<typeof useMidiZustand>) {
       };
     default:
       return {
-        punkt: "bg-tinte-leise",
         text: "Klavier verbinden",
         aktion: true,
         titel: "Nach angeschlossenen MIDI-Geräten suchen",

@@ -4,7 +4,6 @@ import { SpielweiseWahl } from "@/components/ui/SpielweiseWahl";
 import { KniffligeStellen } from "@/components/ui/KniffligeStellen";
 import { Modusbild } from "@/components/ui/Modusbild";
 import { Karte } from "@/components/ui/Karte";
-import { PlanKarte, WochenKarte } from "@/components/ui/Startkarten";
 
 const MODI = [
   {
@@ -24,22 +23,18 @@ const MODI = [
 ];
 
 /**
- * Die Startseite hat zwei Aufgaben: in die Uebung fuehren und zeigen, was
- * daraus geworden ist. Deshalb steht die Session ganz oben, darunter die
- * beiden Modi, und erst dann die Baender, die man nur ab und zu anschaut.
- *
- * Auf einem flachen Tablet-Querformat wird das eng — die Seite darf notfalls
- * scrollen, und die Zeichnungen auf den Moduskacheln verschwinden zuerst.
+ * Die Startseite fokussiert sich ganz auf die Session, die beiden
+ * Übungsmodi (Melodien & Akkorde) sowie die Einstellungen.
  */
 export default function Startseite() {
   return (
-    <main className="flex h-full flex-col justify-center-safe gap-3 overflow-y-auto px-8 py-5">
+    <main className="flex h-full flex-col justify-center-safe gap-4 overflow-y-auto px-8 py-6">
       <header className="flex shrink-0 items-start justify-between gap-4">
         <div>
-          <h1 className="font-titel text-3xl leading-tight font-bold text-tinte">
-            Noten &amp; Akkorde
+          <h1 className="font-titel text-4xl leading-tight font-bold text-[#785BA3]">
+            Noten &amp; Akkorde 🎹
           </h1>
-          <p className="mt-0.5 text-tinte-leise">
+          <p className="mt-1 text-tinte-leise font-medium">
             Kein Timer, kein Punktestand. Spiel so lange, wie es dir guttut.
           </p>
         </div>
@@ -48,9 +43,9 @@ export default function Startseite() {
 
       <SessionBand className="shrink-0" />
 
-      <div className="grid max-h-[24rem] min-h-[8rem] flex-1 shrink-0 grid-cols-2 gap-3">
+      <div className="grid max-h-[24rem] min-h-[9rem] flex-1 shrink-0 grid-cols-2 gap-4">
         {MODI.map((modus) => (
-          <Karte key={modus.href} href={modus.href} akzent={modus.akzent} className="p-5">
+          <Karte key={modus.href} href={modus.href} akzent={modus.akzent} className="p-6">
             {/* Auf flachen Bildschirmen bliebe vom Bild nur ein Streifen —
                 dann traegt die Kachel lieber ihre Ueberschrift allein. */}
             <Modusbild
@@ -65,11 +60,6 @@ export default function Startseite() {
             <p className="mt-1 shrink-0 text-sm leading-snug text-tinte-leise">{modus.text}</p>
           </Karte>
         ))}
-      </div>
-
-      <div className="grid shrink-0 grid-cols-[1.25fr_1fr] gap-3">
-        <WochenKarte />
-        <PlanKarte />
       </div>
 
       <KniffligeStellen className="shrink-0" />

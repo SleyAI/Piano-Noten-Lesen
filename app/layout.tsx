@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Nunito } from "next/font/google";
+import { Fredoka, Nunito } from "next/font/google";
 import "./globals.css";
 import { Wachhalter } from "@/components/ui/Wachhalter";
+import { Sidebar } from "@/components/ui/Sidebar";
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -10,17 +11,12 @@ const nunito = Nunito({
 });
 
 /**
- * Fuer Ueberschriften und grosse Zahlen. `SOFT` rundet die Serifen ab, `opsz`
- * bleibt klein — so steht neben der runden Grotesk ein warmer Serif und keine
- * Zeitungsschrift.
+ * Fredoka für gemütliche, runde und bauchige Überschriften im Stil der Rezept-App.
  */
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
   subsets: ["latin"],
   display: "swap",
-  // Variabel geladen: die Gewichte kommen aus der Achse, `SOFT` rundet die
-  // Serifen. Beides zusammen mit festen Gewichten geht nicht.
-  axes: ["SOFT", "opsz"],
 });
 
 export const metadata: Metadata = {
@@ -33,15 +29,18 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#fdfbf7",
+  themeColor: "#F4EFF8",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="de" className={`${nunito.variable} ${fraunces.variable} h-full antialiased`}>
-      <body className="keine-auswahl h-full overflow-hidden">
+    <html lang="de" className={`${nunito.variable} ${fredoka.variable} h-full antialiased`}>
+      <body className="keine-auswahl flex h-full overflow-hidden bg-papier text-tinte">
         <Wachhalter />
-        {children}
+        <Sidebar />
+        <div className="flex-1 h-full min-w-0 overflow-hidden flex flex-col">
+          {children}
+        </div>
       </body>
     </html>
   );

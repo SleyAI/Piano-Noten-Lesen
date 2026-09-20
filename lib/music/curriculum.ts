@@ -22,24 +22,40 @@ import {
 
 export type { SchluesselWahl };
 
+/** Welche Stufe des Landmark-Systems geuebt wird. */
+export type Notenbereich = "landmarks" | "darum" | "hilfslinien";
+
+export const NOTENBEREICH_WAHLEN: Array<{ wert: Notenbereich; titel: string }> = [
+  { wert: "landmarks", titel: "Nur Landmarks" },
+  { wert: "darum", titel: "Noten darum herum" },
+  { wert: "hilfslinien", titel: "Mit Hilfslinien" },
+];
+
 /** Nur die Stammtoene, oder auch die Halbtoene dazwischen? */
 export type Tastenwahl = "weiss" | "alle";
 
-export const TASTEN_WAHLEN: Array<{ wert: Tastenwahl; titel: string; hinweis: string }> = [
+export const TASTEN_WAHLEN: Array<{ wert: Tastenwahl; titel: string; hinweis?: string }> = [
   {
     wert: "weiss",
     titel: "Nur die weißen Tasten",
-    hinweis: "Die Stammtöne C bis H, ohne ein einziges Vorzeichen.",
   },
   {
     wert: "alle",
     titel: "Auch die schwarzen",
-    hinweis: "Kreuze und Be kommen dazu — jede schwarze Taste in beiden Schreibweisen.",
   },
 ];
 
-/** Der gezeichnete Umfang je System. */
-const BEREICH: Record<Schluessel, { von: number; bis: number }> = {
+const LANDMARK_MIDIS: Record<Schluessel, number[]> = {
+  violin: [n("C4").midi, n("G4").midi, n("C5").midi],
+  bass: [n("C3").midi, n("F3").midi, n("C4").midi],
+};
+
+const BEREICH_DARUM: Record<Schluessel, { von: number; bis: number }> = {
+  violin: { von: n("C4").midi, bis: n("G5").midi },
+  bass: { von: n("F2").midi, bis: n("C4").midi },
+};
+
+const BEREICH_HILFSLINIEN: Record<Schluessel, { von: number; bis: number }> = {
   violin: { von: n("C4").midi, bis: n("C6").midi },
   bass: { von: n("C2").midi, bis: n("C4").midi },
 };
@@ -69,19 +85,25 @@ export function uebungsSchluessel(u: UebungsNote): string {
 }
 
 /**
- * Der ganze Vorrat zu einer Tastenwahl.
- *
- * C4 erscheint bewusst zweimal — einmal je System. Zwei Notenbilder, zwei
- * Lesevorgaenge, also auch zwei Uebungskarten.
+ * Der Vorrat zur gewählten Tasten- und Bereichswahl.
  */
-export function notenVorrat(wahl: Tastenwahl): UebungsNote[] {
+export function notenVorrat(wahl: Tastenwahl, bereich: Notenbereich = "landmarks"): UebungsNote[] {
   const ergebnis: UebungsNote[] = [];
 
   for (const schluessel of ["violin", "bass"] as const) {
-    const { von, bis } = BEREICH[schluessel];
-    for (let midi = von; midi <= bis; midi += 1) {
-      for (const note of schreibweisen(midi, wahl)) {
-        ergebnis.push({ note, schluessel });
+    if (bereich === "landmarks") {
+      for (const midi of LANDMARK_MIDIS[schluessel]) {
+        for (const note of schreibweisen(midi, wahl)) {
+          ergebnis.push({ note, schluessel });
+        }
+      }
+    } else {
+      const { von, bis } =
+        bereich === "darum" ? BEREICH_DARUM[schluessel] : BEREICH_HILFSLINIEN[schluessel];
+      for (let midi = von; midi <= bis; midi += 1) {
+        for (const note of schreibweisen(midi, wahl)) {
+          ergebnis.push({ note, schluessel });
+        }
       }
     }
   }
@@ -89,9 +111,9 @@ export function notenVorrat(wahl: Tastenwahl): UebungsNote[] {
   return ergebnis;
 }
 
-/** Wie viele Noten bringt eine Tastenwahl mit? Fuer die Anzeige auf der Kachel. */
-export function vorratUmfang(wahl: Tastenwahl): number {
-  return notenVorrat(wahl).length;
+/** Wie viele Noten bringt eine Wahl mit? */
+export function vorratUmfang(wahl: Tastenwahl, bereich: Notenbereich = "landmarks"): number {
+  return notenVorrat(wahl, bereich).length;
 }
 
 export const SCHLUESSEL_WAHLEN: Array<{ wert: SchluesselWahl; titel: string; hinweis: string }> = [

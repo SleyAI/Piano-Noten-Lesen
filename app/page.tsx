@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MidiStatus } from "@/components/ui/MidiStatus";
 import { SessionBand } from "@/components/ui/SessionBand";
 import { SpielweiseWahl } from "@/components/ui/SpielweiseWahl";
@@ -10,7 +11,7 @@ const MODI = [
   {
     href: "/melodien",
     titel: "Melodien",
-    text: "Acht Töne aus deinem Vorrat — auf Wunsch mit Notenwerten und über beide Systeme hinweg.",
+    text: "Acht Töne aus deinem Vorrat — nach dem Landmark-System.",
     akzent: "mint" as const,
     bild: "melodie" as const,
   },
@@ -24,19 +25,19 @@ const MODI = [
 ];
 
 /**
- * Startseite:
- * Zentriertes, minimalistisches Dashboard mit max-w-4xl:
- * - Oben: zentrierter Titel "Noten & Akkorde lernen"
- * - 2-Spalten-Bereich: Links Melodien & Akkorde, rechts Stoppuhr & Statistik
- * - Unten: Einstellungen & Knifflige Stellen
+ * Startseite im Stil des Referenz-Dashboards:
+ * - Oben: Großer zentrierter Titel "Noten & Akkorde lernen"
+ * - Links: Große "Übungen"-Kachel mit Melodien & Akkorde
+ * - Rechts: Oben die Stoppuhr mit großem Timer & Button, unten die Wochenstatistik mit Notenlinien
+ * - Unten: Einstellungen
  */
 export default function Startseite() {
   return (
     <main className="flex h-full flex-col justify-center overflow-y-auto px-6 py-8">
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
-        {/* Header mit zentriertem Titel */}
-        <header className="relative flex shrink-0 items-center justify-center py-2">
-          <h1 className="text-center font-titel text-4xl sm:text-5xl font-bold text-[#785BA3]">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+        {/* Header mit zentriertem Titel & dezentem Status */}
+        <header className="relative flex shrink-0 items-center justify-center pt-2">
+          <h1 className="text-center font-titel text-5xl sm:text-6xl font-bold text-[#785BA3]">
             Noten &amp; Akkorde lernen
           </h1>
           <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2">
@@ -45,45 +46,64 @@ export default function Startseite() {
         </header>
 
         {/* Mobile Midi-Status unter der Überschrift */}
-        <div className="flex sm:hidden justify-center -mt-1">
+        <div className="flex sm:hidden justify-center -mt-2">
           <MidiStatus />
         </div>
 
-        {/* 2-Spalten-Bereich: Links Melodien & Akkorde, rechts Stoppuhr & Statistik */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Links: Melodien & Akkorde */}
-          <div className="flex flex-col gap-4">
-            {MODI.map((modus) => (
-              <Karte
-                key={modus.href}
-                href={modus.href}
-                akzent={modus.akzent}
-                className="p-5 flex-1 justify-center"
-              >
-                <div className="flex items-center gap-4">
-                  <Modusbild
-                    bild={modus.bild}
-                    className={`w-14 h-14 shrink-0 ${
-                      modus.akzent === "mint" ? "text-mint-tief" : "text-flieder-tief"
-                    }`}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <h2 className="font-titel text-xl leading-tight font-bold text-tinte">
-                      {modus.titel}
-                    </h2>
-                    <p className="mt-1 text-xs sm:text-sm leading-snug text-tinte-leise">
-                      {modus.text}
-                    </p>
-                  </div>
-                </div>
-              </Karte>
-            ))}
-          </div>
+        {/* 2-Spalten-Bereich nach Referenzbild */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+          {/* Linke Seite: Große Kachel "Übungen" mit Melodien & Akkorde */}
+          <Karte className="p-6 sm:p-7 flex flex-col justify-between h-full">
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <span className="font-titel text-2xl font-bold text-tinte">Übungen</span>
+                <span className="rounded-full bg-papier-tief px-3.5 py-1 text-xs font-bold text-[#785BA3]">
+                  2 Modi
+                </span>
+              </div>
 
-          {/* Rechts: Stoppuhr & Statistik */}
-          <div className="flex flex-col gap-4">
-            <SessionBand className="flex-1 justify-center" />
-            <WochenKarte className="flex-1 justify-center" />
+              <div className="flex flex-col gap-3.5">
+                {MODI.map((modus) => (
+                  <Link
+                    key={modus.href}
+                    href={modus.href}
+                    className="group flex items-center gap-4 p-4 sm:p-5 rounded-2xl bg-papier-tief/40 hover:bg-[#EADCF5]/40 transition-all duration-200 border border-papier-tief/80 hover:border-[#785BA3]/30 hover:-translate-y-0.5 shadow-sm"
+                  >
+                    <div
+                      className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
+                        modus.akzent === "mint"
+                          ? "bg-mint/60 text-mint-tief"
+                          : "bg-[#EADCF5] text-[#785BA3]"
+                      }`}
+                    >
+                      <Modusbild bild={modus.bild} className="w-9 h-9" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="font-titel text-xl sm:text-2xl font-bold text-tinte group-hover:text-[#785BA3] transition-colors">
+                        {modus.titel}
+                      </h2>
+                      <p className="text-xs sm:text-sm text-tinte-leise leading-snug mt-1">
+                        {modus.text}
+                      </p>
+                    </div>
+                    <span className="text-[#785BA3] text-xl font-bold px-1 transition-transform duration-200 group-hover:translate-x-1">
+                      →
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-papier-tief flex items-center justify-between text-xs text-tinte-leise font-medium">
+              <span>Klavier lernen in deinem Tempo</span>
+              <span className="text-[#785BA3] font-semibold">Landmark-System</span>
+            </div>
+          </Karte>
+
+          {/* Rechte Seite: Stoppuhr oben, Statistik unten */}
+          <div className="flex flex-col gap-6">
+            <SessionBand />
+            <WochenKarte />
           </div>
         </div>
 

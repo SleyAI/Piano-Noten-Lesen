@@ -9,7 +9,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { type SchluesselWahl, type Tastenwahl } from "@/lib/music/curriculum";
+import { type Notenbereich, type SchluesselWahl, type Tastenwahl } from "@/lib/music/curriculum";
 import type { Haende, Stellung } from "@/lib/music/akkorde";
 import type { UebungsartId } from "@/lib/music/akkorduebung";
 import { TEMPO, begrenzeTempo } from "@/lib/music/rhythmus";
@@ -50,6 +50,8 @@ export interface EinstellungsZustand {
   schluesselWahl: SchluesselWahl;
   /** Bleiben die Melodien auf den weissen Tasten, oder kommen die schwarzen dazu? */
   tastenwahl: Tastenwahl;
+  /** Welche Stufe des Landmark-Systems: Landmarks, darum herum, oder mit Hilfslinien? */
+  notenbereich: Notenbereich;
   /** Zaehlen die Notenwerte mit, oder geht es nur um die Tonhoehen? */
   notenwerteAn: boolean;
 
@@ -86,6 +88,7 @@ export interface EinstellungsZustand {
 
   setzeSchluesselWahl: (w: SchluesselWahl) => void;
   setzeTastenwahl: (w: Tastenwahl) => void;
+  setzeNotenbereich: (b: Notenbereich) => void;
   schalteNotenwerte: () => void;
 
   setzeTempo: (bpm: number) => void;
@@ -124,6 +127,7 @@ export const useEinstellungen = create<EinstellungsZustand>()(
 
       schluesselWahl: "beide",
       tastenwahl: "weiss",
+      notenbereich: "landmarks",
       notenwerteAn: false,
 
       tempo: TEMPO,
@@ -152,6 +156,7 @@ export const useEinstellungen = create<EinstellungsZustand>()(
 
       setzeSchluesselWahl: (schluesselWahl) => set({ schluesselWahl }),
       setzeTastenwahl: (tastenwahl) => set({ tastenwahl }),
+      setzeNotenbereich: (notenbereich) => set({ notenbereich }),
       schalteNotenwerte: () => set((z) => ({ notenwerteAn: !z.notenwerteAn })),
 
       setzeTempo: (bpm) => set({ tempo: begrenzeTempo(bpm) }),

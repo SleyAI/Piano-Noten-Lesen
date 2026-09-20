@@ -16,10 +16,10 @@ import { KOPF_VIERTEL, ZEILENABSTAND_EM } from "@/lib/notation/glyphen";
 import { type Tageseintrag, kurzeDauer, wochentagKurz } from "@/lib/practice/uebungszeit";
 
 /** Halber Zeilenabstand in Zeicheneinheiten. */
-const HALB = 6;
+const HALB = 7;
 const ZEILE = HALB * 2;
-const SPALTE = 54;
-const RAND_OBEN = 18;
+const SPALTE = 56;
+const RAND_OBEN = 20;
 const RAND_UNTEN = 36;
 const HOEHE = RAND_OBEN + 8 * HALB + RAND_UNTEN;
 

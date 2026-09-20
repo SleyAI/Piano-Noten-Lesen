@@ -23,7 +23,7 @@ export function WochenKarte({ className }: { className?: string } = {}) {
   const beginn = useUebungszeit((z) => z.beginn);
   const jetzt = useSekundentakt(beginn !== null);
 
-  if (!hydriert) return <div className={`h-36 rounded-[2rem] bg-white ${className ?? ""}`} />;
+  if (!hydriert) return <div className={`h-64 rounded-[2rem] bg-white ${className ?? ""}`} />;
 
   // Die laufende Session zaehlt beim heutigen Tag mit, damit die Notenkoepfe
   // waehrend des Uebens steigen statt erst hinterher.
@@ -33,28 +33,35 @@ export function WochenKarte({ className }: { className?: string } = {}) {
   );
   const gesamt = sekundenGesamt(tage) + laufend;
   const amStueck = serie(tage, jetzt);
+  const heuteSekunden = woche[woche.length - 1]?.sekunden ?? 0;
 
   return (
-    <Karte href="/statistik" akzent="flieder" className={`px-6 py-4 ${className ?? ""}`}>
-      <Kartentitel>Diese Woche</Kartentitel>
-      <div className="mt-2 flex min-h-0 flex-1 items-center justify-between gap-6">
-        <div className="shrink-0">
-          <p className="font-titel text-3xl leading-none font-bold text-[#785BA3]">
-            {kurzeDauer(gesamt)}
-          </p>
-          <p className="mt-1 text-xs leading-tight text-tinte-leise font-medium">
-            insgesamt geübt
-            {amStueck > 1 ? (
-              <>
-                <br />
-                {amStueck} Tage am Stück
-              </>
-            ) : null}
-          </p>
-        </div>
-        <div className="flex h-24 min-w-0 flex-1 justify-center sm:justify-end">
-          <Wochenlinie tage={woche} />
-        </div>
+    <Karte href="/statistik" akzent="flieder" className={`p-6 flex flex-col justify-between ${className ?? ""}`}>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <span className="font-titel text-xl font-bold text-tinte">Diese Woche</span>
+        <span className="rounded-full bg-papier-tief px-3 py-1 text-xs font-bold text-[#785BA3]">
+          {kurzeDauer(heuteSekunden)} heute
+        </span>
+      </div>
+
+      {/* Tellers Notenlinien Chart */}
+      <div className="flex h-32 w-full items-center justify-center my-3">
+        <Wochenlinie tage={woche} />
+      </div>
+
+      {/* Footer Stats */}
+      <div className="flex items-center justify-between pt-3 border-t border-papier-tief text-xs text-tinte-leise font-medium">
+        <span>
+          Insgesamt: <strong className="text-tinte font-bold">{kurzeDauer(gesamt)}</strong>
+        </span>
+        <span>
+          {amStueck > 1 ? (
+            <strong className="text-[#785BA3] font-bold">{amStueck} Tage am Stück</strong>
+          ) : (
+            "Regelmäßig üben"
+          )}
+        </span>
       </div>
     </Karte>
   );

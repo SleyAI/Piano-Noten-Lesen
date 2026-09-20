@@ -52,11 +52,11 @@ export function SessionBand({ className }: { className?: string }) {
             </>
           ) : (
             <>
-              <Kartentitel>Übungssession</Kartentitel>
+              <Kartentitel>Stoppuhr</Kartentitel>
               <p className="text-sm text-tinte-leise font-medium">
                 {heute > 0
-                  ? `Heute schon ${dauerText(heute)}. Noch eine Runde?`
-                  : "Die Uhr läuft, bis du sie anhältst. Nichts weiter."}
+                  ? `Heute schon ${dauerText(heute)} geübt.`
+                  : "Starten, um die Session zu beginnen."}
               </p>
             </>
           )}
@@ -117,11 +117,8 @@ export function Sessionuhr() {
       type="button"
       onClick={beende}
       title="Session beenden"
-      className="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-[#785BA3] shadow-[0_2px_10px_rgba(120,91,163,0.08)] transition-colors hover:bg-[#EADCF5]"
+      className="flex items-center rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-[#785BA3] shadow-[0_2px_10px_rgba(120,91,163,0.08)] transition-colors hover:bg-[#EADCF5]"
     >
-      <span aria-hidden className="text-xs">
-        ⏱
-      </span>
       <span className="tabular-nums font-semibold">{uhrzeitText(laufend)}</span>
     </button>
   );

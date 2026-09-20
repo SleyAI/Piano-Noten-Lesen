@@ -3,7 +3,7 @@
 /**
  * Unaufdringlicher Verbindungsstatus des E-Pianos im Header.
  *
- * Ein Piano-Icon 🎹 und ein kurzer Text als sauberes Pill-Badge ohne Statuspunkte.
+ * Kurzer Text als sauberes Pill-Badge ohne Statuspunkte oder Emojis.
  * Nur wenn tatsächlich etwas zu tun ist, wird daraus ein interaktiver Knopf.
  */
 
@@ -15,16 +15,9 @@ export function MidiStatus({ className }: { className?: string }) {
 
   const { text, aktion, titel } = beschreibe(zustand);
 
-  const inhalt = (
-    <>
-      <span aria-hidden className="text-sm">
-        🎹
-      </span>
-      <span className="text-sm font-medium">{text}</span>
-    </>
-  );
+  const inhalt = <span className="text-sm font-medium">{text}</span>;
 
-  const gemeinsam = `flex items-center gap-2 rounded-full px-3.5 py-1.5 bg-white shadow-[0_2px_10px_rgba(120,91,163,0.06)] text-tinte ${className ?? ""}`;
+  const gemeinsam = `flex items-center gap-2 rounded-full px-4 py-2 bg-white shadow-[0_2px_10px_rgba(120,91,163,0.06)] text-tinte ${className ?? ""}`;
 
   if (aktion) {
     return (

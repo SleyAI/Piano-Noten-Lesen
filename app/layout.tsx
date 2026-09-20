@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Fredoka, Nunito } from "next/font/google";
 import "./globals.css";
 import { Wachhalter } from "@/components/ui/Wachhalter";
-import { Sidebar } from "@/components/ui/Sidebar";
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -35,12 +34,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="de" className={`${nunito.variable} ${fredoka.variable} h-full antialiased`}>
-      <body className="keine-auswahl flex h-full overflow-hidden bg-papier text-tinte">
+      <body className="keine-auswahl h-full overflow-hidden bg-papier text-tinte">
         <Wachhalter />
-        <Sidebar />
-        <div className="flex-1 h-full min-w-0 overflow-hidden flex flex-col">
-          {children}
-        </div>
+        {children}
       </body>
     </html>
   );

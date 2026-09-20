@@ -17,13 +17,13 @@ import { useHydriert } from "@/lib/store/hydriert";
 import { Karte, Kartentitel } from "./Karte";
 import { Wochenlinie } from "./Wochenlinie";
 
-export function WochenKarte() {
+export function WochenKarte({ className }: { className?: string } = {}) {
   const hydriert = useHydriert();
   const tage = useUebungszeit((z) => z.tage);
   const beginn = useUebungszeit((z) => z.beginn);
   const jetzt = useSekundentakt(beginn !== null);
 
-  if (!hydriert) return <div className="h-36 rounded-[1.75rem] bg-white/60" />;
+  if (!hydriert) return <div className={`h-36 rounded-[2rem] bg-white ${className ?? ""}`} />;
 
   // Die laufende Session zaehlt beim heutigen Tag mit, damit die Notenkoepfe
   // waehrend des Uebens steigen statt erst hinterher.
@@ -35,14 +35,14 @@ export function WochenKarte() {
   const amStueck = serie(tage, jetzt);
 
   return (
-    <Karte href="/statistik" akzent="pfirsich" className="px-5 py-3.5">
+    <Karte href="/statistik" akzent="flieder" className={`px-6 py-4 ${className ?? ""}`}>
       <Kartentitel>Diese Woche</Kartentitel>
-      <div className="mt-1 flex min-h-0 flex-1 items-center gap-5">
+      <div className="mt-2 flex min-h-0 flex-1 items-center justify-between gap-6">
         <div className="shrink-0">
-          <p className="font-titel text-3xl leading-none font-bold text-tinte">
+          <p className="font-titel text-3xl leading-none font-bold text-[#785BA3]">
             {kurzeDauer(gesamt)}
           </p>
-          <p className="mt-1 text-xs leading-tight text-tinte-leise">
+          <p className="mt-1 text-xs leading-tight text-tinte-leise font-medium">
             insgesamt geübt
             {amStueck > 1 ? (
               <>
@@ -52,7 +52,7 @@ export function WochenKarte() {
             ) : null}
           </p>
         </div>
-        <div className="flex h-24 min-w-0 flex-1 justify-center">
+        <div className="flex h-24 min-w-0 flex-1 justify-center sm:justify-end">
           <Wochenlinie tage={woche} />
         </div>
       </div>

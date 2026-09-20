@@ -76,7 +76,7 @@ export function Wochenlinie({ tage }: { tage: readonly Tageseintrag[] }) {
         const mitte = 8 + i * SPALTE + SPALTE / 2;
         const pos = position(tag.sekunden, hoechst);
         const istHeute = tag.schluessel === heute;
-        const farbe = istHeute ? "var(--color-pfirsich-tief)" : "var(--color-tinte)";
+        const farbe = istHeute ? "var(--color-lavendel)" : "var(--color-tinte)";
 
         return (
           <g key={tag.schluessel}>
@@ -102,9 +102,9 @@ export function Wochenlinie({ tage }: { tage: readonly Tageseintrag[] }) {
               x={mitte}
               y={HOEHE - 11}
               textAnchor="middle"
-              fill={istHeute ? "var(--color-tinte)" : "var(--color-tinte-leise)"}
+              fill={istHeute ? "var(--color-lavendel)" : "var(--color-tinte-leise)"}
               fontSize={11}
-              fontWeight={istHeute ? 700 : 400}
+              fontWeight={istHeute ? 700 : 500}
             >
               {wochentagKurz(tag.datum)}
             </text>

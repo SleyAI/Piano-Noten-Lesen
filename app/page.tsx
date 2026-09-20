@@ -4,6 +4,7 @@ import { SpielweiseWahl } from "@/components/ui/SpielweiseWahl";
 import { KniffligeStellen } from "@/components/ui/KniffligeStellen";
 import { Modusbild } from "@/components/ui/Modusbild";
 import { Karte } from "@/components/ui/Karte";
+import { WochenKarte } from "@/components/ui/Startkarten";
 
 const MODI = [
   {
@@ -23,43 +24,50 @@ const MODI = [
 ];
 
 /**
- * Die Startseite fokussiert sich ganz auf die Session, die beiden
- * Übungsmodi (Melodien & Akkorde) sowie die Einstellungen.
+ * Startseite:
+ * Links: kompakte Modi-Kacheln für „Melodien“ und „Akkorde“
+ * Rechts: Stoppuhr (Session starten) und Wochenstatistik auf Notenlinien
+ * Unten: Knifflige Stellen & Einstellungen
  */
 export default function Startseite() {
   return (
     <main className="flex h-full flex-col justify-center-safe gap-4 overflow-y-auto px-8 py-6">
-      <header className="flex shrink-0 items-start justify-between gap-4">
-        <div>
-          <h1 className="font-titel text-4xl leading-tight font-bold text-[#785BA3]">
-            Noten &amp; Akkorde 🎹
-          </h1>
-          <p className="mt-1 text-tinte-leise font-medium">
-            Kein Timer, kein Punktestand. Spiel so lange, wie es dir guttut.
-          </p>
-        </div>
+      <header className="flex shrink-0 items-center justify-between gap-4">
+        <h1 className="font-titel text-5xl sm:text-6xl leading-tight font-bold text-[#785BA3]">
+          Noten &amp; Akkorde lernen
+        </h1>
         <MidiStatus />
       </header>
 
-      <SessionBand className="shrink-0" />
+      {/* 2-Spalten-Bereich: Links Melodien & Akkorde, rechts Stoppuhr & Statistik */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 shrink-0">
+        {/* Links: Melodien & Akkorde in kleineren, kompakten Containern */}
+        <div className="flex flex-col gap-4">
+          {MODI.map((modus) => (
+            <Karte key={modus.href} href={modus.href} akzent={modus.akzent} className="p-5 flex-1">
+              <div className="flex items-center gap-4">
+                <Modusbild
+                  bild={modus.bild}
+                  className={`w-16 h-16 shrink-0 ${
+                    modus.akzent === "mint" ? "text-mint-tief" : "text-flieder-tief"
+                  }`}
+                />
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-titel text-2xl leading-tight font-bold text-tinte">
+                    {modus.titel}
+                  </h2>
+                  <p className="mt-1 text-sm leading-snug text-tinte-leise">{modus.text}</p>
+                </div>
+              </div>
+            </Karte>
+          ))}
+        </div>
 
-      <div className="grid max-h-[24rem] min-h-[9rem] flex-1 shrink-0 grid-cols-2 gap-4">
-        {MODI.map((modus) => (
-          <Karte key={modus.href} href={modus.href} akzent={modus.akzent} className="p-6">
-            {/* Auf flachen Bildschirmen bliebe vom Bild nur ein Streifen —
-                dann traegt die Kachel lieber ihre Ueberschrift allein. */}
-            <Modusbild
-              bild={modus.bild}
-              className={`min-h-0 w-full flex-1 [@media(max-height:700px)]:hidden ${
-                modus.akzent === "mint" ? "text-mint-tief" : "text-flieder-tief"
-              }`}
-            />
-            <h2 className="mt-3 shrink-0 font-titel text-2xl leading-tight font-bold text-tinte [@media(max-height:700px)]:mt-0">
-              {modus.titel}
-            </h2>
-            <p className="mt-1 shrink-0 text-sm leading-snug text-tinte-leise">{modus.text}</p>
-          </Karte>
-        ))}
+        {/* Rechts: Stoppuhr & Statistik */}
+        <div className="flex flex-col gap-4">
+          <SessionBand />
+          <WochenKarte />
+        </div>
       </div>
 
       <KniffligeStellen className="shrink-0" />

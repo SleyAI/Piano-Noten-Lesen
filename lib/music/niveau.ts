@@ -13,6 +13,7 @@ import {
   AKKORD_PAKETE,
   akkordeAusPaketen,
   akkordeImPaket,
+  akkordNachSymbol,
 } from "./akkorde";
 import type { Tastenwahl } from "./curriculum";
 import { name } from "./pitch";
@@ -21,6 +22,18 @@ export type Niveau = "anfaenger" | "fortgeschritten" | "profi";
 
 /** Von leicht nach schwer. */
 export const NIVEAU_REIHE: Niveau[] = ["anfaenger", "fortgeschritten", "profi"];
+
+export const KURATIERTE_AKKORDE: Record<Niveau, string[]> = {
+  anfaenger: ["C", "D", "E", "F", "G", "A", "Dm", "Em", "Am"],
+  fortgeschritten: ["C7", "G7", "D7", "A7", "E7", "Am7", "Dm7", "Em7", "B", "H", "Hm", "Fism"],
+  profi: ["Cmaj7", "Fmaj7", "Gsus4", "Dsus4", "Ddim", "Am7b5", "Cadd9"],
+};
+
+export function kuratierteAkkordeFuer(niveau: Niveau): Akkord[] {
+  return (KURATIERTE_AKKORDE[niveau] ?? [])
+    .map((s) => akkordNachSymbol(s))
+    .filter((a): a is Akkord => a !== undefined);
+}
 
 /** Was ein Niveau an Noten mitbringt — oder nichts, wenn es nur Akkorde sind. */
 interface NotenZiel {

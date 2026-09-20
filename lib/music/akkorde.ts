@@ -619,8 +619,20 @@ for (const paket of AKKORD_PAKETE) {
   }
 }
 
+const SYMBOL_ALIASES: Record<string, string> = {
+  Bb: "B",
+  Bbm: "Bm",
+  Bm: "Hm",
+  "F#m": "Fism",
+  "F#": "Fis",
+  "C#": "Cis",
+  "C#m": "Cism",
+  "G#": "Gis",
+  "G#m": "Gism",
+};
+
 export function akkordNachSymbol(symbol: string): Akkord | undefined {
-  return ALLE_AKKORDE.get(symbol);
+  return ALLE_AKKORDE.get(symbol) ?? ALLE_AKKORDE.get(SYMBOL_ALIASES[symbol] ?? "");
 }
 
 /**

@@ -9,10 +9,17 @@ import { WochenKarte } from "@/components/ui/Startkarten";
 
 const MODI = [
   {
-    href: "/melodien",
+    href: "/melodien?modus=fliessend",
     titel: "Melodien",
-    text: "Acht Töne aus deinem Vorrat — nach dem Landmark-System.",
+    text: "Fließend vom Blatt spielen — reine Tonhöhen.",
     akzent: "mint" as const,
+    bild: "melodie" as const,
+  },
+  {
+    href: "/melodien?modus=vorbereitung",
+    titel: "Melodien mit Vorbereitung",
+    text: "Erst anhören und üben, dann mit Notenwerten prüfen.",
+    akzent: "flieder" as const,
     bild: "melodie" as const,
   },
   {
@@ -27,7 +34,7 @@ const MODI = [
 /**
  * Startseite im Stil des Referenz-Dashboards:
  * - Oben: Großer zentrierter Titel "Noten & Akkorde lernen"
- * - Links: Große "Übungen"-Kachel mit Melodien & Akkorde
+ * - Links: Große "Übungen"-Kachel mit den 3 Modi (Melodien, Melodien mit Vorbereitung, Akkorde)
  * - Rechts: Oben die Stoppuhr mit großem Timer & Button, unten die Wochenstatistik mit Notenlinien
  * - Unten: Einstellungen
  */
@@ -52,13 +59,13 @@ export default function Startseite() {
 
         {/* 2-Spalten-Bereich nach Referenzbild */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-          {/* Linke Seite: Große Kachel "Übungen" mit Melodien & Akkorde */}
+          {/* Linke Seite: Große Kachel "Übungen" mit den 3 Modi */}
           <Karte className="p-6 sm:p-7 flex flex-col justify-between h-full">
             <div>
               <div className="flex items-center justify-between mb-5">
                 <span className="font-titel text-2xl font-bold text-tinte">Übungen</span>
                 <span className="rounded-full bg-papier-tief px-3.5 py-1 text-xs font-bold text-[#785BA3]">
-                  2 Modi
+                  3 Modi
                 </span>
               </div>
 
@@ -67,7 +74,7 @@ export default function Startseite() {
                   <Link
                     key={modus.href}
                     href={modus.href}
-                    className="group flex items-center gap-4 p-4 sm:p-5 rounded-2xl bg-papier-tief/40 hover:bg-[#EADCF5]/40 transition-all duration-200 border border-papier-tief/80 hover:border-[#785BA3]/30 hover:-translate-y-0.5 shadow-sm"
+                    className="group flex items-center gap-4 p-4 rounded-2xl bg-papier-tief/40 hover:bg-[#EADCF5]/40 transition-all duration-200 border border-papier-tief/80 hover:border-[#785BA3]/30 hover:-translate-y-0.5 shadow-sm"
                   >
                     <div
                       className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
@@ -79,10 +86,10 @@ export default function Startseite() {
                       <Modusbild bild={modus.bild} className="w-9 h-9" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h2 className="font-titel text-xl sm:text-2xl font-bold text-tinte group-hover:text-[#785BA3] transition-colors">
+                      <h2 className="font-titel text-xl font-bold text-tinte group-hover:text-[#785BA3] transition-colors">
                         {modus.titel}
                       </h2>
-                      <p className="text-xs sm:text-sm text-tinte-leise leading-snug mt-1">
+                      <p className="text-xs sm:text-sm text-tinte-leise leading-snug mt-0.5">
                         {modus.text}
                       </p>
                     </div>
@@ -92,11 +99,6 @@ export default function Startseite() {
                   </Link>
                 ))}
               </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-papier-tief flex items-center justify-between text-xs text-tinte-leise font-medium">
-              <span>Klavier lernen in deinem Tempo</span>
-              <span className="text-[#785BA3] font-semibold">Landmark-System</span>
             </div>
           </Karte>
 

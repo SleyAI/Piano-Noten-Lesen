@@ -21,6 +21,9 @@ export type Spielweise =
   /** Zuhause: Eingabe und Klang kommen vom E-Piano. */
   | "piano";
 
+/** Die zwei Modi fuer die Melodien. */
+export type MelodieModus = "fliessend" | "vorbereitung";
+
 /** Die drei Wege durch die Akkorde. */
 export type AkkordModus = "lernen" | "umkehrungen" | "folgen";
 
@@ -52,6 +55,8 @@ export interface EinstellungsZustand {
   tastenwahl: Tastenwahl;
   /** Welche Stufe des Landmark-Systems: Landmarks, darum herum, oder mit Hilfslinien? */
   notenbereich: Notenbereich;
+  /** Fliessend vom Blatt oder mit Vorbereitung? */
+  melodieModus: MelodieModus;
   /** Zaehlen die Notenwerte mit, oder geht es nur um die Tonhoehen? */
   notenwerteAn: boolean;
 
@@ -89,6 +94,7 @@ export interface EinstellungsZustand {
   setzeSchluesselWahl: (w: SchluesselWahl) => void;
   setzeTastenwahl: (w: Tastenwahl) => void;
   setzeNotenbereich: (b: Notenbereich) => void;
+  setzeMelodieModus: (m: MelodieModus) => void;
   schalteNotenwerte: () => void;
 
   setzeTempo: (bpm: number) => void;
@@ -128,6 +134,7 @@ export const useEinstellungen = create<EinstellungsZustand>()(
       schluesselWahl: "beide",
       tastenwahl: "weiss",
       notenbereich: "landmarks",
+      melodieModus: "fliessend",
       notenwerteAn: false,
 
       tempo: TEMPO,
@@ -157,6 +164,7 @@ export const useEinstellungen = create<EinstellungsZustand>()(
       setzeSchluesselWahl: (schluesselWahl) => set({ schluesselWahl }),
       setzeTastenwahl: (tastenwahl) => set({ tastenwahl }),
       setzeNotenbereich: (notenbereich) => set({ notenbereich }),
+      setzeMelodieModus: (melodieModus) => set({ melodieModus }),
       schalteNotenwerte: () => set((z) => ({ notenwerteAn: !z.notenwerteAn })),
 
       setzeTempo: (bpm) => set({ tempo: begrenzeTempo(bpm) }),

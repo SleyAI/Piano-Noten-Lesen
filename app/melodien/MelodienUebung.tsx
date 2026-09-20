@@ -3,14 +3,13 @@
 /**
  * Melodien spielen.
  *
- * Acht Töne, ausschließlich aus den gewählten Noten und nach
- * musikalischen Regeln gebaut. Reines Notenlesen nach dem Landmark-System:
- * - Landmark-Stufen: Nur Landmarks, Noten darum herum oder mit Hilfslinien
- * - Weiße vs. auch schwarze Tasten
- * - Beide Systeme, nur Violin- oder nur Bassschlüssel
+ * Zwei Modi zur Auswahl:
+ * 1. Fließend: Direkt vom Blatt spielen, ohne Notenwerte.
+ * 2. Mit Vorbereitung: Melodie mit Notenwerten anhören, vorüben und mit "Let's check" prüfen.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Kopfzeile } from "@/components/ui/Kopfzeile";
 import { NotenReihe } from "@/components/practice/NotenReihe";
 import { NotenWahl } from "@/components/practice/NotenWahl";
@@ -34,6 +33,7 @@ import { useVorspielen } from "@/lib/practice/useVorspielen";
 import { useEinstellungen } from "@/lib/store/einstellungen";
 import { useHydriert } from "@/lib/store/hydriert";
 import { useTricky } from "@/lib/store/tricky";
+import { MelodienVorbereitung } from "./MelodienVorbereitung";
 
 /** Wie lange die fertige Melodie stehen bleibt, bevor die nächste kommt. */
 const PAUSE_NACH_MELODIE = 1200;
@@ -44,24 +44,83 @@ interface Aufgabe {
 }
 
 export function MelodienUebung() {
+  return (
+    <Suspense fallback={<div className="h-full bg-papier" />}>
+      <MelodienInhalt />
+    </Suspense>
+  );
+}
+
+function MelodienInhalt() {
   const hydriert = useHydriert();
+  const searchParams = useSearchParams();
+  const modusParam = searchParams.get("modus");
+
   const tastenwahl = useEinstellungen((z) => z.tastenwahl);
   const schluesselWahl = useEinstellungen((z) => z.schluesselWahl);
   const notenbereich = useEinstellungen((z) => z.notenbereich);
+  const melodieModus = useEinstellungen((z) => z.melodieModus);
+  const setzeMelodieModus = useEinstellungen((z) => z.setzeMelodieModus);
   const [zeigeAuswahl, setZeigeAuswahl] = useState(false);
+
+  useEffect(() => {
+    if (modusParam === "vorbereitung" || modusParam === "fliessend") {
+      setzeMelodieModus(modusParam);
+    }
+  }, [modusParam, setzeMelodieModus]);
 
   if (!hydriert) return <div className="h-full bg-papier" />;
 
-  // Geänderte Auswahl heisst frischer Vorrat — das erledigt der Key.
   return (
-    <Endlos
-      key={`${tastenwahl}#${schluesselWahl}#${notenbereich}`}
-      tastenwahl={tastenwahl}
-      schluesselWahl={schluesselWahl}
-      notenbereich={notenbereich}
-      zeigeAuswahl={zeigeAuswahl}
-      aufAuswahl={() => setZeigeAuswahl((z) => !z)}
-    />
+    <div className="flex h-full flex-col bg-papier">
+      {/* Modus-Umschalter oben */}
+      <div className="flex justify-center pt-2 pb-1 shrink-0 bg-papier">
+        <div className="inline-flex rounded-full bg-white p-1 shadow-[0_2px_10px_rgba(120,91,163,0.08)]">
+          <button
+            type="button"
+            onClick={() => setzeMelodieModus("fliessend")}
+            className={`rounded-full px-5 py-1.5 text-xs font-bold transition-all ${
+              melodieModus === "fliessend"
+                ? "bg-[#785BA3] text-white shadow-sm"
+                : "text-tinte-leise hover:text-tinte"
+            }`}
+          >
+            Fließend
+          </button>
+          <button
+            type="button"
+            onClick={() => setzeMelodieModus("vorbereitung")}
+            className={`rounded-full px-5 py-1.5 text-xs font-bold transition-all ${
+              melodieModus === "vorbereitung"
+                ? "bg-[#785BA3] text-white shadow-sm"
+                : "text-tinte-leise hover:text-tinte"
+            }`}
+          >
+            Mit Vorbereitung
+          </button>
+        </div>
+      </div>
+
+      {melodieModus === "vorbereitung" ? (
+        <MelodienVorbereitung
+          key={`vorbereitung#${tastenwahl}#${schluesselWahl}#${notenbereich}`}
+          tastenwahl={tastenwahl}
+          schluesselWahl={schluesselWahl}
+          notenbereich={notenbereich}
+          zeigeAuswahl={zeigeAuswahl}
+          aufAuswahl={() => setZeigeAuswahl((z) => !z)}
+        />
+      ) : (
+        <Endlos
+          key={`fliessend#${tastenwahl}#${schluesselWahl}#${notenbereich}`}
+          tastenwahl={tastenwahl}
+          schluesselWahl={schluesselWahl}
+          notenbereich={notenbereich}
+          zeigeAuswahl={zeigeAuswahl}
+          aufAuswahl={() => setZeigeAuswahl((z) => !z)}
+        />
+      )}
+    </div>
   );
 }
 
@@ -112,7 +171,6 @@ function Endlos({
     for (const ton of melodie) {
       merkeVersuch(uebungsSchluessel(ton), nameMitOktave(ton.note));
     }
-    // Nur beim Wechsel der Melodie.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kennung]);
 
@@ -146,7 +204,7 @@ function Endlos({
         unterzeile={melodie.length > 0 ? `${melodie.length} Töne` : undefined}
         rechts={
           <>
-            {!zeigeAuswahl ? (
+            {!zeigeAuswahl && (
               <>
                 <PlayKnopf
                   laeuft={vorspiel.laeuft}
@@ -174,14 +232,6 @@ function Endlos({
                   Auswahl
                 </button>
               </>
-            ) : (
-              <button
-                type="button"
-                onClick={aufAuswahl}
-                className="rounded-full bg-[#785BA3] shadow-[0_2px_10px_rgba(120,91,163,0.15)] px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-[#654B8D]"
-              >
-                Üben
-              </button>
             )}
           </>
         }

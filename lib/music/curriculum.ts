@@ -46,8 +46,23 @@ export const TASTEN_WAHLEN: Array<{ wert: Tastenwahl; titel: string; hinweis?: s
 ];
 
 const LANDMARK_MIDIS: Record<Schluessel, number[]> = {
-  violin: [n("C4").midi, n("G4").midi, n("C5").midi],
-  bass: [n("C3").midi, n("F3").midi, n("C4").midi],
+  violin: [
+    n("C4").midi,
+    n("C4").midi + 1,
+    n("G4").midi - 1,
+    n("G4").midi,
+    n("G4").midi + 1,
+    n("C5").midi,
+    n("C5").midi + 1,
+  ],
+  bass: [
+    n("C3").midi,
+    n("C3").midi + 1,
+    n("F3").midi,
+    n("F3").midi + 1,
+    n("C4").midi,
+    n("C4").midi + 1,
+  ],
 };
 
 const BEREICH_DARUM: Record<Schluessel, { von: number; bis: number }> = {
@@ -87,7 +102,7 @@ export function uebungsSchluessel(u: UebungsNote): string {
 /**
  * Der Vorrat zur gewählten Tasten- und Bereichswahl.
  */
-export function notenVorrat(wahl: Tastenwahl, bereich: Notenbereich = "landmarks"): UebungsNote[] {
+export function notenVorrat(wahl: Tastenwahl, bereich: Notenbereich = "hilfslinien"): UebungsNote[] {
   const ergebnis: UebungsNote[] = [];
 
   for (const schluessel of ["violin", "bass"] as const) {
@@ -112,7 +127,7 @@ export function notenVorrat(wahl: Tastenwahl, bereich: Notenbereich = "landmarks
 }
 
 /** Wie viele Noten bringt eine Wahl mit? */
-export function vorratUmfang(wahl: Tastenwahl, bereich: Notenbereich = "landmarks"): number {
+export function vorratUmfang(wahl: Tastenwahl, bereich: Notenbereich = "hilfslinien"): number {
   return notenVorrat(wahl, bereich).length;
 }
 

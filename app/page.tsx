@@ -53,23 +53,60 @@ export default function Startseite() {
   return (
     <main className="flex h-full flex-col justify-center overflow-y-auto px-4 sm:px-6 py-6 sm:py-8">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 sm:gap-6">
-        {/* Header im cozy Stil wie Referenz */}
-        <header className="relative flex shrink-0 items-center justify-center pt-1">
-          <div className="inline-flex items-center gap-2.5">
-            <h1 className="text-center font-titel text-3xl sm:text-5xl font-bold text-[#785BA3] tracking-tight">
+        {/* Header im cozy Stil mit Maskottchen und fliegenden Noten */}
+        <header className="relative flex shrink-0 items-center justify-center pt-2 sm:pt-4 pb-2">
+          <div className="inline-flex items-center gap-3 sm:gap-5 md:gap-6">
+            <h1 className="text-center font-titel text-4xl sm:text-6xl md:text-7xl font-bold text-[#785BA3] tracking-tight">
               Noten &amp; Akkorde lernen
             </h1>
-            <span className="text-2xl sm:text-3xl select-none" aria-hidden>
-              ✨
-            </span>
+
+            {/* Hüpfendes Maskottchen mit fliegenden Noten */}
+            <div className="relative shrink-0 select-none animate-huepfen flex items-center justify-center">
+              {/* Fliegende Noten */}
+              <span
+                className="absolute -top-2.5 -left-2.5 text-base sm:text-xl font-bold text-[#785BA3] animate-note-1 pointer-events-none"
+                aria-hidden
+              >
+                ♪
+              </span>
+              <span
+                className="absolute -top-3.5 -right-2 text-lg sm:text-2xl font-bold text-[#9874CC] animate-note-2 pointer-events-none"
+                aria-hidden
+              >
+                ♫
+              </span>
+              <span
+                className="absolute -bottom-2 -right-2.5 text-sm sm:text-lg font-bold text-[#785BA3] animate-note-3 pointer-events-none"
+                aria-hidden
+              >
+                ♩
+              </span>
+              <span
+                className="absolute -bottom-1 -left-2 text-xs sm:text-base font-bold text-[#9874CC] animate-note-2 pointer-events-none"
+                aria-hidden
+              >
+                ♬
+              </span>
+
+              {/* Maskottchen */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/maskottchen.png"
+                alt="Maskottchen"
+                width={96}
+                height={96}
+                className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain filter drop-shadow-sm pointer-events-none"
+              />
+            </div>
           </div>
-          <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2">
+
+          <div className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2">
             <MidiStatus />
           </div>
         </header>
 
-        {/* Mobile Midi-Status */}
-        <div className="flex sm:hidden justify-center -mt-2">
+        {/* Mobile / Tablet Midi-Status */}
+        <div className="flex lg:hidden justify-center -mt-2 mb-1">
           <MidiStatus />
         </div>
 

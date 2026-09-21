@@ -168,11 +168,18 @@ export function Klaviatur({
               className="relative flex-1 rounded-b-xl border border-papier-tief bg-white shadow-sm transition-colors duration-100 disabled:cursor-default"
               style={farbe ? { backgroundColor: farbe } : undefined}
             >
-              {aufschrift(midi) && (
+              {midi === 60 ? (
+                <span className="pointer-events-none absolute inset-x-0 bottom-2 flex flex-col items-center justify-center gap-0.5">
+                  <span className="h-2 w-2 rounded-full bg-[#785BA3] shadow-xs" />
+                  <span className="text-[0.68rem] font-bold text-[#785BA3] leading-none">
+                    C4
+                  </span>
+                </span>
+              ) : aufschrift(midi) ? (
                 <span className="pointer-events-none absolute inset-x-0 bottom-2 text-center text-[0.7rem] font-semibold text-tinte">
                   {aufschrift(midi)}
                 </span>
-              )}
+              ) : null}
             </button>
           );
         })}

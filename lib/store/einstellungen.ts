@@ -10,6 +10,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { type Notenbereich, type SchluesselWahl, type Tastenwahl } from "@/lib/music/curriculum";
+import { type NotenLevelId } from "@/lib/music/levels";
+import { type TonabfolgeModus } from "@/lib/music/melodie";
 import type { Haende, Stellung } from "@/lib/music/akkorde";
 import type { UebungsartId } from "@/lib/music/akkorduebung";
 import { TEMPO, begrenzeTempo } from "@/lib/music/rhythmus";
@@ -50,6 +52,15 @@ export interface EinstellungsZustand {
 
   /** Abgehakte Lernziele des Uebungsplans, ueber alle Niveaus hinweg. */
   beherrscht: string[];
+
+  /** Noten-Level 1 bis 5 (Kategorien A, B, C) */
+  notenLevel: NotenLevelId;
+  /** Zufällige Noten oder Melodische Ketten */
+  abfolgeModus: TonabfolgeModus;
+  /** Bildschirm-Eingabemodus: Virtuelle Klaviatur oder Noten-Kästchen */
+  eingabeModus: "klaviatur" | "kaestchen";
+  /** Hat der Nutzer beim Erst-Start bereits ein Level gewählt? */
+  startLevelGewaehlt: boolean;
 
   /** Nur ein System ueben oder beide gemischt? Gilt fuer die Melodien. */
   schluesselWahl: SchluesselWahl;
@@ -95,6 +106,11 @@ export interface EinstellungsZustand {
   schalteLernziel: (id: string) => void;
   vergisssLernziele: () => void;
 
+  setzeNotenLevel: (level: NotenLevelId) => void;
+  setzeAbfolgeModus: (modus: TonabfolgeModus) => void;
+  setzeEingabeModus: (modus: "klaviatur" | "kaestchen") => void;
+  setzeStartLevelGewaehlt: (gewaehlt: boolean) => void;
+
   setzeSchluesselWahl: (w: SchluesselWahl) => void;
   setzeTastenwahl: (w: Tastenwahl) => void;
   setzeNotenbereich: (b: Notenbereich) => void;
@@ -137,6 +153,11 @@ export const useEinstellungen = create<EinstellungsZustand>()(
 
       beherrscht: [],
 
+      notenLevel: 1,
+      abfolgeModus: "zufall",
+      eingabeModus: "klaviatur",
+      startLevelGewaehlt: false,
+
       schluesselWahl: "beide",
       tastenwahl: "weiss",
       notenbereich: "landmarks",
@@ -168,6 +189,11 @@ export const useEinstellungen = create<EinstellungsZustand>()(
       schalteLernziel: (id) =>
         set((z) => ({ beherrscht: umschalten(z.beherrscht, id, false) })),
       vergisssLernziele: () => set({ beherrscht: [] }),
+
+      setzeNotenLevel: (notenLevel) => set({ notenLevel }),
+      setzeAbfolgeModus: (abfolgeModus) => set({ abfolgeModus }),
+      setzeEingabeModus: (eingabeModus) => set({ eingabeModus }),
+      setzeStartLevelGewaehlt: (startLevelGewaehlt) => set({ startLevelGewaehlt }),
 
       setzeSchluesselWahl: (schluesselWahl) => set({ schluesselWahl }),
       setzeTastenwahl: (tastenwahl) => set({ tastenwahl }),
@@ -201,22 +227,10 @@ export const useEinstellungen = create<EinstellungsZustand>()(
     }),
     {
       name: "noten-einstellungen",
-      // Version 5: Stellung als einzelne Wahl statt Liste, dazu Tempo,
-      // Metronom und die Taktpruefung bei den Akkorden.
-      version: 5,
-      /**
-       * Was es weiter gibt, wird uebernommen; die Landmark-Stufen, das Niveau
-       * und die angehakte Stellungsliste fallen weg. Wer schon einmal ueber
-       * den Anfaenger hinaus war, hatte die schwarzen Tasten im Vorrat — das
-       * bleibt so.
-       *
-       * Alles Uebrige kommt aus den Voreinstellungen: zustand legt das
-       * Ergebnis ueber den Anfangszustand.
-       */
+      version: 6,
       migrate: (gespeichert) => {
         const alt = (gespeichert ?? {}) as Partial<EinstellungsZustand> & {
           niveau?: string;
-          /** Bis Version 4 eine Liste zum Anhaken; die Wahl faengt neu an. */
           umkehrungen?: number[];
         };
         const uebernommen: Partial<EinstellungsZustand> = {};
@@ -224,8 +238,6 @@ export const useEinstellungen = create<EinstellungsZustand>()(
         if (alt.niveau && alt.niveau !== "anfaenger") uebernommen.tastenwahl = "alle";
         if (alt.tastenwahl) uebernommen.tastenwahl = alt.tastenwahl;
 
-        // Nur setzen, was wirklich dastand — sonst ueberschreibt ein
-        // `undefined` die Voreinstellung.
         if (alt.spielweise) uebernommen.spielweise = alt.spielweise;
         if (alt.schluesselWahl) uebernommen.schluesselWahl = alt.schluesselWahl;
         if (alt.akkordHaende) uebernommen.akkordHaende = alt.akkordHaende;
@@ -237,6 +249,12 @@ export const useEinstellungen = create<EinstellungsZustand>()(
         }
         if (typeof alt.klaviaturImmerZeigen === "boolean") {
           uebernommen.klaviaturImmerZeigen = alt.klaviaturImmerZeigen;
+        }
+        if (alt.notenLevel) uebernommen.notenLevel = alt.notenLevel;
+        if (alt.abfolgeModus) uebernommen.abfolgeModus = alt.abfolgeModus;
+        if (alt.eingabeModus) uebernommen.eingabeModus = alt.eingabeModus;
+        if (typeof alt.startLevelGewaehlt === "boolean") {
+          uebernommen.startLevelGewaehlt = alt.startLevelGewaehlt;
         }
 
         return uebernommen;

@@ -119,3 +119,43 @@ export function wuerfleMelodie(
 export function melodieSchluessel(melodie: readonly UebungsNote[]): string {
   return melodie.map(uebungsSchluessel).join("|");
 }
+
+export type TonabfolgeModus = "zufall" | "melodisch";
+
+/**
+ * Erzeugt 8 unvorhersehbare Zufallsnoten aus dem Vorrat.
+ * Direkte Wiederholungen werden vermieden, wenn mehr als ein Ton verfügbar ist.
+ */
+export function wuerfleZufall(
+  vorrat: readonly UebungsNote[],
+  optionen: MelodieOptionen = {},
+): UebungsNote[] {
+  if (vorrat.length === 0) return [];
+  const laenge = optionen.laenge ?? MELODIE_LAENGE;
+  const reihe: UebungsNote[] = [];
+
+  for (let i = 0; i < laenge; i++) {
+    const vorher = reihe[i - 1];
+    const pool =
+      vorher && vorrat.length > 1
+        ? vorrat.filter((u) => u.note.midi !== vorher.note.midi)
+        : vorrat;
+    const gewaehlt = pool[Math.floor(Math.random() * pool.length)] ?? vorrat[0];
+    reihe.push(gewaehlt);
+  }
+
+  return reihe;
+}
+
+/**
+ * Erzeugt eine Tonabfolge im gewünschten Modus (Zufall oder Melodische Ketten).
+ */
+export function erzeugeTonabfolge(
+  vorrat: readonly UebungsNote[],
+  modus: TonabfolgeModus,
+  optionen: MelodieOptionen = {},
+): UebungsNote[] {
+  return modus === "zufall"
+    ? wuerfleZufall(vorrat, optionen)
+    : wuerfleMelodie(vorrat, optionen);
+}

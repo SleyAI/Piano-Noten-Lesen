@@ -8,20 +8,14 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { Kopfzeile } from "@/components/ui/Kopfzeile";
 import { type DanebenStelle, NotenReihe } from "@/components/practice/NotenReihe";
-import { NotenWahl } from "@/components/practice/NotenWahl";
 import { PlayKnopf } from "@/components/practice/PlayKnopf";
+import { SchnellLeiste } from "@/components/practice/SchnellLeiste";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
-import {
-  type Notenbereich,
-  type SchluesselWahl,
-  type Tastenwahl,
-  type UebungsNote,
-  nachSchluessel,
-  notenVorrat,
-  uebungsSchluessel,
-} from "@/lib/music/curriculum";
+import { type SchluesselWahl, type UebungsNote, uebungsSchluessel } from "@/lib/music/curriculum";
+import { notenFuerLevel } from "@/lib/music/levels";
 import { melodieSchluessel, wuerfleMelodie } from "@/lib/music/melodie";
 import { nameMitOktave, vonMidi } from "@/lib/music/pitch";
 import { type NotenwertId, wuerfleRhythmus } from "@/lib/music/rhythmus";
@@ -40,24 +34,18 @@ interface Aufgabe {
 }
 
 export function MelodienVorbereitung({
-  tastenwahl,
+  notenLevel,
   schluesselWahl,
-  notenbereich,
-  zeigeAuswahl,
-  aufAuswahl,
 }: {
-  tastenwahl: Tastenwahl;
+  notenLevel: number;
   schluesselWahl: SchluesselWahl;
-  notenbereich: Notenbereich;
-  zeigeAuswahl: boolean;
-  aufAuswahl: () => void;
 }) {
   const merkeVersuch = useTricky((z) => z.merkeVersuch);
   const tempo = useEinstellungen((z) => z.tempo);
 
   const vorrat = useMemo(
-    () => nachSchluessel(notenVorrat(tastenwahl, notenbereich), schluesselWahl),
-    [tastenwahl, notenbereich, schluesselWahl],
+    () => notenFuerLevel(notenLevel as any, schluesselWahl),
+    [notenLevel, schluesselWahl],
   );
 
   const bereich = useMemo(() => klaviaturBereich(vorrat.map((u) => u.note.midi)), [vorrat]);
@@ -119,7 +107,7 @@ export function MelodienVorbereitung({
     reihe: melodie,
     werte,
     tempo,
-    aktiv: phase === "pruefen" && !zeigeAuswahl,
+    aktiv: phase === "pruefen",
     aufFertig,
     aufFehler,
   });
@@ -160,146 +148,119 @@ export function MelodienVorbereitung({
   return (
     <div className="flex h-full flex-col bg-papier">
       <Kopfzeile
-        titel="Melodien mit Vorbereitung"
-        unterzeile={`${melodie.length} Töne · 4/4-Takt · ♩ = ${tempo}`}
+        titel="Melodien mit Rhythmus"
+        unterzeile={melodie.length > 0 ? `${melodie.length} Töne` : undefined}
         rechts={
           <>
-            {!zeigeAuswahl && (
-              <>
-                <PlayKnopf
-                  laeuft={vorspiel.laeuft}
-                  onClick={vorspiel.umschalten}
-                  titel="Melodie anhören"
-                />
-                <button
-                  type="button"
-                  onClick={neueMelodie}
-                  className="rounded-full bg-white shadow-[0_2px_10px_rgba(120,91,163,0.08)] px-4 py-1.5 text-sm font-semibold text-[#785BA3] transition-colors hover:bg-[#EADCF5]"
-                >
-                  neu würfeln
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    vorspiel.stoppen();
-                    aufAuswahl();
-                  }}
-                  className="rounded-full bg-[#785BA3] shadow-[0_2px_10px_rgba(120,91,163,0.15)] px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-[#654B8D]"
-                >
-                  Auswahl
-                </button>
-              </>
-            )}
-          </>
-        }
-      />
-
-      {zeigeAuswahl ? (
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pb-6 pt-2">
-          <NotenWahl />
-          <div className="mt-auto max-w-xl mx-auto w-full pt-4">
+            <PlayKnopf
+              laeuft={vorspiel.laeuft}
+              onClick={vorspiel.umschalten}
+              titel="Melodie einmal anhören"
+            />
             <button
               type="button"
               onClick={() => {
                 vorspiel.stoppen();
                 neueMelodie();
-                aufAuswahl();
               }}
-              className="w-full rounded-full bg-[#785BA3] py-3.5 font-semibold text-white shadow-[0_6px_20px_rgba(120,91,163,0.25)] transition-all duration-200 hover:bg-[#654B8D] hover:-translate-y-0.5"
+              className="rounded-full bg-white shadow-xs px-4 py-1.5 text-xs sm:text-sm font-semibold text-[#785BA3] transition-colors hover:bg-[#EADCF5]"
             >
-              Los geht’s!
+              neu würfeln
             </button>
-          </div>
-        </div>
-      ) : (
-        <Uebungsflaeche
-          notenbild={
-            <NotenReihe
-              reihe={melodie}
-              werte={werte}
-              position={phase === "pruefen" ? uebung.position : -1}
-              daneben={danebenStelle}
-              beschreibung={`Melodie aus ${melodie.length} Tönen mit Notenwerten`}
-            />
-          }
-          hinweis={
-            <div className="flex items-center gap-3">
-              {phase === "vorbereiten" && (
-                <>
-                  <span className="text-tinte-leise font-medium text-sm">
-                    In Ruhe ansehen, vorüben oder anhören.
-                  </span>
-                  <button
-                    type="button"
-                    onClick={startePruefung}
-                    className="rounded-full bg-[#785BA3] px-6 py-2 text-sm font-bold text-white shadow-[0_4px_16px_rgba(120,91,163,0.25)] transition-all duration-200 hover:bg-[#654B8D] hover:-translate-y-0.5"
-                  >
-                    Let&apos;s check
-                  </button>
-                </>
-              )}
+          </>
+        }
+      />
 
-              {phase === "einzaehlen" && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-tinte-leise">Einzählen:</span>
-                  <span className="font-titel text-3xl font-bold text-[#785BA3] animate-puls-sanft">
-                    {countIn}
-                  </span>
-                </div>
-              )}
+      <SchnellLeiste onAenderung={neueMelodie} />
 
-              {phase === "pruefen" && (
-                <span className="text-sm font-medium text-[#785BA3]">
-                  Prüfung läuft: Ton {uebung.position + 1} von {melodie.length}
+      <Uebungsflaeche
+        notenbild={
+          <NotenReihe
+            reihe={melodie}
+            werte={werte}
+            position={phase === "pruefen" ? uebung.position : -1}
+            daneben={danebenStelle}
+            beschreibung={`Melodie aus ${melodie.length} Tönen mit Notenwerten`}
+          />
+        }
+        aktuelleNote={phase === "pruefen" ? melodie[uebung.position] : melodie[0]}
+        hinweis={
+          <div className="flex items-center gap-3">
+            {phase === "vorbereiten" && (
+              <>
+                <span className="text-tinte-leise font-medium text-sm">
+                  In Ruhe ansehen, vorüben oder anhören.
                 </span>
-              )}
+                <button
+                  type="button"
+                  onClick={startePruefung}
+                  className="rounded-full bg-[#785BA3] px-6 py-2 text-sm font-bold text-white shadow-[0_4px_16px_rgba(120,91,163,0.25)] transition-all duration-200 hover:bg-[#654B8D] hover:-translate-y-0.5"
+                >
+                  Let&apos;s check
+                </button>
+              </>
+            )}
 
-              {phase === "bestanden" && (
-                <div className="flex items-center gap-4">
-                  <span className="text-sm font-bold text-emerald-600">
-                    Perfekt gespielt! Töne und Notenwerte stimmen.
-                  </span>
-                  <button
-                    type="button"
-                    onClick={neueMelodie}
-                    className="rounded-full bg-[#785BA3] px-5 py-2 text-sm font-bold text-white shadow-[0_4px_16px_rgba(120,91,163,0.25)] transition-all duration-200 hover:bg-[#654B8D]"
-                  >
-                    Nächste Melodie
-                  </button>
-                </div>
-              )}
+            {phase === "einzaehlen" && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-tinte-leise">Einzählen:</span>
+                <span className="font-titel text-3xl font-bold text-[#785BA3] animate-puls-sanft">
+                  {countIn}
+                </span>
+              </div>
+            )}
 
-              {phase === "fehler" && letzterFehler && (
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-semibold text-rose-600">
-                    {letzterFehler.art === "ton"
-                      ? `Das war ${nameMitOktave(vonMidi(letzterFehler.midi))}`
-                      : letzterFehler.art === "zu-kurz"
-                        ? "Der Ton war zu kurz gehalten"
-                        : "Der Ton war zu lange gehalten"}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={startePruefung}
-                    className="rounded-full bg-[#785BA3] px-4 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#654B8D]"
-                  >
-                    Nochmal prüfen
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPhase("vorbereiten")}
-                    className="rounded-full bg-white px-4 py-1.5 text-xs font-bold text-tinte transition-colors hover:bg-papier-tief"
-                  >
-                    Zurück zur Vorbereitung
-                  </button>
-                </div>
-              )}
-            </div>
-          }
-          klaviaturVon={bereich.von}
-          klaviaturBis={bereich.bis}
-        />
-      )}
+            {phase === "pruefen" && (
+              <span className="text-sm font-medium text-[#785BA3]">
+                Prüfung läuft: Ton {uebung.position + 1} von {melodie.length}
+              </span>
+            )}
+
+            {phase === "bestanden" && (
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-bold text-emerald-600">
+                  Perfekt gespielt! Töne und Notenwerte stimmen.
+                </span>
+                <button
+                  type="button"
+                  onClick={neueMelodie}
+                  className="rounded-full bg-[#785BA3] px-5 py-2 text-sm font-bold text-white shadow-[0_4px_16px_rgba(120,91,163,0.25)] transition-all duration-200 hover:bg-[#654B8D]"
+                >
+                  Nächste Melodie
+                </button>
+              </div>
+            )}
+
+            {phase === "fehler" && letzterFehler && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-semibold text-rose-600">
+                  {letzterFehler.art === "ton"
+                    ? `Das war ${nameMitOktave(vonMidi(letzterFehler.midi))}`
+                    : letzterFehler.art === "zu-kurz"
+                      ? "Der Ton war zu kurz gehalten"
+                      : "Der Ton war zu lange gehalten"}
+                </span>
+                <button
+                  type="button"
+                  onClick={startePruefung}
+                  className="rounded-full bg-[#785BA3] px-4 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#654B8D]"
+                >
+                  Nochmal prüfen
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPhase("vorbereiten")}
+                  className="rounded-full bg-white px-4 py-1.5 text-xs font-bold text-tinte transition-colors hover:bg-papier-tief"
+                >
+                  Zurück zur Vorbereitung
+                </button>
+              </div>
+            )}
+          </div>
+        }
+        klaviaturVon={bereich.von}
+        klaviaturBis={bereich.bis}
+      />
     </div>
   );
 }

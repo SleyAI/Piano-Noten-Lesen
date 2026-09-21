@@ -1,29 +1,16 @@
 "use client";
 
-/**
- * Melodien spielen.
- *
- * Zwei Modi zur Auswahl:
- * 1. Fließend: Direkt vom Blatt spielen, ohne Notenwerte.
- * 2. Mit Vorbereitung: Melodie mit Notenwerten anhören, vorüben und mit "Let's check" prüfen.
- */
-
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { Kopfzeile } from "@/components/ui/Kopfzeile";
 import { NotenReihe } from "@/components/practice/NotenReihe";
-import { NotenWahl } from "@/components/practice/NotenWahl";
 import { PlayKnopf } from "@/components/practice/PlayKnopf";
+import { SchnellLeiste } from "@/components/practice/SchnellLeiste";
+import { LevelAuswahlModal } from "@/components/practice/LevelAuswahlModal";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
-import {
-  type Notenbereich,
-  type SchluesselWahl,
-  type Tastenwahl,
-  type UebungsNote,
-  nachSchluessel,
-  notenVorrat,
-  uebungsSchluessel,
-} from "@/lib/music/curriculum";
-import { melodieSchluessel, wuerfleMelodie } from "@/lib/music/melodie";
+import { notenFuerLevel } from "@/lib/music/levels";
+import { erzeugeTonabfolge, melodieSchluessel } from "@/lib/music/melodie";
+import { type UebungsNote, uebungsSchluessel } from "@/lib/music/curriculum";
 import { nameMitOktave, vonMidi } from "@/lib/music/pitch";
 import type { NotenwertId } from "@/lib/music/rhythmus";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
@@ -34,8 +21,7 @@ import { useHydriert } from "@/lib/store/hydriert";
 import { useTricky } from "@/lib/store/tricky";
 import { MelodienVorbereitung } from "./MelodienVorbereitung";
 
-/** Wie lange die fertige Melodie stehen bleibt, bevor die nächste kommt. */
-const PAUSE_NACH_MELODIE = 1200;
+const PAUSE_NACH_MELODIE = 800;
 
 interface Aufgabe {
   melodie: UebungsNote[];
@@ -45,12 +31,21 @@ interface Aufgabe {
 export function MelodienUebung() {
   const hydriert = useHydriert();
 
-  const tastenwahl = useEinstellungen((z) => z.tastenwahl);
+  const notenLevel = useEinstellungen((z) => z.notenLevel);
   const schluesselWahl = useEinstellungen((z) => z.schluesselWahl);
-  const notenbereich = useEinstellungen((z) => z.notenbereich);
+  const abfolgeModus = useEinstellungen((z) => z.abfolgeModus);
   const melodieModus = useEinstellungen((z) => z.melodieModus);
   const setzeMelodieModus = useEinstellungen((z) => z.setzeMelodieModus);
-  const [zeigeAuswahl, setZeigeAuswahl] = useState(false);
+  const startLevelGewaehlt = useEinstellungen((z) => z.startLevelGewaehlt);
+  const setzeStartLevelGewaehlt = useEinstellungen((z) => z.setzeStartLevelGewaehlt);
+
+  const [onboardingOffen, setOnboardingOffen] = useState(false);
+
+  useEffect(() => {
+    if (hydriert && !startLevelGewaehlt) {
+      setOnboardingOffen(true);
+    }
+  }, [hydriert, startLevelGewaehlt]);
 
   if (!hydriert) return <div className="h-full bg-papier" />;
 
@@ -68,7 +63,7 @@ export function MelodienUebung() {
                 : "text-tinte-leise hover:text-tinte"
             }`}
           >
-            Fließend
+            Noten lesen
           </button>
           <button
             type="button"
@@ -79,63 +74,63 @@ export function MelodienUebung() {
                 : "text-tinte-leise hover:text-tinte"
             }`}
           >
-            Mit Vorbereitung
+            Mit Rhythmus
           </button>
         </div>
       </div>
 
       {melodieModus === "vorbereitung" ? (
         <MelodienVorbereitung
-          key={`vorbereitung#${tastenwahl}#${schluesselWahl}#${notenbereich}`}
-          tastenwahl={tastenwahl}
+          key={`vorbereitung#${notenLevel}#${schluesselWahl}`}
+          notenLevel={notenLevel}
           schluesselWahl={schluesselWahl}
-          notenbereich={notenbereich}
-          zeigeAuswahl={zeigeAuswahl}
-          aufAuswahl={() => setZeigeAuswahl((z) => !z)}
         />
       ) : (
         <Endlos
-          key={`fliessend#${tastenwahl}#${schluesselWahl}#${notenbereich}`}
-          tastenwahl={tastenwahl}
+          key={`endlos#${notenLevel}#${schluesselWahl}#${abfolgeModus}`}
+          notenLevel={notenLevel}
           schluesselWahl={schluesselWahl}
-          notenbereich={notenbereich}
-          zeigeAuswahl={zeigeAuswahl}
-          aufAuswahl={() => setZeigeAuswahl((z) => !z)}
         />
       )}
+
+      {/* Onboarding Dialog beim ersten Start */}
+      <LevelAuswahlModal
+        offen={onboardingOffen}
+        aufSchliessen={() => {
+          setOnboardingOffen(false);
+          setzeStartLevelGewaehlt(true);
+        }}
+        titel="Willkommen! Wähle dein Start-Level"
+        hinweis="Mit welchem Level möchtest du starten? Du kannst es jederzeit anpassen."
+      />
     </div>
   );
 }
 
 function Endlos({
-  tastenwahl,
+  notenLevel,
   schluesselWahl,
-  notenbereich,
-  zeigeAuswahl,
-  aufAuswahl,
 }: {
-  tastenwahl: Tastenwahl;
-  schluesselWahl: SchluesselWahl;
-  notenbereich: Notenbereich;
-  zeigeAuswahl: boolean;
-  aufAuswahl: () => void;
+  notenLevel: number;
+  schluesselWahl: "beide" | "violin" | "bass";
 }) {
   const merkeVersuch = useTricky((z) => z.merkeVersuch);
+  const abfolgeModus = useEinstellungen((z) => z.abfolgeModus);
 
   const vorrat = useMemo(
-    () => nachSchluessel(notenVorrat(tastenwahl, notenbereich), schluesselWahl),
-    [tastenwahl, notenbereich, schluesselWahl],
+    () => notenFuerLevel(notenLevel as any, schluesselWahl),
+    [notenLevel, schluesselWahl],
   );
 
   const bereich = useMemo(() => klaviaturBereich(vorrat.map((u) => u.note.midi)), [vorrat]);
 
   const wuerfeln = useCallback((): Aufgabe => {
-    const melodie = wuerfleMelodie(vorrat, { mischen: schluesselWahl === "beide" });
+    const melodie = erzeugeTonabfolge(vorrat, abfolgeModus, { mischen: schluesselWahl === "beide" });
     return {
       melodie,
       werte: undefined,
     };
-  }, [vorrat, schluesselWahl]);
+  }, [vorrat, abfolgeModus, schluesselWahl]);
 
   const [aufgabe, setAufgabe] = useState<Aufgabe>(wuerfeln);
   const { melodie } = aufgabe;
@@ -148,7 +143,6 @@ function Endlos({
     [],
   );
 
-  // Jeder Ton der Melodie zaehlt als Versuch, sobald sie erscheint.
   const kennung = melodieSchluessel(melodie);
   useEffect(() => {
     for (const ton of melodie) {
@@ -159,14 +153,13 @@ function Endlos({
 
   const neuWuerfeln = useCallback(() => setAufgabe(wuerfeln()), [wuerfeln]);
 
-  // Durch? Dann kommt nach kurzer Pause einfach die nächste.
   const aufFertig = useCallback(() => {
     uhren.current.push(window.setTimeout(neuWuerfeln, PAUSE_NACH_MELODIE));
   }, [neuWuerfeln]);
 
   const uebung = useReihenUebung({
     reihe: melodie,
-    aktiv: !zeigeAuswahl,
+    aktiv: true,
     aufFertig,
   });
 
@@ -183,84 +176,55 @@ function Endlos({
   return (
     <div className="flex h-full flex-col bg-papier">
       <Kopfzeile
-        titel="Melodien"
+        titel="Noten lesen"
         unterzeile={melodie.length > 0 ? `${melodie.length} Töne` : undefined}
         rechts={
           <>
-            {!zeigeAuswahl && (
-              <>
-                <PlayKnopf
-                  laeuft={vorspiel.laeuft}
-                  onClick={vorspiel.umschalten}
-                  titel="Melodie einmal anhören"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    vorspiel.stoppen();
-                    neuWuerfeln();
-                  }}
-                  className="rounded-full bg-white shadow-[0_2px_10px_rgba(120,91,163,0.08)] px-4 py-1.5 text-sm font-semibold text-[#785BA3] transition-colors hover:bg-[#EADCF5]"
-                >
-                  neu würfeln
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    vorspiel.stoppen();
-                    aufAuswahl();
-                  }}
-                  className="rounded-full bg-[#785BA3] shadow-[0_2px_10px_rgba(120,91,163,0.15)] px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-[#654B8D]"
-                >
-                  Auswahl
-                </button>
-              </>
-            )}
-          </>
-        }
-      />
-
-      {zeigeAuswahl ? (
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pb-6 pt-2">
-          <NotenWahl />
-          <div className="mt-auto max-w-xl mx-auto w-full pt-4">
+            <PlayKnopf
+              laeuft={vorspiel.laeuft}
+              onClick={vorspiel.umschalten}
+              titel="Reihe einmal anhören"
+            />
             <button
               type="button"
               onClick={() => {
                 vorspiel.stoppen();
                 neuWuerfeln();
-                aufAuswahl();
               }}
-              className="w-full rounded-full bg-[#785BA3] py-3.5 font-semibold text-white shadow-[0_6px_20px_rgba(120,91,163,0.25)] transition-all duration-200 hover:bg-[#654B8D] hover:-translate-y-0.5"
+              className="rounded-full bg-white shadow-xs px-4 py-1.5 text-xs sm:text-sm font-semibold text-[#785BA3] transition-colors hover:bg-[#EADCF5]"
             >
-              Los geht’s!
+              neu würfeln
             </button>
-          </div>
-        </div>
-      ) : (
-        <Uebungsflaeche
-          notenbild={
-            <NotenReihe
-              reihe={melodie}
-              position={uebung.position}
-              daneben={
-                uebung.danebenNote && uebung.fehler
-                  ? { index: uebung.fehler.index, note: uebung.danebenNote }
-                  : null
-              }
-              beschreibung={`Melodie aus ${melodie.length} Tönen`}
-            />
-          }
-          hinweis={<Hinweis uebung={uebung} anzahl={melodie.length} />}
-          hervorgehoben={
-            uebung.fehler
-              ? new Map([[uebung.fehler.midi, "flieder" as const]])
-              : undefined
-          }
-          klaviaturVon={bereich.von}
-          klaviaturBis={bereich.bis}
-        />
-      )}
+          </>
+        }
+      />
+
+      {/* Schnell-Leiste für 1-Klick-Wechsel */}
+      <SchnellLeiste onAenderung={neuWuerfeln} />
+
+      <Uebungsflaeche
+        notenbild={
+          <NotenReihe
+            reihe={melodie}
+            position={uebung.position}
+            daneben={
+              uebung.danebenNote && uebung.fehler
+                ? { index: uebung.fehler.index, note: uebung.danebenNote }
+                : null
+            }
+            beschreibung={`Reihe aus ${melodie.length} Tönen`}
+          />
+        }
+        hinweis={<Hinweis uebung={uebung} anzahl={melodie.length} />}
+        hervorgehoben={
+          uebung.fehler
+            ? new Map([[uebung.fehler.midi, "flieder" as const]])
+            : undefined
+        }
+        klaviaturVon={bereich.von}
+        klaviaturBis={bereich.bis}
+        aktuelleNote={melodie[uebung.position] ?? null}
+      />
     </div>
   );
 }
@@ -275,7 +239,7 @@ function Hinweis({
   if (uebung.fertig) {
     return (
       <span className="animate-auftauchen text-mint-tief font-medium">
-        Am Stück durch. Die nächste kommt gleich.
+        Geschafft! Die nächsten 8 Töne kommen sofort...
       </span>
     );
   }

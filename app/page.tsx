@@ -1,56 +1,68 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MidiStatus } from "@/components/ui/MidiStatus";
 import { SessionBand } from "@/components/ui/SessionBand";
 import { SpielweiseWahl } from "@/components/ui/SpielweiseWahl";
-import { KniffligeStellen } from "@/components/ui/KniffligeStellen";
 import { Modusbild } from "@/components/ui/Modusbild";
 import { Karte } from "@/components/ui/Karte";
 import { WochenKarte } from "@/components/ui/Startkarten";
+import { LevelAuswahlModal } from "@/components/practice/LevelAuswahlModal";
+import { levelInfo } from "@/lib/music/levels";
 import { useEinstellungen } from "@/lib/store/einstellungen";
+import { useHydriert } from "@/lib/store/hydriert";
 
-const MODI = [
-  {
-    id: "melodien",
-    href: "/melodien",
-    titel: "Melodien",
-    text: "Fließend vom Blatt spielen — reine Tonhöhen.",
-    akzent: "mint" as const,
-    bild: "melodie" as const,
-    melodieModus: "fliessend" as const,
-  },
-  {
-    id: "melodien-vorbereitung",
-    href: "/melodien",
-    titel: "Melodien mit Vorbereitung",
-    text: "Erst anhören und üben, dann mit Notenwerten prüfen.",
-    akzent: "flieder" as const,
-    bild: "melodie" as const,
-    melodieModus: "vorbereitung" as const,
-  },
-  {
-    id: "akkorde",
-    href: "/akkorde",
-    titel: "Akkorde",
-    text: "Neue Griffe kennenlernen, Umkehrungen sitzen lassen, Folgen durchspielen.",
-    akzent: "flieder" as const,
-    bild: "akkord" as const,
-  },
-];
-
-/**
- * Startseite im Stil des Referenz-Dashboards:
- * - Oben: Großer zentrierter Titel "Noten & Akkorde lernen"
- * - Links: Große "Übungen"-Kachel mit den 3 Modi (Melodien, Melodien mit Vorbereitung, Akkorde)
- * - Rechts: Oben die Stoppuhr mit großem Timer & Button, unten die Wochenstatistik mit Notenlinien
- * - Unten: Einstellungen
- */
 export default function Startseite() {
+  const hydriert = useHydriert();
+  const notenLevel = useEinstellungen((z) => z.notenLevel);
+  const startLevelGewaehlt = useEinstellungen((z) => z.startLevelGewaehlt);
+  const setzeStartLevelGewaehlt = useEinstellungen((z) => z.setzeStartLevelGewaehlt);
+
+  const [modalOffen, setModalOffen] = useState(false);
+
+  useEffect(() => {
+    if (hydriert && !startLevelGewaehlt) {
+      setModalOffen(true);
+    }
+  }, [hydriert, startLevelGewaehlt]);
+
+  const curLevel = levelInfo(notenLevel);
+
+  const MODI = [
+    {
+      id: "melodien",
+      href: "/melodien",
+      titel: "Noten lesen",
+      text: "8 Töne fließend lesen — Zufall oder Melodische Ketten.",
+      akzent: "mint" as const,
+      bild: "melodie" as const,
+      melodieModus: "fliessend" as const,
+      zusatz: `${curLevel.titel}`,
+    },
+    {
+      id: "melodien-vorbereitung",
+      href: "/melodien",
+      titel: "Melodien mit Rhythmus",
+      text: "Erst anhören und üben, dann mit Notenwerten prüfen.",
+      akzent: "flieder" as const,
+      bild: "melodie" as const,
+      melodieModus: "vorbereitung" as const,
+    },
+    {
+      id: "akkorde",
+      href: "/akkorde",
+      titel: "Akkorde",
+      text: "Griffe kennenlernen, Umkehrungen festigen, Folgen durchspielen.",
+      akzent: "flieder" as const,
+      bild: "akkord" as const,
+    },
+  ];
+
   return (
     <main className="flex h-full flex-col justify-center overflow-y-auto px-6 py-8">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        {/* Header mit zentriertem Titel & dezentem Status */}
+        {/* Header */}
         <header className="relative flex shrink-0 items-center justify-center pt-2">
           <h1 className="text-center font-titel text-5xl sm:text-6xl font-bold text-[#785BA3]">
             Noten &amp; Akkorde lernen
@@ -60,14 +72,38 @@ export default function Startseite() {
           </div>
         </header>
 
-        {/* Mobile Midi-Status unter der Überschrift */}
+        {/* Mobile Midi-Status */}
         <div className="flex sm:hidden justify-center -mt-2">
           <MidiStatus />
         </div>
 
-        {/* 2-Spalten-Bereich nach Referenzbild */}
+        {/* Level Schnell-Wahl Leiste auf dem Dashboard */}
+        <div className="flex items-center justify-between p-4 rounded-2xl bg-white shadow-xs border border-papier-tief">
+          <div className="flex items-center gap-3">
+            <span className="w-8 h-8 rounded-full bg-[#785BA3] text-white font-titel text-sm font-bold flex items-center justify-center">
+              {curLevel.id}
+            </span>
+            <div>
+              <div className="text-xs font-semibold text-tinte-leise uppercase tracking-wider">
+                {curLevel.kategorieTitel}
+              </div>
+              <div className="font-titel text-base font-bold text-tinte">
+                {curLevel.titel}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setModalOffen(true)}
+            className="rounded-full bg-[#EADCF5] px-4 py-1.5 text-xs sm:text-sm font-bold text-[#785BA3] hover:bg-[#785BA3] hover:text-white transition-colors"
+          >
+            Level wechseln
+          </button>
+        </div>
+
+        {/* 2-Spalten-Bereich */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-          {/* Linke Seite: Große Kachel "Übungen" mit den 3 Modi */}
+          {/* Linke Seite: Übungen */}
           <Karte className="p-6 sm:p-7 flex flex-col justify-between h-full">
             <div>
               <div className="flex items-center justify-between mb-5">
@@ -99,9 +135,16 @@ export default function Startseite() {
                       <Modusbild bild={modus.bild} className="w-9 h-9" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h2 className="font-titel text-xl font-bold text-tinte group-hover:text-[#785BA3] transition-colors">
-                        {modus.titel}
-                      </h2>
+                      <div className="flex items-center gap-2">
+                        <h2 className="font-titel text-xl font-bold text-tinte group-hover:text-[#785BA3] transition-colors">
+                          {modus.titel}
+                        </h2>
+                        {modus.zusatz && (
+                          <span className="rounded-full bg-[#EADCF5] text-[#785BA3] px-2 py-0.5 text-[10px] font-bold">
+                            Level {curLevel.id}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs sm:text-sm text-tinte-leise leading-snug mt-0.5">
                         {modus.text}
                       </p>
@@ -122,9 +165,18 @@ export default function Startseite() {
           </div>
         </div>
 
-        <KniffligeStellen className="shrink-0" />
         <SpielweiseWahl className="shrink-0" />
       </div>
+
+      <LevelAuswahlModal
+        offen={modalOffen}
+        aufSchliessen={() => {
+          setModalOffen(false);
+          setzeStartLevelGewaehlt(true);
+        }}
+        titel="Level auswählen"
+        hinweis="Wähle dein Start-Level. Du kannst es jederzeit anpassen."
+      />
     </main>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MELODIE_LAENGE, melodieSchluessel, wuerfleMelodie } from "./melodie";
+import { MELODIE_LAENGE, erzeugeTonabfolge, melodieSchluessel, wuerfleMelodie, wuerfleZufall } from "./melodie";
 import {
   type UebungsNote,
   istLandmark,
@@ -131,5 +131,26 @@ describe("Neu wuerfeln", () => {
   it("liefert immer wieder andere Melodien", () => {
     const schluessel = new Set(vieleMelodien(50).map(melodieSchluessel));
     expect(schluessel.size).toBeGreaterThan(20);
+  });
+});
+
+describe("Zufall & Tonabfolgen", () => {
+  it("wuerfleZufall liefert 8 Töne aus dem Vorrat", () => {
+    const reihe = erzeugeTonabfolge(VORRAT, "zufall");
+    expect(reihe).toHaveLength(8);
+  });
+
+  it("wuerfleZufall vermeidet direkte Tonwiederholungen", () => {
+    for (let r = 0; r < 20; r++) {
+      const reihe = erzeugeTonabfolge(VORRAT, "zufall");
+      for (let i = 1; i < reihe.length; i++) {
+        expect(reihe[i].note.midi).not.toBe(reihe[i - 1].note.midi);
+      }
+    }
+  });
+
+  it("erzeugeTonabfolge mit melodisch liefert 8 Töne", () => {
+    const reihe = erzeugeTonabfolge(VORRAT, "melodisch");
+    expect(reihe).toHaveLength(8);
   });
 });

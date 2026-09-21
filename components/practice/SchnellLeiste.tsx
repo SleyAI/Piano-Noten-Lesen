@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { type NotenLevelId, levelInfo } from "@/lib/music/levels";
+import { levelInfo } from "@/lib/music/levels";
 import { type TonabfolgeModus } from "@/lib/music/melodie";
 import { type SchluesselWahl } from "@/lib/music/pitch";
 import { useEinstellungen } from "@/lib/store/einstellungen";

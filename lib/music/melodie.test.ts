@@ -136,7 +136,7 @@ describe("Neu wuerfeln", () => {
 
 describe("Zufall & Tonabfolgen", () => {
   it("wuerfleZufall liefert 8 Töne aus dem Vorrat", () => {
-    const reihe = erzeugeTonabfolge(VORRAT, "zufall");
+    const reihe = wuerfleZufall(VORRAT);
     expect(reihe).toHaveLength(8);
   });
 

@@ -57,4 +57,9 @@ describe("Level-Definitionen", () => {
     const bass = notenFuerLevel(1, "bass");
     expect(bass.every((n) => n.schluessel === "bass")).toBe(true);
   });
+
+  it("liefert Metadaten über levelInfo", () => {
+    expect(levelInfo(1).id).toBe(1);
+    expect(levelInfo(1).kategorie).toBe("A");
+  });
 });

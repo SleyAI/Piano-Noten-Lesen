@@ -1,16 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import { Kopfzeile } from "@/components/ui/Kopfzeile";
 import { NotenReihe } from "@/components/practice/NotenReihe";
 import { PlayKnopf } from "@/components/practice/PlayKnopf";
 import { SchnellLeiste } from "@/components/practice/SchnellLeiste";
 import { LevelAuswahlModal } from "@/components/practice/LevelAuswahlModal";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
-import { notenFuerLevel } from "@/lib/music/levels";
+import { type NotenLevelId, notenFuerLevel } from "@/lib/music/levels";
 import { erzeugeTonabfolge, melodieSchluessel } from "@/lib/music/melodie";
-import { type UebungsNote, uebungsSchluessel } from "@/lib/music/curriculum";
+import { type SchluesselWahl, type UebungsNote, uebungsSchluessel } from "@/lib/music/curriculum";
 import { nameMitOktave, vonMidi } from "@/lib/music/pitch";
 import type { NotenwertId } from "@/lib/music/rhythmus";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
@@ -39,13 +38,8 @@ export function MelodienUebung() {
   const startLevelGewaehlt = useEinstellungen((z) => z.startLevelGewaehlt);
   const setzeStartLevelGewaehlt = useEinstellungen((z) => z.setzeStartLevelGewaehlt);
 
-  const [onboardingOffen, setOnboardingOffen] = useState(false);
-
-  useEffect(() => {
-    if (hydriert && !startLevelGewaehlt) {
-      setOnboardingOffen(true);
-    }
-  }, [hydriert, startLevelGewaehlt]);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+  const onboardingOffen = hydriert && !startLevelGewaehlt && !onboardingDismissed;
 
   if (!hydriert) return <div className="h-full bg-papier" />;
 
@@ -97,7 +91,7 @@ export function MelodienUebung() {
       <LevelAuswahlModal
         offen={onboardingOffen}
         aufSchliessen={() => {
-          setOnboardingOffen(false);
+          setOnboardingDismissed(true);
           setzeStartLevelGewaehlt(true);
         }}
         titel="Willkommen! Wähle dein Start-Level"
@@ -111,14 +105,14 @@ function Endlos({
   notenLevel,
   schluesselWahl,
 }: {
-  notenLevel: number;
-  schluesselWahl: "beide" | "violin" | "bass";
+  notenLevel: NotenLevelId;
+  schluesselWahl: SchluesselWahl;
 }) {
   const merkeVersuch = useTricky((z) => z.merkeVersuch);
   const abfolgeModus = useEinstellungen((z) => z.abfolgeModus);
 
   const vorrat = useMemo(
-    () => notenFuerLevel(notenLevel as any, schluesselWahl),
+    () => notenFuerLevel(notenLevel, schluesselWahl),
     [notenLevel, schluesselWahl],
   );
 

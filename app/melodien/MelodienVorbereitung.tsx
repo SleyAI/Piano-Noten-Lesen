@@ -8,14 +8,13 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { Kopfzeile } from "@/components/ui/Kopfzeile";
 import { type DanebenStelle, NotenReihe } from "@/components/practice/NotenReihe";
 import { PlayKnopf } from "@/components/practice/PlayKnopf";
 import { SchnellLeiste } from "@/components/practice/SchnellLeiste";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
 import { type SchluesselWahl, type UebungsNote, uebungsSchluessel } from "@/lib/music/curriculum";
-import { notenFuerLevel } from "@/lib/music/levels";
+import { type NotenLevelId, notenFuerLevel } from "@/lib/music/levels";
 import { melodieSchluessel, wuerfleMelodie } from "@/lib/music/melodie";
 import { nameMitOktave, vonMidi } from "@/lib/music/pitch";
 import { type NotenwertId, wuerfleRhythmus } from "@/lib/music/rhythmus";
@@ -37,14 +36,14 @@ export function MelodienVorbereitung({
   notenLevel,
   schluesselWahl,
 }: {
-  notenLevel: number;
+  notenLevel: NotenLevelId;
   schluesselWahl: SchluesselWahl;
 }) {
   const merkeVersuch = useTricky((z) => z.merkeVersuch);
   const tempo = useEinstellungen((z) => z.tempo);
 
   const vorrat = useMemo(
-    () => notenFuerLevel(notenLevel as any, schluesselWahl),
+    () => notenFuerLevel(notenLevel, schluesselWahl),
     [notenLevel, schluesselWahl],
   );
 

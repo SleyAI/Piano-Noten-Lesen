@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { MidiStatus } from "@/components/ui/MidiStatus";
 import { SessionBand } from "@/components/ui/SessionBand";
@@ -19,13 +19,9 @@ export default function Startseite() {
   const startLevelGewaehlt = useEinstellungen((z) => z.startLevelGewaehlt);
   const setzeStartLevelGewaehlt = useEinstellungen((z) => z.setzeStartLevelGewaehlt);
 
-  const [modalOffen, setModalOffen] = useState(false);
-
-  useEffect(() => {
-    if (hydriert && !startLevelGewaehlt) {
-      setModalOffen(true);
-    }
-  }, [hydriert, startLevelGewaehlt]);
+  const [modalDismissed, setModalDismissed] = useState(false);
+  const [modalManuellOffen, setModalManuellOffen] = useState(false);
+  const modalOffen = modalManuellOffen || (hydriert && !startLevelGewaehlt && !modalDismissed);
 
   const curLevel = levelInfo(notenLevel);
 
@@ -94,7 +90,7 @@ export default function Startseite() {
           </div>
           <button
             type="button"
-            onClick={() => setModalOffen(true)}
+            onClick={() => setModalManuellOffen(true)}
             className="rounded-full bg-[#EADCF5] px-4 py-1.5 text-xs sm:text-sm font-bold text-[#785BA3] hover:bg-[#785BA3] hover:text-white transition-colors"
           >
             Level wechseln
@@ -171,7 +167,8 @@ export default function Startseite() {
       <LevelAuswahlModal
         offen={modalOffen}
         aufSchliessen={() => {
-          setModalOffen(false);
+          setModalManuellOffen(false);
+          setModalDismissed(true);
           setzeStartLevelGewaehlt(true);
         }}
         titel="Level auswählen"

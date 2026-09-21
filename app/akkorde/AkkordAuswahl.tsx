@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+import maskottchenBild from "@/public/maskottchen.png";
 import {
   type AkkordKomplexitaet,
   KOMPLEXITAET_INFOS,
@@ -308,14 +310,19 @@ export function AkkordAuswahl({
                 )}
               </div>
 
-              {/* Button: Mit passenden Akkorden auffüllen */}
+              {/* Button: Lass Otto passende Akkorde auswählen */}
               <button
                 type="button"
                 onClick={auffuellen}
-                className="shrink-0 inline-flex items-center justify-center gap-1.5 rounded-full bg-[#EADCF5] hover:bg-[#D8C4EE] border border-[#785BA3]/30 px-4 py-2 text-xs font-bold text-[#785BA3] transition-all duration-150 active:scale-95 shadow-2xs"
-                title="Ergänzt automatisch passende Akkorde auf eine 4er-Kadenz"
+                className="shrink-0 inline-flex items-center justify-center gap-2.5 rounded-2xl bg-[#EDE0F5] hover:bg-[#E2CEF0] border border-[#785BA3]/25 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-[#785BA3] transition-all duration-150 active:scale-95 shadow-xs hover:shadow-sm group"
+                title="Otto wählt 4 unterschiedliche passende Akkorde für dich aus"
               >
-                ✨ Mit passenden Akkorden auffüllen
+                <Image
+                  src={maskottchenBild}
+                  alt=""
+                  className="w-7 h-7 sm:w-8 sm:h-8 object-contain drop-shadow-xs transition-transform duration-200 group-hover:scale-110 pointer-events-none"
+                />
+                <span>Lass Otto passende Akkorde auswählen</span>
               </button>
             </div>
           </div>

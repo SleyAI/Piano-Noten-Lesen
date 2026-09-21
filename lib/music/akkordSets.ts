@@ -159,86 +159,91 @@ const KADENZEN_DREIKLAENGE: Record<string, string[][]> = {
   C: [
     ["C", "G", "Am", "F"],
     ["C", "Am", "F", "G"],
-    ["C", "F", "G", "C"],
     ["C", "Em", "F", "G"],
-    ["C", "G", "F", "G"],
+    ["C", "Dm", "G", "Am"],
+    ["C", "F", "Dm", "G"],
   ],
   G: [
     ["G", "D", "Em", "C"],
     ["G", "Em", "C", "D"],
-    ["G", "C", "D", "G"],
-    ["G", "D", "C", "D"],
+    ["G", "C", "Am", "D"],
+    ["G", "Am", "C", "D"],
   ],
   Am: [
     ["Am", "F", "C", "G"],
-    ["Am", "Dm", "Em", "Am"],
-    ["Am", "G", "F", "E"],
     ["Am", "Dm", "G", "C"],
+    ["Am", "G", "F", "Em"],
+    ["Am", "C", "Dm", "Em"],
   ],
   F: [
-    ["F", "C", "Dm", "C"],
     ["F", "G", "Em", "Am"],
-    ["F", "C", "G", "Am"],
+    ["F", "C", "Dm", "Am"],
+    ["F", "Dm", "C", "G"],
     ["F", "Am", "Dm", "C"],
   ],
   Dm: [
     ["Dm", "G", "C", "Am"],
     ["Dm", "Em", "F", "G"],
-    ["Dm", "G", "C", "C"],
+    ["Dm", "F", "C", "G"],
+    ["Dm", "Am", "F", "C"],
   ],
   Em: [
     ["Em", "C", "G", "D"],
-    ["Em", "Am", "B", "Em"],
-    ["Em", "D", "C", "D"],
+    ["Em", "Am", "D", "G"],
+    ["Em", "D", "C", "Am"],
+    ["Em", "G", "Am", "D"],
   ],
   D: [
-    ["D", "A", "Bm", "G"],
-    ["D", "G", "A", "D"],
-    ["D", "Bm", "G", "A"],
+    ["D", "A", "Em", "G"],
+    ["D", "G", "Em", "A"],
+    ["D", "A", "G", "Em"],
   ],
   E: [
-    ["E", "B", "C#m", "A"],
-    ["E", "A", "B", "E"],
+    ["E", "Am", "F", "G"],
+    ["E", "Am", "Dm", "G"],
+    ["E", "A", "D", "G"],
   ],
   A: [
-    ["A", "E", "F#m", "D"],
-    ["A", "D", "E", "A"],
+    ["A", "Dm", "G", "C"],
+    ["A", "D", "Em", "G"],
+    ["A", "Em", "D", "G"],
   ],
 };
 
 const KADENZEN_ERWEITERT: Record<string, string[][]> = {
   C: [
-    ["C", "G7", "Am", "F"],
+    ["C", "G7", "Am7", "F"],
     ["C", "Cadd9", "F", "G7"],
-    ["C", "Gsus4", "G", "C"],
     ["C", "Am7", "Dm7", "G7"],
+    ["C", "Gsus4", "Dm7", "G7"],
   ],
   G: [
-    ["G", "D7", "Em", "C"],
-    ["G", "Gsus4", "G", "D7"],
-    ["G", "Em7", "Cadd9", "D"],
+    ["G", "D7", "Em7", "C"],
+    ["G", "Gsus4", "C", "D7"],
+    ["G", "Em7", "Cadd9", "D7"],
+    ["G", "Am7", "D7", "C"],
   ],
   G7: [
-    ["C", "G7", "Am", "F"],
-    ["Dm7", "G7", "C", "Am"],
-    ["G7", "C", "F", "G7"],
+    ["C", "G7", "Am7", "F"],
+    ["Dm7", "G7", "C", "Am7"],
+    ["G7", "C", "Em7", "Am7"],
     ["C", "Em7", "Am7", "G7"],
   ],
   Am: [
-    ["Am", "Dm7", "E7", "Am"],
+    ["Am", "Dm7", "E7", "C"],
     ["Am", "F", "C", "E7"],
     ["Am7", "Dm7", "G7", "C"],
   ],
   E7: [
-    ["Am", "Dm", "E7", "Am"],
-    ["E7", "Am", "Dm", "E7"],
+    ["Am", "Dm7", "E7", "C"],
+    ["E7", "Am", "Dm7", "G7"],
   ],
   D: [
-    ["D", "Dsus4", "G", "A"],
-    ["D", "A7", "G", "D"],
+    ["D", "Dsus4", "G", "A7"],
+    ["D", "A7", "G", "Em7"],
   ],
   Dsus4: [
-    ["D", "Dsus4", "G", "A"],
+    ["D", "Dsus4", "G", "A7"],
     ["Dsus4", "D", "G", "A7"],
   ],
 };
@@ -265,9 +270,9 @@ const KADENZEN_KOMPLEX: Record<string, string[][]> = {
     ["Gm7", "C7", "Am7", "D7"],
   ],
   C7: [
-    ["C7", "F7", "C7", "G7"],
+    ["C7", "F7", "Gm7", "G7"],
     ["C7", "Am7", "Dm7", "G7"],
-    ["F7", "C7", "G7", "C7"],
+    ["Gm7", "C7", "F7", "G7"],
   ],
   Am7: [
     ["Am7", "Dm7", "G7", "Cmaj7"],
@@ -278,7 +283,8 @@ const KADENZEN_KOMPLEX: Record<string, string[][]> = {
 
 /**
  * Automatische Auffüllung mit passenden harmonischen Akkorden (auf 4 Akkorde),
- * wenn der Nutzer auf "Mit passenden Akkorden auffüllen" klickt.
+ * wenn der Nutzer auf "Lass Otto passende Akkorde auswählen" klickt.
+ * Es werden garantiert immer 4 unterschiedliche Akkorde ausgewählt.
  * Unterstützt einen Variations-Index, sodass jeder Klick eine neue Folge liefert.
  */
 export function passendeViererFolgeFuer(
@@ -298,19 +304,42 @@ export function passendeViererFolgeFuer(
         : KADENZEN_DREIKLAENGE;
 
   const optionen = tabelle[akkord.symbol] ?? tabelle[basis];
+  let kandidat: string[] = [];
+
   if (optionen && optionen.length > 0) {
     const idx = Math.abs(variation) % optionen.length;
-    return [...optionen[idx]];
-  }
-
-  try {
-    const folge = stabileViererFolge(akkord);
-    if (folge.length > 0) {
-      return folge.map((a) => a.symbol);
+    kandidat = [...optionen[idx]];
+  } else {
+    try {
+      const folge = stabileViererFolge(akkord);
+      if (folge.length > 0) {
+        kandidat = folge.map((a) => a.symbol);
+      }
+    } catch {
+      // fallback
     }
-  } catch {
-    // fallback
   }
 
-  return [symbol];
+  if (kandidat.length === 0) {
+    kandidat = [symbol];
+  }
+
+  // Streng garantieren: Es müssen immer 4 UNTERSCHIEDLICHE Akkorde sein!
+  const einzigartig: string[] = [];
+  for (const s of kandidat) {
+    if (!einzigartig.includes(s)) {
+      einzigartig.push(s);
+    }
+  }
+
+  // Falls noch keine 4 unterschiedlichen vorhanden sind, aus dem jeweiligen Vorrat auffüllen:
+  const pool = KOMPLEXITAET_INFOS[komplexitaet]?.einzelAkkorde ?? [];
+  for (const s of pool) {
+    if (einzigartig.length >= 4) break;
+    if (!einzigartig.includes(s)) {
+      einzigartig.push(s);
+    }
+  }
+
+  return einzigartig.slice(0, 4);
 }

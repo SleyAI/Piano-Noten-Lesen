@@ -13,20 +13,37 @@ export function Kopfzeile({
   titel,
   unterzeile,
   rechts,
+  onZurueck,
+  zurueckHref,
 }: {
   titel: string;
   unterzeile?: string;
   rechts?: ReactNode;
+  onZurueck?: () => void;
+  zurueckHref?: string;
 }) {
   return (
     <header className="flex shrink-0 items-center gap-4 px-6 py-4">
-      <Link
-        href="/"
-        aria-label="Zurück zur Auswahl"
-        className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg font-bold text-[#785BA3] shadow-[0_2px_10px_rgba(120,91,163,0.08)] transition-all hover:bg-[#785BA3] hover:text-white"
-      >
-        ←
-      </Link>
+      {onZurueck ? (
+        <button
+          type="button"
+          onClick={onZurueck}
+          aria-label="Einen Schritt zurück"
+          title="Zurück"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg font-bold text-[#785BA3] shadow-[0_2px_10px_rgba(120,91,163,0.08)] transition-all hover:bg-[#785BA3] hover:text-white active:scale-95"
+        >
+          ←
+        </button>
+      ) : (
+        <Link
+          href={zurueckHref ?? "/"}
+          aria-label="Zurück zur Startseite"
+          title="Zurück zur Startseite"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg font-bold text-[#785BA3] shadow-[0_2px_10px_rgba(120,91,163,0.08)] transition-all hover:bg-[#785BA3] hover:text-white active:scale-95"
+        >
+          ←
+        </Link>
+      )}
 
       <div className="min-w-0">
         <h1 className="truncate font-titel text-2xl leading-tight font-bold text-tinte">

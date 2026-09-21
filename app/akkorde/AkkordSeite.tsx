@@ -56,6 +56,13 @@ export function AkkordSeite() {
               ? `${eintraege.length} Griffe · Flashcards`
               : `${eintraege.length} Griffe · ${spielart === "arpeggio" ? "Arpeggios" : "Ganzer Griff"}`
         }
+        onZurueck={
+          phase === "uebung"
+            ? () => setPhase("flashcards")
+            : phase === "flashcards"
+              ? () => setPhase("auswahl")
+              : undefined
+        }
       />
 
       <div className="flex-1 overflow-y-auto">

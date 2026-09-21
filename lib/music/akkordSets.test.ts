@@ -37,14 +37,25 @@ describe("Akkord-Sets & Einträge", () => {
     expect(cSlashG?.lage.toene[0].stufe).toBe("G");
   });
 
-  it("findet passende Viererfolgen ausgehend von einem Akkord", () => {
+  it("findet passende Viererfolgen ausgehend von einem Akkord mit 4 unterschiedlichen Akkorden", () => {
     const folgeC = passendeViererFolgeFuer("C", "dreiklaenge");
     expect(folgeC.length).toBe(4);
+    expect(new Set(folgeC).size).toBe(4);
     expect(folgeC[0]).toBe("C");
 
     const folgeG7 = passendeViererFolgeFuer("G7", "erweitert");
     expect(folgeG7.length).toBe(4);
+    expect(new Set(folgeG7).size).toBe(4);
     expect(folgeG7.includes("G7")).toBe(true);
+
+    for (let v = 0; v < 10; v++) {
+      const f1 = passendeViererFolgeFuer("C", "dreiklaenge", v);
+      expect(new Set(f1).size).toBe(4);
+      const f2 = passendeViererFolgeFuer("G", "dreiklaenge", v);
+      expect(new Set(f2).size).toBe(4);
+      const f3 = passendeViererFolgeFuer("Cmaj7", "komplex", v);
+      expect(new Set(f3).size).toBe(4);
+    }
   });
 
   it("erzeugt alle Umkehrungen für einen Akkord", () => {

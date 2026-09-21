@@ -8,8 +8,7 @@
  * 2. Mit Vorbereitung: Melodie mit Notenwerten anhören, vorüben und mit "Let's check" prüfen.
  */
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Kopfzeile } from "@/components/ui/Kopfzeile";
 import { NotenReihe } from "@/components/practice/NotenReihe";
 import { NotenWahl } from "@/components/practice/NotenWahl";
@@ -44,17 +43,7 @@ interface Aufgabe {
 }
 
 export function MelodienUebung() {
-  return (
-    <Suspense fallback={<div className="h-full bg-papier" />}>
-      <MelodienInhalt />
-    </Suspense>
-  );
-}
-
-function MelodienInhalt() {
   const hydriert = useHydriert();
-  const searchParams = useSearchParams();
-  const modusParam = searchParams.get("modus");
 
   const tastenwahl = useEinstellungen((z) => z.tastenwahl);
   const schluesselWahl = useEinstellungen((z) => z.schluesselWahl);
@@ -62,12 +51,6 @@ function MelodienInhalt() {
   const melodieModus = useEinstellungen((z) => z.melodieModus);
   const setzeMelodieModus = useEinstellungen((z) => z.setzeMelodieModus);
   const [zeigeAuswahl, setZeigeAuswahl] = useState(false);
-
-  useEffect(() => {
-    if (modusParam === "vorbereitung" || modusParam === "fliessend") {
-      setzeMelodieModus(modusParam);
-    }
-  }, [modusParam, setzeMelodieModus]);
 
   if (!hydriert) return <div className="h-full bg-papier" />;
 

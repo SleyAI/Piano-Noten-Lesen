@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { MidiStatus } from "@/components/ui/MidiStatus";
 import { SessionBand } from "@/components/ui/SessionBand";
@@ -6,23 +8,29 @@ import { KniffligeStellen } from "@/components/ui/KniffligeStellen";
 import { Modusbild } from "@/components/ui/Modusbild";
 import { Karte } from "@/components/ui/Karte";
 import { WochenKarte } from "@/components/ui/Startkarten";
+import { useEinstellungen } from "@/lib/store/einstellungen";
 
 const MODI = [
   {
-    href: "/melodien?modus=fliessend",
+    id: "melodien",
+    href: "/melodien",
     titel: "Melodien",
     text: "Fließend vom Blatt spielen — reine Tonhöhen.",
     akzent: "mint" as const,
     bild: "melodie" as const,
+    melodieModus: "fliessend" as const,
   },
   {
-    href: "/melodien?modus=vorbereitung",
+    id: "melodien-vorbereitung",
+    href: "/melodien",
     titel: "Melodien mit Vorbereitung",
     text: "Erst anhören und üben, dann mit Notenwerten prüfen.",
     akzent: "flieder" as const,
     bild: "melodie" as const,
+    melodieModus: "vorbereitung" as const,
   },
   {
+    id: "akkorde",
     href: "/akkorde",
     titel: "Akkorde",
     text: "Neue Griffe kennenlernen, Umkehrungen sitzen lassen, Folgen durchspielen.",
@@ -72,8 +80,13 @@ export default function Startseite() {
               <div className="flex flex-col gap-3.5">
                 {MODI.map((modus) => (
                   <Link
-                    key={modus.href}
+                    key={modus.id}
                     href={modus.href}
+                    onClick={() => {
+                      if (modus.melodieModus) {
+                        useEinstellungen.getState().setzeMelodieModus(modus.melodieModus);
+                      }
+                    }}
                     className="group flex items-center gap-4 p-4 rounded-2xl bg-papier-tief/40 hover:bg-[#EADCF5]/40 transition-all duration-200 border border-papier-tief/80 hover:border-[#785BA3]/30 hover:-translate-y-0.5 shadow-sm"
                   >
                     <div

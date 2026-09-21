@@ -37,6 +37,7 @@ export interface ReihenUebungOptionen {
   aktiv: boolean;
   /** Wird einmal aufgerufen, sobald der letzte Ton sitzt. */
   aufFertig: () => void;
+  aufFehler?: (fehler: Fehler) => void;
 }
 
 export interface Fehler {
@@ -65,6 +66,7 @@ export function useReihenUebung({
   tempo = TEMPO,
   aktiv,
   aufFertig,
+  aufFehler,
 }: ReihenUebungOptionen): ReihenUebung {
   const merkeFehler = useTricky((z) => z.merkeFehler);
 
@@ -104,9 +106,11 @@ export function useReihenUebung({
     if (erwartet) {
       merkeFehler(uebungsSchluessel(erwartet), nameMitOktave(erwartet.note));
     }
+    const f: Fehler = { art, midi, index };
     setPosition(0);
-    setFehler({ art, midi, index });
+    setFehler(f);
     setLetzterAnschlag(null);
+    aufFehler?.(f);
     uhren.current.push(window.setTimeout(() => setFehler(null), PULS_DAUER));
   }
 

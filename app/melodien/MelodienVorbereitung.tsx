@@ -98,21 +98,19 @@ export function MelodienVorbereitung({
     setPhase("bestanden");
   }, []);
 
+  const aufFehler = useCallback((f: Fehler) => {
+    setLetzterFehler(f);
+    setPhase("fehler");
+  }, []);
+
   const uebung = useReihenUebung({
     reihe: melodie,
     werte,
     tempo,
     aktiv: phase === "pruefen" && !zeigeAuswahl,
     aufFertig,
+    aufFehler,
   });
-
-  // Fehler überwachen
-  useEffect(() => {
-    if (phase === "pruefen" && uebung.fehler) {
-      setLetzterFehler(uebung.fehler);
-      setPhase("fehler");
-    }
-  }, [phase, uebung.fehler]);
 
   // Einzähler-Timer
   useEffect(() => {

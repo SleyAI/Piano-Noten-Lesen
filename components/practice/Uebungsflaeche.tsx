@@ -55,7 +55,7 @@ export function Uebungsflaeche({
               erwarteteNote={aktuelleNote}
               mitKlang={appKlang}
               mitAlterationen={notenLevel === 5}
-              className="w-full max-w-3xl pb-8 sm:pb-12 mb-2"
+              className="w-full max-w-3xl mb-8 sm:mb-12 pb-2 px-3"
             />
           ) : (
             <Klaviatur

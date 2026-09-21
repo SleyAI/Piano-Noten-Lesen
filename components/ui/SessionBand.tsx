@@ -1,12 +1,6 @@
 "use client";
 
-/**
- * Die Stoppuhr / Session-Kachel auf der Startseite im Stil der Referenz:
- * - Oben: "Stoppuhr" mit Statusbadge
- * - Mitte: Große digitale Zeitanzeige (5xl/6xl) mit Info-Text
- * - Unten: Breiter Aktionsbutton "Session starten" / "Session beenden"
- */
-
+import { useState } from "react";
 import { Karte } from "./Karte";
 import { useSekundentakt } from "@/lib/practice/useSekundentakt";
 import { dauerText, sekundenAmTag, uhrzeitText } from "@/lib/practice/uebungszeit";
@@ -17,75 +11,101 @@ export function SessionBand({ className }: { className?: string }) {
   const hydriert = useHydriert();
   const beginn = useUebungszeit((z) => z.beginn);
   const tage = useUebungszeit((z) => z.tage);
-  const letzteDauer = useUebungszeit((z) => z.letzteDauer);
   const starte = useUebungszeit((z) => z.starte);
   const beende = useUebungszeit((z) => z.beende);
-  const quittiere = useUebungszeit((z) => z.quittiere);
+
+  const [zielMinuten, setZielMinuten] = useState<number | null>(null);
 
   const jetzt = useSekundentakt(beginn !== null);
 
-  if (!hydriert) return <div className={`h-64 rounded-[2rem] bg-white ${className ?? ""}`} />;
+  if (!hydriert) return <div className={`h-64 rounded-[28px] bg-white ${className ?? ""}`} />;
 
   const laeuft = beginn !== null;
   const laufend = laeuft ? Math.max(0, Math.floor((jetzt - beginn) / 1000)) : 0;
   const heute = sekundenAmTag(tage) + laufend;
 
   return (
-    <Karte akzent="flieder" className={`p-6 flex flex-col justify-between ${className ?? ""}`}>
+    <Karte akzent="flieder" className={`p-6 sm:p-7 flex flex-col justify-between ${className ?? ""}`}>
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="font-titel text-xl font-bold text-tinte">Stoppuhr</span>
+        <div className="flex items-center gap-2">
+          <span className="text-base select-none">⏱</span>
+          <span className="font-titel text-xl font-bold text-tinte">Timer</span>
+          <span className="rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-2.5 py-0.5 text-xs font-bold text-[#785BA3]">
+            {zielMinuten ? `${zielMinuten} Min Ziel` : "Stoppuhr"}
+          </span>
+        </div>
         {laeuft && (
-          <span className="rounded-full bg-[#EADCF5] px-3 py-1 text-xs font-bold text-[#785BA3]">
+          <span className="flex items-center gap-1.5 rounded-full bg-[#EADCF5] px-3 py-1 text-xs font-bold text-[#785BA3] animate-pulse">
+            <span className="w-2 h-2 rounded-full bg-[#785BA3]" />
             Läuft
           </span>
         )}
       </div>
 
       {/* Große Zeitanzeige */}
-      <div className="my-5 text-center">
+      <div className="my-4 text-center">
         <span className="font-titel text-5xl sm:text-6xl font-bold text-[#785BA3] tracking-tight tabular-nums block">
           {uhrzeitText(laufend)}
         </span>
-        <p className="mt-2 text-sm font-medium text-tinte-leise">
+        <p className="mt-1 text-xs font-semibold text-tinte-leise">
           {laeuft
-            ? `Heute zusammen ${dauerText(heute)} geübt`
+            ? `Heute ${dauerText(heute)} geübt`
             : heute > 0
               ? `Heute schon ${dauerText(heute)} geübt`
-              : "Session starten, um die Zeit zu messen"}
+              : "Session starten, um die Zeit zu erfassen"}
         </p>
+
+        {/* Quick Ziel-Chips wie im Referenzbild */}
+        {!laeuft && (
+          <div className="flex items-center justify-center gap-1.5 mt-3">
+            {[5, 15, 25].map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setZielMinuten(zielMinuten === m ? null : m)}
+                className={`rounded-xl px-2.5 py-1 text-xs font-bold transition-all ${
+                  zielMinuten === m
+                    ? "bg-[#785BA3] text-white shadow-xs"
+                    : "bg-[#FAF5FD] text-tinte-leise hover:bg-[#EADCF5] hover:text-[#785BA3] border border-[#785BA3]/15"
+                }`}
+              >
+                {m}m
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setZielMinuten(null)}
+              className={`rounded-xl px-2.5 py-1 text-xs font-bold transition-all ${
+                zielMinuten === null
+                  ? "bg-[#785BA3] text-white shadow-xs"
+                  : "bg-[#FAF5FD] text-tinte-leise hover:bg-[#EADCF5] hover:text-[#785BA3] border border-[#785BA3]/15"
+              }`}
+            >
+              Frei
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Großer Start/Stop-Button */}
-      <div className="flex gap-2">
-        {letzteDauer !== null && !laeuft && (
-          <button
-            type="button"
-            onClick={quittiere}
-            className="rounded-full px-4 py-3 text-sm font-medium text-tinte-leise transition-colors hover:bg-papier-tief"
-          >
-            danke
-          </button>
-        )}
+      <div>
         <button
           type="button"
           onClick={laeuft ? beende : starte}
-          className={`w-full rounded-full py-3.5 px-6 font-bold text-base transition-all duration-200 flex items-center justify-center gap-2 ${
+          className={`w-full rounded-2xl py-3.5 px-6 font-bold text-base transition-all duration-200 flex items-center justify-center gap-2 active:scale-98 shadow-sm ${
             laeuft
-              ? "bg-papier-tief text-tinte hover:bg-[#EADCF5]"
-              : "bg-[#785BA3] text-white hover:bg-[#654B8D] shadow-[0_6px_20px_rgba(120,91,163,0.25)] hover:-translate-y-0.5"
+              ? "bg-[#FAF5FD] border border-[#785BA3]/30 text-[#785BA3] hover:bg-[#EADCF5]"
+              : "bg-[#785BA3] text-white hover:bg-[#654B8D] shadow-[#785BA3]/25 hover:-translate-y-0.5"
           }`}
         >
-          {laeuft ? "Session beenden" : "Session starten"}
+          {laeuft ? "⏹ Session beenden" : "▶ Start"}
         </button>
       </div>
     </Karte>
   );
 }
 
-/**
- * Die laufende Uhr in der Kopfzeile einer Uebungsseite.
- */
 export function Sessionuhr() {
   const hydriert = useHydriert();
   const beginn = useUebungszeit((z) => z.beginn);
@@ -101,7 +121,7 @@ export function Sessionuhr() {
       type="button"
       onClick={beende}
       title="Session beenden"
-      className="flex items-center rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-[#785BA3] shadow-[0_2px_10px_rgba(120,91,163,0.08)] transition-colors hover:bg-[#EADCF5]"
+      className="flex items-center rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-[#785BA3] shadow-xs border border-[#785BA3]/20 transition-colors hover:bg-[#EADCF5]"
     >
       <span className="tabular-nums font-semibold">{uhrzeitText(laufend)}</span>
     </button>

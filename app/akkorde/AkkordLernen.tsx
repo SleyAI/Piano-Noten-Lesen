@@ -205,23 +205,37 @@ function InversionsLauf({
     ? umkehrungsFolge[umkehrungsFolge.length - 1]
     : (schritte[lauf.index]?.umkehrung ?? 0);
 
+  const [namenSichtbar, setNamenSichtbar] = useState(false);
+
   return (
     <div className="flex flex-col h-full bg-papier">
       <div className="flex shrink-0 items-center justify-between gap-3 px-6 py-3">
         <div className="flex items-center gap-3">
-          <span className="text-xl font-bold text-tinte">{akkord.symbol}</span>
-          <span className="rounded-full bg-flieder px-3 py-1 text-xs font-semibold text-tinte">
-            {umkehrungName(aktuelleUmkehrung)}
+          <span className="text-xl font-bold text-tinte">
+            {namenSichtbar ? akkord.symbol : "Akkord"}
           </span>
+          {namenSichtbar && (
+            <span className="rounded-full bg-[#EADCF5] px-3 py-1 text-xs font-semibold text-[#785BA3]">
+              {umkehrungName(aktuelleUmkehrung)}
+            </span>
+          )}
           <span className="text-xs text-tinte-leise font-medium capitalize">
             {spielart === "griff" ? "Ganzer Griff" : "Arpeggio"}
           </span>
+
+          <button
+            type="button"
+            onClick={() => setNamenSichtbar((v) => !v)}
+            className="ml-2 rounded-full bg-white border border-[#785BA3]/20 px-3 py-1 text-xs font-bold text-[#785BA3] hover:bg-[#EADCF5]/60 transition-colors"
+          >
+            {namenSichtbar ? "Name verbergen" : "Name einblenden"}
+          </button>
         </div>
 
         <button
           type="button"
           onClick={aufVorbereitung}
-          className="shrink-0 rounded-full bg-papier-tief px-5 py-2 text-sm font-semibold text-tinte transition-colors hover:bg-flieder"
+          className="shrink-0 rounded-full bg-white border border-[#785BA3]/20 px-5 py-2 text-sm font-semibold text-tinte transition-colors hover:bg-[#EADCF5]"
         >
           Zurück zur Auswahl
         </button>

@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  /* Cozy Lilac & Lavender Palette */
-  --color-papier: #F4EFF8;
-  --color-papier-tief: #EAE3F2;
-  --color-tinte: #382F45;
-  --color-tinte-leise: #7B7289;
+  /* Cozy Pastel Lilac & Lavender Palette */
+  --color-papier: #F8F4FA;
+  --color-papier-tief: #EFE8F6;
+  --color-tinte: #342A42;
+  --color-tinte-leise: #7B708A;
 
   --color-lavendel: #785BA3;
   --color-lavendel-dunkel: #654B8D;

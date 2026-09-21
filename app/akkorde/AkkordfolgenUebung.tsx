@@ -148,6 +148,8 @@ function Lauf({
     return karte;
   }, [lauf.gespielt, lauf.daneben]);
 
+  const [namenSichtbar, setNamenSichtbar] = useState(false);
+
   const aktuellerAkkord = lauf.fertig
     ? kette.length - 1
     : (schritte[lauf.index]?.akkordIndex ?? 0);
@@ -156,26 +158,40 @@ function Lauf({
     <div className="flex flex-col h-full bg-papier">
       <div className="flex shrink-0 items-center justify-between gap-3 px-6 py-3">
         <div className="flex items-center gap-2 overflow-x-auto">
-          {kette.map((a, i) => (
-            <span
-              key={`${i}-${a.id}`}
-              className={`flex rounded-xl px-3 py-1 text-sm font-bold transition-all duration-200 ${
-                lauf.fertig || i < aktuellerAkkord
-                  ? "bg-mint text-tinte opacity-80"
-                  : i === aktuellerAkkord
-                    ? "bg-flieder text-tinte ring-2 ring-flieder-tief/50 scale-105"
-                    : "bg-papier-tief text-tinte-leise"
-              }`}
-            >
-              {a.symbol}
-            </span>
-          ))}
+          {kette.map((a, i) => {
+            const gespielt = lauf.fertig || i < aktuellerAkkord;
+            const istAktiv = i === aktuellerAkkord;
+            const text = namenSichtbar || gespielt ? a.symbol : String(i + 1);
+
+            return (
+              <span
+                key={`${i}-${a.id}`}
+                className={`flex rounded-xl px-3 py-1 text-sm font-bold transition-all duration-200 ${
+                  gespielt
+                    ? "bg-mint text-tinte opacity-80"
+                    : istAktiv
+                      ? "bg-[#EADCF5] text-[#785BA3] ring-2 ring-[#785BA3]/40 scale-105"
+                      : "bg-white/80 text-tinte-leise border border-[#785BA3]/10"
+                }`}
+              >
+                {text}
+              </span>
+            );
+          })}
+
+          <button
+            type="button"
+            onClick={() => setNamenSichtbar((v) => !v)}
+            className="ml-1 rounded-full bg-white border border-[#785BA3]/20 px-3 py-1 text-xs font-bold text-[#785BA3] hover:bg-[#EADCF5]/60 transition-colors shrink-0"
+          >
+            {namenSichtbar ? "Namen ausblenden" : "Namen einblenden"}
+          </button>
         </div>
 
         <button
           type="button"
           onClick={aufVorbereitung}
-          className="shrink-0 rounded-full bg-papier-tief px-5 py-2 text-sm font-semibold text-tinte transition-colors hover:bg-flieder"
+          className="shrink-0 rounded-full bg-white border border-[#785BA3]/20 px-5 py-2 text-sm font-semibold text-tinte transition-colors hover:bg-[#EADCF5]"
         >
           Zurück zur Auswahl
         </button>

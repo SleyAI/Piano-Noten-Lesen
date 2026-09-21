@@ -9,7 +9,7 @@
  */
 
 import { NIVEAUS, fortschritt, gesamtFortschritt } from "@/lib/music/niveau";
-import { kurzeDauer, letzteTage, sekundenGesamt, serie } from "@/lib/practice/uebungszeit";
+import { kurzeDauer, letzteTage } from "@/lib/practice/uebungszeit";
 import { useEinstellungen } from "@/lib/store/einstellungen";
 import { useSekundentakt } from "@/lib/practice/useSekundentakt";
 import { useUebungszeit } from "@/lib/store/uebungszeit";
@@ -31,36 +31,32 @@ export function WochenKarte({ className }: { className?: string } = {}) {
   const woche = letzteTage(tage, 7, jetzt).map((tag, i, alle) =>
     i === alle.length - 1 ? { ...tag, sekunden: tag.sekunden + laufend } : tag,
   );
-  const gesamt = sekundenGesamt(tage) + laufend;
-  const amStueck = serie(tage, jetzt);
+  const wochenGesamt = woche.reduce((summe, t) => summe + t.sekunden, 0);
+  const schnittProTag = Math.round(wochenGesamt / 7);
   const heuteSekunden = woche[woche.length - 1]?.sekunden ?? 0;
 
   return (
-    <Karte href="/statistik" akzent="flieder" className={`p-6 flex flex-col justify-between ${className ?? ""}`}>
+    <Karte href="/statistik" akzent="flieder" className={`p-6 sm:p-7 flex flex-col justify-between ${className ?? ""}`}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <span className="font-titel text-xl font-bold text-tinte">Diese Woche</span>
-        <span className="rounded-full bg-papier-tief px-3 py-1 text-xs font-bold text-[#785BA3]">
+        <span className="rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-3 py-1 text-xs font-bold text-[#785BA3]">
           {kurzeDauer(heuteSekunden)} heute
         </span>
       </div>
 
-      {/* Tellers Notenlinien Chart */}
-      <div className="flex h-32 w-full items-center justify-center my-3">
+      {/* Cozy Bar Chart */}
+      <div className="flex w-full items-center justify-center my-2">
         <Wochenlinie tage={woche} />
       </div>
 
       {/* Footer Stats */}
       <div className="flex items-center justify-between pt-3 border-t border-papier-tief text-xs text-tinte-leise font-medium">
         <span>
-          Insgesamt: <strong className="text-tinte font-bold">{kurzeDauer(gesamt)}</strong>
+          Diese Woche: <strong className="text-tinte font-bold">{kurzeDauer(wochenGesamt)}</strong>
         </span>
         <span>
-          {amStueck > 1 ? (
-            <strong className="text-[#785BA3] font-bold">{amStueck} Tage am Stück</strong>
-          ) : (
-            "Regelmäßig üben"
-          )}
+          Ø <strong className="text-[#785BA3] font-bold">{kurzeDauer(schnittProTag)}</strong>/Tag
         </span>
       </div>
     </Karte>

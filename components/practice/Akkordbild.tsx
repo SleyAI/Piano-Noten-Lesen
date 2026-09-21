@@ -19,11 +19,15 @@ export function Akkordbild({
   griff,
   umkehrung,
   ansichtVorgabe,
+  titel,
+  namenSichtbar = true,
   className = "",
 }: {
   griff: Griff;
   umkehrung: number;
   ansichtVorgabe?: "noten" | "tastatur";
+  titel?: string;
+  namenSichtbar?: boolean;
   className?: string;
 }) {
   const [lokaleAnsicht, setLokaleAnsicht] = useState<"noten" | "tastatur">("noten");
@@ -62,37 +66,52 @@ export function Akkordbild({
     setLokaleAnsicht((a) => (a === "noten" ? "tastatur" : "noten"));
   }
 
+  const toeneText = (rechts.length > 0 ? rechts : links).map(name).join(" · ");
+  const titelAnzeigen = namenSichtbar || ansicht === "tastatur";
+
   return (
     <div
-      className={`flex flex-col gap-2 rounded-2xl bg-papier-tief p-3 shadow-xs border border-papier-tief/80 ${className}`}
+      className={`flex flex-col gap-3 rounded-3xl bg-[#FAF6FD] p-4 sm:p-5 shadow-xs border border-[#785BA3]/15 transition-all ${className}`}
     >
-      {/* Umschalt-Knopf als dezente Flashcard-Aktion */}
+      {/* Flashcard Header */}
       <div className="flex items-center justify-between px-1">
-        <span className="text-[11px] font-bold text-tinte-leise uppercase tracking-wider">
-          {ansicht === "noten" ? "Notenbild" : "Klaviatur-Hilfe"}
-        </span>
+        <div className="flex items-center gap-2">
+          {titel && (
+            <span
+              className={`font-titel text-lg sm:text-xl font-bold transition-colors ${
+                titelAnzeigen ? "text-tinte" : "text-tinte-leise/60"
+              }`}
+            >
+              {titelAnzeigen ? titel : "Akkord ?"}
+            </span>
+          )}
+          <span className="rounded-full bg-white/90 border border-[#785BA3]/15 text-[#785BA3] px-2.5 py-0.5 text-[11px] font-bold">
+            {ansicht === "noten" ? "Noten" : "Hilfe"}
+          </span>
+        </div>
+
         <button
           type="button"
           onClick={umschalten}
-          className="flex items-center gap-1 rounded-full bg-white/80 hover:bg-white px-2.5 py-0.5 text-[11px] font-bold text-[#785BA3] shadow-xs transition-colors"
+          className="flex items-center gap-1 rounded-full bg-white hover:bg-[#EADCF5]/60 border border-[#785BA3]/20 px-3 py-1 text-xs font-bold text-[#785BA3] shadow-2xs transition-all active:scale-95"
           title="Flashcard umdrehen"
         >
-          {ansicht === "noten" ? "Tastatur zeigen" : "Noten zeigen"}
+          {ansicht === "noten" ? "🔄 Tastatur zeigen" : "🔄 Noten zeigen"}
         </button>
       </div>
 
       {/* Große Anzeige: Entweder Noten (Standard) oder Klaviatur (Hilfe) */}
       <div
         onClick={umschalten}
-        className="cursor-pointer flex items-center justify-center bg-white rounded-xl p-2 min-h-[140px] shadow-inner transition-all hover:ring-2 hover:ring-[#785BA3]/20"
+        className="cursor-pointer flex items-center justify-center bg-white rounded-2xl p-3 sm:p-4 min-h-[200px] sm:min-h-[240px] shadow-inner transition-all hover:ring-2 hover:ring-[#785BA3]/25 select-none"
         title="Klicken zum Umdrehen"
       >
         {ansicht === "noten" ? (
-          <div className="w-full h-32 flex items-center justify-center">
+          <div className="w-full h-44 sm:h-52 flex items-center justify-center">
             <Notensystem
               spalten={spalten}
-              beschreibung="Akkord im Notensystem"
-              className="h-full w-full max-h-32"
+              beschreibung={titelAnzeigen ? `${titel ?? "Akkord"} im Notensystem` : "Akkord im Notensystem"}
+              className="h-full w-full max-h-52 object-contain"
             />
           </div>
         ) : (
@@ -103,15 +122,24 @@ export function Akkordbild({
               hervorgehoben={hervorgehoben}
               beschriftungen={beschriftungen}
               nurZeigen
-              className="h-24 w-full overflow-hidden rounded-b-xl"
+              className="h-28 sm:h-36 w-full overflow-hidden rounded-xl"
             />
           </div>
         )}
       </div>
 
-      <p className="text-center text-xs font-semibold text-tinte-leise">
-        {(rechts.length > 0 ? rechts : links).map(name).join(" · ")} — {haende}
-      </p>
+      {/* Footer Text */}
+      <div className="text-center">
+        {titelAnzeigen ? (
+          <p className="text-xs sm:text-sm font-semibold text-tinte-leise">
+            {toeneText} — {haende}
+          </p>
+        ) : (
+          <p className="text-xs font-medium text-tinte-leise/70">
+            Klicken zum Umdrehen für Tasten &amp; Fingersatz
+          </p>
+        )}
+      </div>
     </div>
   );
 }

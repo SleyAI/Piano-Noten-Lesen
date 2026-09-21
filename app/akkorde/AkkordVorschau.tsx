@@ -50,11 +50,11 @@ export function AkkordVorschau({
             {ueberschrift}
           </h2>
           <p className="text-xs sm:text-sm text-tinte-leise mt-0.5">
-            Tippe auf eine Flashcard, um zwischen Noten und Tastatur (Fingersatz) zu wechseln.
+            Tippe auf eine Flashcard, um zwischen Noten und Klaviatur (Fingersatz) zu wechseln.
           </p>
         </div>
 
-        {/* Steuerungs-Pills (Noten / Tastatur) */}
+        {/* Steuerungs-Pills (Noten / Klaviatur) */}
         <div className="flex items-center justify-center shrink-0">
           <div className="inline-flex rounded-full bg-white border border-[#785BA3]/20 p-1 shadow-2xs">
             <button
@@ -77,7 +77,7 @@ export function AkkordVorschau({
                   : "text-tinte-leise hover:text-[#785BA3]"
               }`}
             >
-              Alle Tastaturen
+              Alle Klaviaturen
             </button>
           </div>
         </div>

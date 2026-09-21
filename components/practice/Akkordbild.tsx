@@ -140,7 +140,7 @@ export function Akkordbild({
                 : "text-tinte-leise hover:text-[#785BA3]"
             }`}
           >
-            Tastatur
+            Klaviatur
           </button>
         </div>
       </div>
@@ -149,7 +149,7 @@ export function Akkordbild({
       <div
         onClick={toggleAnsicht}
         className="cursor-pointer flex items-center justify-center bg-white rounded-2xl p-4 sm:p-5 min-h-[220px] sm:min-h-[250px] shadow-inner transition-all hover:ring-2 hover:ring-[#785BA3]/30 select-none group relative"
-        title="Klicken zum Umdrehen (Noten / Tastatur)"
+        title="Klicken zum Umdrehen (Noten / Klaviatur)"
       >
         {ansicht === "noten" ? (
           <div className="w-full h-44 sm:h-52 flex items-center justify-center">

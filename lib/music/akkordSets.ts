@@ -397,75 +397,144 @@ const KADENZEN_ERWEITERT: Record<string, string[][]> = {
 
 const KADENZEN_KOMPLEX: Record<string, string[][]> = {
   Cmaj7: [
-    ["Dm7", "G7", "Cmaj7", "Am7"],
-    ["Cmaj7", "Am7", "Dm7", "G7"],
-    ["Cmaj7", "Fmaj7", "Dm7", "G7"],
-    ["Cmaj7", "Em7", "Fmaj7", "G7"],
+    ["Dm11", "G13", "Cmaj7", "Am7"],
+    ["Cmaj7", "F/G", "Em7", "Am7"],
+    ["Dm7", "G7b9", "Cmaj7", "Am7"],
+    ["Cmaj7", "C°7", "Dm7", "G7"],
     ["Cmaj7", "Fmaj7", "Bm7b5", "Em7"],
-    ["Cmaj7", "Am7", "Dm11", "G13"],
+    ["Bb/C", "Fmaj7", "Dm7", "Cmaj7"],
   ],
   Dm7: [
-    ["Dm7", "G7", "Cmaj7", "Am7"],
     ["Dm7", "G7b9", "Cmaj7", "Am7"],
-    ["Dm7", "G7#9", "Cmaj7", "Fmaj7"],
-    ["Dm7", "G7", "Em7", "A7"],
-    ["Dm7", "Cmaj7", "Fmaj7", "G7"],
+    ["Dm7", "G7#9", "Cmaj9", "Fmaj7"],
+    ["Dm7", "F/G", "Cmaj7", "Am7"],
+    ["Dm7", "G13", "Cmaj9", "Am7"],
+    ["Dm7", "Bm7b5", "Em7", "A7"],
   ],
   Em7: [
-    ["Em7", "Am7", "Dm7", "G7"],
-    ["Em7", "A7", "Dm7", "G7"],
-    ["Em7", "Fmaj7", "Dm7", "Cmaj7"],
+    ["Em7", "Am7", "Dm11", "G13"],
+    ["Fmaj7", "F/G", "Em7", "Am7"],
+    ["Em7", "A7", "Dm7", "G7b9"],
   ],
   Fmaj7: [
-    ["Fmaj7", "Em7", "Dm7", "Cmaj7"],
+    ["Fmaj7", "F/G", "Em7", "Am7"],
+    ["Bb/C", "Fmaj7", "Dm7", "Cmaj7"],
     ["Fmaj7", "Bm7b5", "Em7", "Am7"],
-    ["Fmaj7", "Dm7", "G7", "Cmaj7"],
+    ["Dm7", "G7#9", "Cmaj7", "Fmaj7"],
   ],
   G7: [
     ["Dm7", "G7b9", "Cmaj7", "Am7"],
+    ["Dm7", "G7#9", "Cmaj7", "Fmaj7"],
+    ["C°7", "Dm7", "G7", "Cmaj7"],
     ["Dm11", "G13", "Cmaj9", "Am7"],
-    ["Dm7", "G7", "Cmaj7", "Am7"],
   ],
   Am7: [
-    ["Am7", "Dm7", "G7", "Cmaj7"],
+    ["Dm11", "G13", "Cmaj9", "Am7"],
     ["Am7", "Bm7b5", "Em7", "Dm7"],
+    ["Cmaj7", "F/G", "Em7", "Am7"],
   ],
   Bm7b5: [
+    ["Cmaj7", "Fmaj7", "Bm7b5", "Em7"],
     ["Bm7b5", "Em7", "Am7", "Dm7"],
     ["Dm7", "Bm7b5", "Em7", "G7"],
   ],
   Cmaj9: [
     ["Dm11", "G13", "Cmaj9", "Am7"],
-    ["Cmaj9", "Am7", "Dm7", "G7"],
+    ["Dm7", "G7b9", "Cmaj9", "Am7"],
+    ["Dm7", "F/G", "Cmaj9", "Am7"],
   ],
   Dm11: [
-    ["Dm11", "G13", "Cmaj7", "Am7"],
-    ["Dm11", "G7b9", "Cmaj9", "Am7"],
+    ["Dm11", "G13", "Cmaj9", "Am7"],
+    ["Dm11", "G7b9", "Cmaj7", "Am7"],
+    ["Em7", "Am7", "Dm11", "G13"],
   ],
   G13: [
-    ["Dm7", "G13", "Cmaj7", "Am7"],
     ["Dm11", "G13", "Cmaj9", "Am7"],
+    ["Dm7", "G13", "Cmaj7", "Am7"],
   ],
   G7b9: [
     ["Dm7", "G7b9", "Cmaj7", "Am7"],
-    ["Dm7", "G7b9", "Cmaj9", "Am7"],
+    ["Dm11", "G7b9", "Cmaj9", "Am7"],
+    ["C°7", "Dm7", "G7b9", "Cmaj7"],
   ],
   "G7#9": [
-    ["Dm7", "G7#9", "Cmaj7", "Am7"],
     ["Dm7", "G7#9", "Cmaj7", "Fmaj7"],
+    ["Dm7", "G7#9", "Cmaj9", "Am7"],
   ],
   "C°7": [
-    ["C°7", "Dm7", "G7", "Cmaj7"],
+    ["Cmaj7", "C°7", "Dm7", "G7"],
+    ["C°7", "Dm7", "G7b9", "Cmaj7"],
     ["C°7", "Fmaj7", "Dm7", "G7"],
   ],
   "F/G": [
-    ["Cmaj7", "F/G", "Em7", "Am7"],
     ["Fmaj7", "F/G", "Em7", "Am7"],
-    ["Dm7", "F/G", "Cmaj7", "Am7"],
+    ["Cmaj7", "F/G", "Em7", "Am7"],
+    ["Dm7", "F/G", "Cmaj9", "Am7"],
   ],
   "Bb/C": [
     ["Bb/C", "Fmaj7", "Dm7", "Cmaj7"],
-    ["Dm7", "G7", "Cmaj7", "Bb/C"],
+    ["Bb/C", "Fmaj7", "Dm7", "G7"],
+    ["Dm7", "G7b9", "Cmaj7", "Bb/C"],
+  ],
+};
+
+export const STANDARD_FOLGEN: Record<AkkordKomplexitaet, string[][]> = {
+  dreiklaenge: [
+    ["C", "G", "Am", "F"],
+    ["G", "D", "Em", "C"],
+    ["Am", "F", "C", "G"],
+    ["D", "A", "Bm", "G"],
+    ["F", "C", "Dm", "B (H)"],
+    ["Em", "C", "G", "D"],
+  ],
+  inversionen: [
+    ["C/E", "G/B", "Am/C", "F/A"],
+    ["C/G", "F/C", "G/D", "Am/E"],
+  ],
+  erweitert: [
+    ["Cadd9", "Am6", "D7", "G7"],
+    ["Csus4", "C6", "Gsus4", "G7"],
+    ["C7", "F7", "Csus2", "G7"],
+    ["D7", "Gsus4", "A7", "Cadd9"],
+    ["Am6", "E7", "D7", "G7"],
+  ],
+  komplex: [
+    ["Dm11", "G13", "Cmaj9", "Am7"],
+    ["Fmaj7", "F/G", "Em7", "Am7"],
+    ["Dm7", "G7b9", "Cmaj7", "Am7"],
+    ["Cmaj7", "C°7", "Dm7", "G7"],
+    ["Bb/C", "Fmaj7", "Dm7", "Cmaj7"],
+    ["Cmaj7", "Fmaj7", "Bm7b5", "Em7"],
+    ["Dm7", "G7#9", "Cmaj9", "Fmaj7"],
+  ],
+};
+
+export const GEMISCHTE_FOLGEN: Record<"erweitert" | "komplex", string[][]> = {
+  erweitert: [
+    ["C", "G7", "Am", "F7"],
+    ["C", "Cadd9", "F", "G7"],
+    ["Dm", "G7", "C", "Cadd9"],
+    ["C", "Gsus4", "F", "G7"],
+    ["C", "Am6", "F", "G7"],
+    ["G", "D7", "Em", "Cadd9"],
+    ["Dm", "G7", "C", "C6"],
+    ["A", "E7", "D", "A7"],
+    ["F", "C7", "Dm", "Csus4"],
+    ["Am", "E7", "C", "D7"],
+    ["C", "Csus2", "G", "G7"],
+    ["Am", "C6", "Dm", "E7"],
+  ],
+  komplex: [
+    ["C", "F/G", "Em7", "Am"],
+    ["C", "Am7", "Dm7", "G7"],
+    ["Bb/C", "F", "Dm7", "C"],
+    ["Dm7", "G7b9", "C", "Am"],
+    ["C", "C°7", "Dm7", "G"],
+    ["Am", "Dm11", "G13", "C"],
+    ["F", "F/G", "Cmaj7", "Am"],
+    ["C", "Cmaj9", "Fmaj7", "G"],
+    ["Am", "Bm7b5", "E7", "C"],
+    ["Dm7", "G7#9", "C", "Am"],
   ],
 };
 
@@ -473,14 +542,43 @@ const KADENZEN_KOMPLEX: Record<string, string[][]> = {
  * Automatische Auffüllung mit passenden harmonischen Akkorden (auf 4 Akkorde),
  * wenn der Nutzer auf "Lass Otto passende Akkorde auswählen" klickt.
  * Es werden garantiert immer 4 unterschiedliche Akkorde ausgewählt,
- * streng aus dem Vorrat des jeweiligen Akkord-Typs.
+ * streng aus dem Vorrat des jeweiligen Akkord-Typs oder bei mitVorherigen gemischt.
  */
 export function passendeViererFolgeFuer(
   symbol: string,
   komplexitaet: AkkordKomplexitaet,
   variation = 0,
+  mitVorherigen = false,
 ): string[] {
-  const basis = symbol.split("/")[0];
+  // Wenn vorherige Typen einbezogen werden sollen (z. B. 2 Dreiklänge + 2 erweiterte Griffe):
+  if (mitVorherigen && (komplexitaet === "erweitert" || komplexitaet === "komplex")) {
+    const gemischte = GEMISCHTE_FOLGEN[komplexitaet];
+    if (symbol) {
+      const treffer = gemischte.filter((folge) => folge.includes(symbol));
+      if (treffer.length > 0) {
+        const idx = Math.abs(variation) % treffer.length;
+        return [...treffer[idx]];
+      }
+      // Falls der Akkord nicht direkt vorkommt, basierend auf dem Typ einsetzen:
+      const idx = Math.abs(variation) % gemischte.length;
+      const basisFolge = [...gemischte[idx]];
+      const dreiklaengePool = KOMPLEXITAET_INFOS.dreiklaenge.einzelAkkorde;
+      const isDreiklang = dreiklaengePool.includes(symbol);
+      const replIdx = basisFolge.findIndex((s) =>
+        isDreiklang ? dreiklaengePool.includes(s) : !dreiklaengePool.includes(s)
+      );
+      if (replIdx !== -1) {
+        basisFolge[replIdx] = symbol;
+      } else {
+        basisFolge[0] = symbol;
+      }
+      return basisFolge;
+    }
+    const idx = Math.abs(variation) % gemischte.length;
+    return [...gemischte[idx]];
+  }
+
+  const basis = symbol ? symbol.split("/")[0] : "";
 
   const tabelle =
     komplexitaet === "komplex"
@@ -489,26 +587,35 @@ export function passendeViererFolgeFuer(
         ? KADENZEN_ERWEITERT
         : KADENZEN_DREIKLAENGE;
 
-  const optionen = tabelle[symbol] ?? tabelle[basis];
+  const optionen = (symbol && tabelle[symbol]) || (basis && tabelle[basis]);
   let kandidat: string[] = [];
 
   if (optionen && optionen.length > 0) {
     const idx = Math.abs(variation) % optionen.length;
     kandidat = [...optionen[idx]];
   } else {
-    kandidat = [symbol];
+    // Wenn kein passender Eintrag vorhanden ist oder kein Akkord gewählt wurde:
+    const standards = STANDARD_FOLGEN[komplexitaet];
+    if (standards && standards.length > 0) {
+      const idx = Math.abs(variation) % standards.length;
+      kandidat = [...standards[idx]];
+    } else {
+      kandidat = symbol ? [symbol] : [];
+    }
   }
 
   // Streng garantieren: Es müssen immer 4 UNTERSCHIEDLICHE Akkorde sein!
+  const pool = KOMPLEXITAET_INFOS[komplexitaet]?.einzelAkkorde ?? [];
   const einzigartig: string[] = [];
+
+  // Nur Akkorde aufnehmen, die auch wirklich zum Vorrat dieser Komplexitätsstufe gehören!
   for (const s of kandidat) {
-    if (!einzigartig.includes(s)) {
+    if (pool.includes(s) && !einzigartig.includes(s)) {
       einzigartig.push(s);
     }
   }
 
   // Falls noch keine 4 unterschiedlichen vorhanden sind, STRENG aus dem jeweiligen Vorrat auffüllen:
-  const pool = KOMPLEXITAET_INFOS[komplexitaet]?.einzelAkkorde ?? [];
   for (const s of pool) {
     if (einzigartig.length >= 4) break;
     if (!einzigartig.includes(s)) {

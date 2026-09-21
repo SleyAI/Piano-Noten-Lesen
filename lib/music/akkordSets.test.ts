@@ -155,4 +155,41 @@ describe("Akkord-Sets & Einträge", () => {
     expect(KOMPLEXITAET_INFOS.erweitert.gruppen.length).toBe(2);
     expect(KOMPLEXITAET_INFOS.komplex.gruppen.length).toBe(4);
   });
+
+  it("erzeugt bei mitVorherigen gemischte Viererfolgen mit 2 Dreiklängen und 2 erweiterten Griffen", () => {
+    const dreiklaengePool = new Set(KOMPLEXITAET_INFOS.dreiklaenge.einzelAkkorde);
+    const erweitertePool = new Set(KOMPLEXITAET_INFOS.erweitert.einzelAkkorde);
+
+    // Alle erweiterten Einzelakkorde durchtesten
+    for (const sym of KOMPLEXITAET_INFOS.erweitert.einzelAkkorde) {
+      const folge = passendeViererFolgeFuer(sym, "erweitert", 0, true);
+      expect(folge.length).toBe(4);
+      expect(new Set(folge).size).toBe(4);
+      expect(folge).toContain(sym);
+
+      const anzahlDreiklaenge = folge.filter((c) => dreiklaengePool.has(c)).length;
+      const anzahlErweitert = folge.filter((c) => erweitertePool.has(c)).length;
+      expect(anzahlDreiklaenge, `Folge für ${sym} muss 2 Dreiklänge haben: ${folge.join(", ")}`).toBe(2);
+      expect(anzahlErweitert, `Folge für ${sym} muss 2 erweiterte Griffe haben: ${folge.join(", ")}`).toBe(2);
+    }
+  });
+
+  it("erzeugt bei mitVorherigen gemischte Viererfolgen für komplexe Akkorde", () => {
+    const vorherigePool = new Set([
+      ...KOMPLEXITAET_INFOS.dreiklaenge.einzelAkkorde,
+      ...KOMPLEXITAET_INFOS.erweitert.einzelAkkorde,
+    ]);
+    const komplexPool = new Set(KOMPLEXITAET_INFOS.komplex.einzelAkkorde);
+
+    for (let v = 0; v < 10; v++) {
+      const folge = passendeViererFolgeFuer("Cmaj7", "komplex", v, true);
+      expect(folge.length).toBe(4);
+      expect(new Set(folge).size).toBe(4);
+      // Mindestens ein komplexer Akkord und mindestens ein vorheriger Akkord
+      const anzahlKomplex = folge.filter((c) => komplexPool.has(c)).length;
+      const anzahlVorherig = folge.filter((c) => vorherigePool.has(c)).length;
+      expect(anzahlKomplex).toBeGreaterThanOrEqual(1);
+      expect(anzahlVorherig).toBeGreaterThanOrEqual(1);
+    }
+  });
 });

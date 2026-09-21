@@ -43,6 +43,7 @@ export function AkkordAuswahl({
   onWeiter,
 }: AkkordAuswahlProps) {
   const info = KOMPLEXITAET_INFOS[komplexitaet];
+  const [mitVorherigen, setMitVorherigen] = useState(false);
 
   function klickAkkord(symbol: string) {
     if (ausgewaehlteAkkorde.includes(symbol)) {
@@ -59,16 +60,28 @@ export function AkkordAuswahl({
   const [auffuellVariation, setAuffuellVariation] = useState(0);
 
   function auffuellen() {
-    const defaultBasis =
-      komplexitaet === "komplex"
-        ? "Cmaj7"
-        : komplexitaet === "erweitert"
-          ? "G7"
-          : "C";
-    const basis = ausgewaehlteAkkorde[0] ?? defaultBasis;
+    const pool = mitVorherigen
+      ? [
+          ...info.einzelAkkorde,
+          ...(komplexitaet === "erweitert"
+            ? KOMPLEXITAET_INFOS.dreiklaenge.einzelAkkorde
+            : [
+                ...KOMPLEXITAET_INFOS.dreiklaenge.einzelAkkorde,
+                ...KOMPLEXITAET_INFOS.erweitert.einzelAkkorde,
+              ]),
+        ]
+      : info.einzelAkkorde;
+
+    const gueltigeAuswahl = ausgewaehlteAkkorde.filter((s) => pool.includes(s));
+    const basis = gueltigeAuswahl[0] ?? "";
     const naechste = auffuellVariation + 1;
     setAuffuellVariation(naechste);
-    const gefuellt = passendeViererFolgeFuer(basis, komplexitaet, naechste);
+    const gefuellt = passendeViererFolgeFuer(
+      basis,
+      komplexitaet,
+      naechste,
+      mitVorherigen,
+    );
     onAkkordeChange(gefuellt);
   }
 
@@ -119,6 +132,12 @@ export function AkkordAuswahl({
                 type="button"
                 onClick={() => {
                   onKomplexitaetChange(stufe);
+                  setMitVorherigen(false);
+                  // Nur Akkorde behalten, die zur neuen Stufe gehören
+                  const neueGueltige = ausgewaehlteAkkorde.filter((s) =>
+                    KOMPLEXITAET_INFOS[stufe].einzelAkkorde.includes(s),
+                  );
+                  onAkkordeChange(neueGueltige);
                   if (stufe === "inversionen") {
                     onModusArtChange("inversionen");
                   } else {
@@ -182,11 +201,69 @@ export function AkkordAuswahl({
         </div>
       </section>
 
-      {/* 3. Akkorde wählen */}
+      {/* 3. Vorherige Akkord-Typen mit einbeziehen? (nur bei Erweitert & Komplex) */}
+      {(komplexitaet === "erweitert" || komplexitaet === "komplex") && (
+        <section className="w-full rounded-[24px] bg-white p-5 sm:p-6 border border-[#785BA3]/15 shadow-sm">
+          <div className="mb-3 px-1">
+            <span className="font-titel text-base sm:text-lg font-bold text-tinte block">
+              3. {komplexitaet === "erweitert" ? "Dreiklänge mit dazu üben?" : "Vorherige Akkord-Typen mit dazu üben?"}
+            </span>
+            <span className="text-xs text-tinte-leise">
+              {komplexitaet === "erweitert"
+                ? "Kombiniere erweiterte Griffe mit bekannten Dreiklängen wie in echten Songs."
+                : "Kombiniere komplexe Griffe mit Dreiklängen & 7er-Akkorden."}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl">
+            <button
+              type="button"
+              onClick={() => setMitVorherigen(false)}
+              className={`flex flex-col text-left p-4 rounded-2xl transition-all border ${
+                !mitVorherigen
+                  ? "bg-[#FAF6FD] border-[#785BA3] ring-2 ring-[#785BA3]/25 shadow-xs"
+                  : "bg-white border-papier-tief hover:border-[#785BA3]/30"
+              }`}
+            >
+              <span className={`font-titel text-sm font-bold ${!mitVorherigen ? "text-[#785BA3]" : "text-tinte"}`}>
+                {komplexitaet === "erweitert" ? "Nur Erweiterte Griffe" : "Nur Komplexe Akkorde"}
+              </span>
+              <span className="text-xs text-tinte-leise mt-1 leading-snug">
+                {komplexitaet === "erweitert"
+                  ? "Ausschließlich Vierklänge & Sus/Add-Akkorde"
+                  : "Ausschließlich Tensions, Alterationen & Slash-Chords"}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMitVorherigen(true)}
+              className={`flex flex-col text-left p-4 rounded-2xl transition-all border ${
+                mitVorherigen
+                  ? "bg-[#FAF6FD] border-[#785BA3] ring-2 ring-[#785BA3]/25 shadow-xs"
+                  : "bg-white border-papier-tief hover:border-[#785BA3]/30"
+              }`}
+            >
+              <span className={`font-titel text-sm font-bold ${mitVorherigen ? "text-[#785BA3]" : "text-tinte"}`}>
+                {komplexitaet === "erweitert" ? "Mit Dreiklängen mischen" : "Mit Vorherigen mischen"}
+              </span>
+              <span className="text-xs text-tinte-leise mt-1 leading-snug">
+                {komplexitaet === "erweitert"
+                  ? "Otto wählt z. B. 2 Dreiklänge + 2 erweiterte Griffe"
+                  : "Otto kombiniert komplexe Griffe mit Dreiklängen & 7ern"}
+              </span>
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* 4. bzw. 3. Akkorde wählen */}
       <section className="w-full rounded-[24px] bg-white p-5 sm:p-6 border border-[#785BA3]/15 shadow-sm flex flex-col gap-4">
         <div>
           <span className="font-titel text-base sm:text-lg font-bold text-tinte block">
-            Akkorde wählen
+            {komplexitaet === "erweitert" || komplexitaet === "komplex"
+              ? "4. Akkorde wählen"
+              : "3. Akkorde wählen"}
           </span>
           <span className="text-xs text-tinte-leise">
             {modusArt === "inversionen"
@@ -339,6 +416,39 @@ export function AkkordAuswahl({
                 </div>
               </div>
             ))}
+
+            {/* Wenn mitVorherigen aktiv: Vorherige Akkorde als optionale Zusatz-Gruppe */}
+            {mitVorherigen && (
+              <div className="flex flex-col gap-2 pt-2 border-t border-[#785BA3]/10">
+                <span className="text-xs font-bold text-[#785BA3] uppercase tracking-wider px-1">
+                  {komplexitaet === "erweitert"
+                    ? "Dreiklänge dazu wählen (Optional)"
+                    : "Dreiklänge & Erweiterte Griffe dazu wählen (Optional)"}
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {(komplexitaet === "erweitert"
+                    ? ["C", "G", "Am", "F", "Dm", "Em", "D", "A", "B (H)"]
+                    : ["C", "G", "Am", "F", "Dm", "Em", "C7", "G7", "D7", "Cadd9", "Gsus4"]
+                  ).map((sym) => {
+                    const istDrin = ausgewaehlteAkkorde.includes(sym);
+                    return (
+                      <button
+                        key={sym}
+                        type="button"
+                        onClick={() => klickAkkord(sym)}
+                        className={`rounded-2xl px-4 py-2.5 text-sm font-bold transition-all duration-150 border ${
+                          istDrin
+                            ? "bg-[#785BA3] text-white border-[#785BA3] shadow-xs scale-105"
+                            : "bg-[#FAF6FD]/60 text-tinte border-papier-tief hover:border-[#785BA3]/30 hover:bg-[#FAF6FD]"
+                        }`}
+                      >
+                        {sym}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Deine Auswahl + Button zum Auffüllen */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#FAF6FD] border border-[#785BA3]/15 mt-2">

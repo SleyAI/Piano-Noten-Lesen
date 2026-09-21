@@ -40,7 +40,7 @@ export default function Startseite() {
       id: "melodien-vorbereitung",
       href: "/melodien",
       titel: "Melodien mit Rhythmus",
-      text: "Erst anhören und üben, dann mit Notenwerten prüfen.",
+      text: "Bereite eine kurze Melodie vor. Übe sie, bevor du dich prüfst.",
       akzent: "flieder" as const,
       bild: "melodie" as const,
       melodieModus: "vorbereitung" as const,

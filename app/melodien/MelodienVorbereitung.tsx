@@ -188,7 +188,7 @@ export function MelodienVorbereitung({
             {phase === "vorbereiten" && (
               <>
                 <span className="text-tinte-leise font-medium text-sm">
-                  In Ruhe ansehen, vorüben oder anhören.
+                  Bereite eine kurze Melodie vor. Übe sie, bevor du dich prüfst.
                 </span>
                 <button
                   type="button"

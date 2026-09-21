@@ -79,7 +79,7 @@ export function SchnellLeiste({ onAenderung }: SchnellLeisteProps) {
                 : "text-tinte-leise hover:text-tinte"
             }`}
           >
-            Rechts (𝄞)
+            Rechts
           </button>
           <button
             type="button"
@@ -90,7 +90,7 @@ export function SchnellLeiste({ onAenderung }: SchnellLeisteProps) {
                 : "text-tinte-leise hover:text-tinte"
             }`}
           >
-            Links (𝄢)
+            Links
           </button>
         </div>
 
@@ -131,7 +131,7 @@ export function SchnellLeiste({ onAenderung }: SchnellLeisteProps) {
                 : "text-tinte-leise hover:text-tinte"
             }`}
           >
-            🎹 Klaviatur
+            Klaviatur
           </button>
           <button
             type="button"
@@ -142,7 +142,7 @@ export function SchnellLeiste({ onAenderung }: SchnellLeisteProps) {
                 : "text-tinte-leise hover:text-tinte"
             }`}
           >
-            🔤 Kästchen
+            Kästchen
           </button>
         </div>
       </div>

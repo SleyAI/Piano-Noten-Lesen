@@ -42,16 +42,16 @@ export function SchnellLeiste({ onAenderung }: SchnellLeisteProps) {
           <button
             type="button"
             onClick={() => setModalOffen(true)}
-            className="group flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EADCF5]/80 hover:bg-[#EADCF5] border border-[#785BA3]/20 shadow-xs transition-all duration-150 active:scale-98"
+            className="group flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FDE8D3]/80 hover:bg-[#FDE8D3] border border-[#E86518]/20 shadow-xs transition-all duration-150 active:scale-98"
             title="Level wechseln"
           >
-            <span className="w-5 h-5 rounded-full bg-[#785BA3] text-white text-xs font-bold flex items-center justify-center">
+            <span className="w-5 h-5 rounded-full bg-[#E86518] text-white text-xs font-bold flex items-center justify-center">
               {curLevel.id}
             </span>
-            <span className="font-titel text-xs sm:text-sm font-bold text-[#785BA3] whitespace-nowrap">
+            <span className="font-titel text-xs sm:text-sm font-bold text-[#E86518] whitespace-nowrap">
               {curLevel.titel.split(":")[1]?.trim() ?? curLevel.titel}
             </span>
-            <span className="text-[11px] text-[#785BA3] transition-transform group-hover:translate-y-0.5">
+            <span className="text-[11px] text-[#E86518] transition-transform group-hover:translate-y-0.5">
               ▾
             </span>
           </button>
@@ -101,7 +101,7 @@ export function SchnellLeiste({ onAenderung }: SchnellLeisteProps) {
             onClick={() => waehleAbfolge("zufall")}
             className={`rounded-full px-3 py-1 text-xs font-bold transition-all duration-150 ${
               abfolgeModus === "zufall"
-                ? "bg-[#785BA3] text-white shadow-xs"
+                ? "bg-[#E86518] text-white shadow-xs"
                 : "text-tinte-leise hover:text-tinte"
             }`}
           >
@@ -112,7 +112,7 @@ export function SchnellLeiste({ onAenderung }: SchnellLeisteProps) {
             onClick={() => waehleAbfolge("melodisch")}
             className={`rounded-full px-3 py-1 text-xs font-bold transition-all duration-150 ${
               abfolgeModus === "melodisch"
-                ? "bg-[#785BA3] text-white shadow-xs"
+                ? "bg-[#E86518] text-white shadow-xs"
                 : "text-tinte-leise hover:text-tinte"
             }`}
           >

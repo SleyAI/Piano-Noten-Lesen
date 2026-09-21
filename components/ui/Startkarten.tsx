@@ -40,7 +40,7 @@ export function WochenKarte({ className }: { className?: string } = {}) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <span className="font-titel text-xl font-bold text-tinte">Diese Woche</span>
-        <span className="rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-3 py-1 text-xs font-bold text-[#785BA3]">
+        <span className="rounded-full bg-[#FDF5ED] border border-[#E86518]/20 px-3 py-1 text-xs font-bold text-[#E86518]">
           {kurzeDauer(heuteSekunden)} heute
         </span>
       </div>
@@ -56,7 +56,7 @@ export function WochenKarte({ className }: { className?: string } = {}) {
           Diese Woche: <strong className="text-tinte font-bold">{kurzeDauer(wochenGesamt)}</strong>
         </span>
         <span>
-          Ø <strong className="text-[#785BA3] font-bold">{kurzeDauer(schnittProTag)}</strong>/Tag
+          Ø <strong className="text-[#E86518] font-bold">{kurzeDauer(schnittProTag)}</strong>/Tag
         </span>
       </div>
     </Karte>

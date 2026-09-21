@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
 @theme {
-  /* Cozy Pastel Lilac & Lavender Palette */
-  --color-papier: #ECE0F5;
-  --color-papier-tief: #E0CEF0;
-  --color-tinte: #342A42;
-  --color-tinte-leise: #7B708A;
+  /* Cozy Warm Caramel, Peach & Beige Palette */
+  --color-papier: #F8ECE0;
+  --color-papier-tief: #EEDCCE;
+  --color-tinte: #2E1F16;
+  --color-tinte-leise: #857062;
 
-  --color-lavendel: #785BA3;
-  --color-lavendel-dunkel: #654B8D;
-  --color-flieder: #EADCF5;
-  --color-flieder-tief: #C4B5E0;
+  --color-lavendel: #E86518;
+  --color-lavendel-dunkel: #CF530B;
+  --color-flieder: #FDE8D3;
+  --color-flieder-tief: #F6CCA6;
 
   --color-mint: #d9f0e3;
   --color-mint-tief: #a8dcc0;
-  --color-rose: #f7dde4;
-  --color-rose-tief: #ebbfce;
-  --color-himmel: #dcebf7;
-  --color-himmel-tief: #b5d4ec;
-  --color-creme: #faf3dc;
-  --color-creme-tief: #f0e3b8;
-  --color-pfirsich: #fce4d3;
-  --color-pfirsich-tief: #f4c0a0;
+  --color-rose: #fce2ce;
+  --color-rose-tief: #f6bfa0;
+  --color-himmel: #fdebd8;
+  --color-himmel-tief: #f7d0ab;
+  --color-creme: #fff5eb;
+  --color-creme-tief: #fde5ce;
+  --color-pfirsich: #fce2ce;
+  --color-pfirsich-tief: #f4be95;
 
   /* Fredoka für runde, gemütliche Titel; Nunito für Fließtext & Bedienung */
   --font-sans: var(--font-nunito), ui-rounded, system-ui, sans-serif;

@@ -62,7 +62,7 @@ export default function Startseite() {
 
         {/* Header im cozy Stil mit Maskottchen und fliegenden Noten */}
         <header className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 py-1">
-          <h1 className="text-center font-titel text-4xl sm:text-6xl md:text-7xl font-bold text-[#785BA3] tracking-tight">
+          <h1 className="text-center font-titel text-4xl sm:text-6xl md:text-7xl font-bold text-[#E86518] tracking-tight">
             Noten &amp; Akkorde lernen
           </h1>
 
@@ -70,25 +70,25 @@ export default function Startseite() {
           <div className="relative shrink-0 select-none animate-huepfen flex items-center justify-center">
             {/* Fliegende Noten */}
             <span
-              className="absolute -top-3 -left-3 text-lg sm:text-2xl font-bold text-[#785BA3] animate-note-1 pointer-events-none"
+              className="absolute -top-3 -left-3 text-lg sm:text-2xl font-bold text-[#E86518] animate-note-1 pointer-events-none"
               aria-hidden
             >
               ♪
             </span>
             <span
-              className="absolute -top-4 -right-2 text-xl sm:text-3xl font-bold text-[#9874CC] animate-note-2 pointer-events-none"
+              className="absolute -top-4 -right-2 text-xl sm:text-3xl font-bold text-[#FA7E23] animate-note-2 pointer-events-none"
               aria-hidden
             >
               ♫
             </span>
             <span
-              className="absolute -bottom-2 -right-3 text-base sm:text-xl font-bold text-[#785BA3] animate-note-3 pointer-events-none"
+              className="absolute -bottom-2 -right-3 text-base sm:text-xl font-bold text-[#E86518] animate-note-3 pointer-events-none"
               aria-hidden
             >
               ♩
             </span>
             <span
-              className="absolute -bottom-1 -left-3 text-sm sm:text-lg font-bold text-[#9874CC] animate-note-2 pointer-events-none"
+              className="absolute -bottom-1 -left-3 text-sm sm:text-lg font-bold text-[#FA7E23] animate-note-2 pointer-events-none"
               aria-hidden
             >
               ♬
@@ -105,9 +105,9 @@ export default function Startseite() {
         </header>
 
         {/* Gemütliche Level-Leiste */}
-        <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white border border-[#785BA3]/10 shadow-[0_4px_20px_rgba(120,91,163,0.05)]">
+        <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white border border-[#E86518]/12 shadow-[0_4px_20px_rgba(232,101,24,0.05)]">
           <div className="flex items-center gap-3 min-w-0">
-            <span className="w-8 h-8 rounded-xl bg-[#EADCF5] text-[#785BA3] font-titel text-sm font-bold flex items-center justify-center shrink-0">
+            <span className="w-8 h-8 rounded-xl bg-[#FDE8D3] text-[#E86518] font-titel text-sm font-bold flex items-center justify-center shrink-0">
               {curLevel.id}
             </span>
             <div className="truncate">
@@ -122,7 +122,7 @@ export default function Startseite() {
           <button
             type="button"
             onClick={() => setModalManuellOffen(true)}
-            className="shrink-0 ml-3 rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-[#785BA3] hover:bg-[#785BA3] hover:text-white transition-all shadow-xs"
+            className="shrink-0 ml-3 rounded-full bg-[#FDF5ED] border border-[#E86518]/20 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-[#E86518] hover:bg-[#E86518] hover:text-white transition-all shadow-xs"
           >
             Level wechseln ▾
           </button>
@@ -135,7 +135,7 @@ export default function Startseite() {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="font-titel text-xl font-bold text-tinte">Übungen</span>
-                <span className="rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-3 py-1 text-xs font-bold text-[#785BA3]">
+                <span className="rounded-full bg-[#FDF5ED] border border-[#E86518]/20 px-3 py-1 text-xs font-bold text-[#E86518]">
                   3 Modi
                 </span>
               </div>
@@ -150,24 +150,24 @@ export default function Startseite() {
                         useEinstellungen.getState().setzeMelodieModus(modus.melodieModus);
                       }
                     }}
-                    className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-[#FAF6FD] hover:bg-[#F3ECF9] transition-all duration-200 border border-[#785BA3]/10 hover:border-[#785BA3]/30 hover:-translate-y-0.5 shadow-xs"
+                    className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-[#FAF2E8] hover:bg-[#F5E6D6] transition-all duration-200 border border-[#E86518]/10 hover:border-[#E86518]/30 hover:-translate-y-0.5 shadow-xs"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-[#EADCF5] text-[#785BA3] text-lg font-bold shadow-xs">
+                      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-[#FDE8D3] text-[#E86518] text-lg font-bold shadow-xs">
                         {modus.symbol}
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="font-titel text-base sm:text-lg font-bold text-tinte group-hover:text-[#785BA3] transition-colors">
+                        <h2 className="font-titel text-base sm:text-lg font-bold text-tinte group-hover:text-[#E86518] transition-colors">
                           {modus.titel}
                         </h2>
                         {modus.tag && (
-                          <span className="rounded-full bg-white/80 border border-[#785BA3]/15 text-[#785BA3] px-2.5 py-0.5 text-[11px] font-bold">
+                          <span className="rounded-full bg-white/80 border border-[#E86518]/15 text-[#E86518] px-2.5 py-0.5 text-[11px] font-bold">
                             {modus.tag}
                           </span>
                         )}
                       </div>
                     </div>
-                    <span className="text-[#785BA3] text-xl font-bold px-1 transition-transform duration-200 group-hover:translate-x-1 shrink-0">
+                    <span className="text-[#E86518] text-xl font-bold px-1 transition-transform duration-200 group-hover:translate-x-1 shrink-0">
                       ›
                     </span>
                   </Link>

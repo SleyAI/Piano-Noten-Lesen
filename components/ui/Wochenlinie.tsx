@@ -20,7 +20,7 @@ export function Wochenlinie({ tage }: { tage: readonly Tageseintrag[] }) {
               className={`text-[11px] tabular-nums font-bold leading-none ${
                 tag.sekunden > 0
                   ? istHeute
-                    ? "text-[#785BA3]"
+                    ? "text-[#E86518]"
                     : "text-tinte"
                   : "text-tinte-leise/50"
               }`}
@@ -35,8 +35,8 @@ export function Wochenlinie({ tage }: { tage: readonly Tageseintrag[] }) {
                   style={{ height: `${hoeheProzent}%` }}
                   className={`w-6 sm:w-8 rounded-full transition-all duration-300 ${
                     istHeute
-                      ? "bg-[#785BA3] shadow-sm shadow-[#785BA3]/20"
-                      : "bg-[#D8C4EE] hover:bg-[#C4B5E0]"
+                      ? "bg-[#E86518] shadow-sm shadow-[#E86518]/20"
+                      : "bg-[#F4C7A5] hover:bg-[#EEB68E]"
                   }`}
                   title={`${wochentagKurz(tag.datum)}: ${kurzeDauer(tag.sekunden)}`}
                 />
@@ -44,7 +44,7 @@ export function Wochenlinie({ tage }: { tage: readonly Tageseintrag[] }) {
                 <div
                   className={`w-6 sm:w-8 h-2.5 rounded-full border border-dashed ${
                     istHeute
-                      ? "border-[#785BA3]/60 bg-[#EADCF5]/40"
+                      ? "border-[#E86518]/60 bg-[#FDE8D3]/40"
                       : "border-papier-tief bg-white/60"
                   }`}
                   title={`${wochentagKurz(tag.datum)}: keine Übung`}
@@ -54,7 +54,7 @@ export function Wochenlinie({ tage }: { tage: readonly Tageseintrag[] }) {
 
             {/* Wochentag-Beschriftung */}
             {istHeute ? (
-              <span className="rounded-full bg-[#EADCF5] px-1.5 py-0.5 text-[10px] font-bold text-[#785BA3] leading-tight">
+              <span className="rounded-full bg-[#FDE8D3] px-1.5 py-0.5 text-[10px] font-bold text-[#E86518] leading-tight">
                 Heute
               </span>
             ) : (

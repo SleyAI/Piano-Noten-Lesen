@@ -17,7 +17,7 @@ export function MidiStatus({ className }: { className?: string }) {
 
   const inhalt = <span className="text-sm font-medium">{text}</span>;
 
-  const gemeinsam = `flex items-center gap-2 rounded-full px-4 py-2 bg-white shadow-[0_2px_10px_rgba(120,91,163,0.06)] text-tinte ${className ?? ""}`;
+  const gemeinsam = `flex items-center gap-2 rounded-full px-4 py-2 bg-white shadow-[0_2px_10px_rgba(232,101,24,0.06)] text-tinte ${className ?? ""}`;
 
   if (aktion) {
     return (
@@ -25,7 +25,7 @@ export function MidiStatus({ className }: { className?: string }) {
         type="button"
         onClick={() => void verbinde()}
         title={titel}
-        className={`${gemeinsam} transition-colors hover:bg-[#EADCF5]`}
+        className={`${gemeinsam} transition-colors hover:bg-[#FDE8D3]`}
       >
         {inhalt}
       </button>

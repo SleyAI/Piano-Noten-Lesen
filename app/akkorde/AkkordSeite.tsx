@@ -29,18 +29,19 @@ export function AkkordSeite() {
   const [komplexitaet, setKomplexitaet] = useState<AkkordKomplexitaet>("dreiklaenge");
   const [modusArt, setModusArt] = useState<"akkorde" | "inversionen">("akkorde");
   const [inversionsAkkord, setInversionsAkkord] = useState<string>("C");
-  const [ausgewaehlteSymbole, setAusgewaehlteSymbole] = useState<string[]>(["C"]);
+  const [gewaehlteUmkehrungen, setGewaehlteUmkehrungen] = useState<number[]>([0, 1, 2]);
+  const [ausgewaehlteSymbole, setAusgewaehlteSymbole] = useState<string[]>([]);
   const [spielart, setSpielart] = useState<AkkordSpielart>("griff");
 
   // Aufbereitete Akkorde für Flashcards und Übung
   const eintraege = useMemo(() => {
     if (modusArt === "inversionen") {
-      return inversionenFuerAkkord(inversionsAkkord);
+      return inversionenFuerAkkord(inversionsAkkord, gewaehlteUmkehrungen);
     }
     return ausgewaehlteSymbole
       .map((sym) => baueAkkordEintrag(sym))
       .filter((e): e is AkkordEintrag => e !== null);
-  }, [modusArt, inversionsAkkord, ausgewaehlteSymbole]);
+  }, [modusArt, inversionsAkkord, gewaehlteUmkehrungen, ausgewaehlteSymbole]);
 
   if (!hydriert) return <div className="h-full bg-papier" />;
 
@@ -66,10 +67,10 @@ export function AkkordSeite() {
             onModusArtChange={setModusArt}
             inversionsAkkord={inversionsAkkord}
             onInversionsAkkordChange={setInversionsAkkord}
+            gewaehlteUmkehrungen={gewaehlteUmkehrungen}
+            onGewaehlteUmkehrungenChange={setGewaehlteUmkehrungen}
             haende={haende}
             onHaendeChange={setzeHaende}
-            spielart={spielart}
-            onSpielartChange={setSpielart}
             ausgewaehlteAkkorde={ausgewaehlteSymbole}
             onAkkordeChange={setAusgewaehlteSymbole}
             onWeiter={() => setPhase("flashcards")}

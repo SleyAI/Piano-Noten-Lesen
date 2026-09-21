@@ -61,6 +61,17 @@ describe("Akkord-Sets & Einträge", () => {
     expect(invG7.length).toBe(4); // Grundstellung + 3 Umkehrungen
   });
 
+  it("filtert Umkehrungen nach ausgewählten Stufen", () => {
+    const invNurGrundUnd1 = inversionenFuerAkkord("C", [0, 1]);
+    expect(invNurGrundUnd1.length).toBe(2);
+    expect(invNurGrundUnd1[0].umkehrung).toBe(0);
+    expect(invNurGrundUnd1[1].umkehrung).toBe(1);
+
+    const invNur2 = inversionenFuerAkkord("C", [2]);
+    expect(invNur2.length).toBe(1);
+    expect(invNur2[0].umkehrung).toBe(2);
+  });
+
   it("definiert die 3 Komplexitätsstufen vollständig", () => {
     expect(KOMPLEXITAET_INFOS.dreiklaenge.kurztitel).toBe("Dreiklänge");
     expect(KOMPLEXITAET_INFOS.erweitert.kurztitel).toBe("Erweiterte Griffe");

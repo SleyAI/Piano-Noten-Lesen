@@ -84,7 +84,10 @@ export const KOMPLEXITAET_INFOS: Record<
  * - 1. Umkehrung (E-G-C)
  * - 2. Umkehrung (G-C-E)
  */
-export function inversionenFuerAkkord(symbol: string): AkkordEintrag[] {
+export function inversionenFuerAkkord(
+  symbol: string,
+  erlaubteUmkehrungen?: readonly number[],
+): AkkordEintrag[] {
   const basis = symbol.split("/")[0];
   const akkord = akkordNachSymbol(basis);
   if (!akkord) return [];
@@ -93,6 +96,7 @@ export function inversionenFuerAkkord(symbol: string): AkkordEintrag[] {
   const eintraege: AkkordEintrag[] = [];
 
   for (let u = 0; u <= anzahl; u++) {
+    if (erlaubteUmkehrungen && !erlaubteUmkehrungen.includes(u)) continue;
     const l = lage(akkord, u);
     const titel =
       u === 0

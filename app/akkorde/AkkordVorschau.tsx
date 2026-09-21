@@ -23,7 +23,6 @@ export function AkkordVorschau({
   onStartUebung,
 }: AkkordVorschauProps) {
   const [ansichtVorgabe, setAnsichtVorgabe] = useState<"noten" | "tastatur">("noten");
-  const [namenSichtbar, setNamenSichtbar] = useState(true);
 
   const istInversionsReihe =
     eintraege.length > 1 &&
@@ -55,9 +54,8 @@ export function AkkordVorschau({
           </p>
         </div>
 
-        {/* Steuerungs-Pills (Noten / Tastatur & Namen) */}
-        <div className="flex flex-wrap items-center justify-center gap-2 shrink-0">
-          {/* Alle Noten / Alle Tastaturen */}
+        {/* Steuerungs-Pills (Noten / Tastatur) */}
+        <div className="flex items-center justify-center shrink-0">
           <div className="inline-flex rounded-full bg-white border border-[#785BA3]/20 p-1 shadow-2xs">
             <button
               type="button"
@@ -82,18 +80,6 @@ export function AkkordVorschau({
               Alle Tastaturen
             </button>
           </div>
-
-          <button
-            type="button"
-            onClick={() => setNamenSichtbar((v) => !v)}
-            className={`rounded-full px-3.5 py-1.5 text-xs font-bold border transition-all ${
-              !namenSichtbar
-                ? "bg-[#EADCF5] text-[#785BA3] border-[#785BA3]/40"
-                : "bg-white text-tinte-leise border-[#785BA3]/20 hover:text-[#785BA3]"
-            }`}
-          >
-            {namenSichtbar ? "Namen verbergen" : "Namen zeigen"}
-          </button>
         </div>
       </div>
 
@@ -119,7 +105,7 @@ export function AkkordVorschau({
               umkehrung={eintrag.umkehrung}
               ansichtVorgabe={ansichtVorgabe}
               titel={eintrag.titel}
-              namenSichtbar={namenSichtbar}
+              namenSichtbar={true}
               className="w-full"
             />
           );

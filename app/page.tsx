@@ -70,25 +70,25 @@ export default function Startseite() {
           <div className="relative shrink-0 select-none animate-huepfen flex items-center justify-center">
             {/* Fliegende Noten */}
             <span
-              className="absolute -top-3 -left-3 text-lg sm:text-2xl font-bold text-[#785BA3] animate-note-1 pointer-events-none"
+              className="absolute -top-2 -left-2 text-base sm:text-lg font-bold text-[#785BA3] animate-note-1 pointer-events-none"
               aria-hidden
             >
               ♪
             </span>
             <span
-              className="absolute -top-4 -right-2 text-xl sm:text-3xl font-bold text-[#9874CC] animate-note-2 pointer-events-none"
+              className="absolute -top-3 -right-2 text-lg sm:text-xl font-bold text-[#9874CC] animate-note-2 pointer-events-none"
               aria-hidden
             >
               ♫
             </span>
             <span
-              className="absolute -bottom-2 -right-3 text-base sm:text-xl font-bold text-[#785BA3] animate-note-3 pointer-events-none"
+              className="absolute -bottom-1 -right-2 text-sm sm:text-base font-bold text-[#785BA3] animate-note-3 pointer-events-none"
               aria-hidden
             >
               ♩
             </span>
             <span
-              className="absolute -bottom-1 -left-3 text-sm sm:text-lg font-bold text-[#9874CC] animate-note-2 pointer-events-none"
+              className="absolute -bottom-1 -left-2 text-xs sm:text-sm font-bold text-[#9874CC] animate-note-2 pointer-events-none"
               aria-hidden
             >
               ♬
@@ -99,7 +99,7 @@ export default function Startseite() {
               src={maskottchenBild}
               alt=""
               priority
-              className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain filter drop-shadow-sm pointer-events-none"
+              className="w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain filter drop-shadow-sm pointer-events-none"
             />
           </div>
         </header>

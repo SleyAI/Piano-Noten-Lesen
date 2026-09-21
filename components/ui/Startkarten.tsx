@@ -45,8 +45,8 @@ export function WochenKarte({ className }: { className?: string } = {}) {
         </span>
       </div>
 
-      {/* Cozy Bar Chart */}
-      <div className="flex w-full items-center justify-center my-2">
+      {/* Notensystem Chart */}
+      <div className="flex h-32 sm:h-36 w-full items-center justify-center my-2">
         <Wochenlinie tage={woche} />
       </div>
 

@@ -1,39 +1,29 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { HandWahl } from "@/components/practice/HandWahl";
-import { KuratierteAkkordWahl } from "@/components/practice/KuratierteAkkordWahl";
 import { SchrittReihe } from "@/components/practice/SchrittReihe";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
-import {
-  type Akkord,
-  type Haende,
-  akkordNachSymbol,
-  lage,
-} from "@/lib/music/akkorde";
+import { type Haende } from "@/lib/music/akkorde";
 import { type UebungsSchritt, baueUebung } from "@/lib/music/akkorduebung";
-import { stabileViererFolge, wuerfleFolge } from "@/lib/music/akkordfolgen";
+import { type AkkordEintrag } from "@/lib/music/akkordSets";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
 import { useSchrittfolge } from "@/lib/practice/useSchrittfolge";
-import { useEinstellungen } from "@/lib/store/einstellungen";
-import { AkkordVorbereitung } from "./AkkordVorbereitung";
 
-const PAUSE_NACH_FOLGE = 1000;
+const PAUSE_NACH_FOLGE = 900;
 
 interface FolgenSchritt extends UebungsSchritt {
   akkordIndex: number;
 }
 
 function schritteAusKette(
-  kette: readonly Akkord[],
+  kette: readonly AkkordEintrag[],
   haende: Haende,
 ): { schritte: FolgenSchritt[]; bassGrenze: number } {
   const schritte: FolgenSchritt[] = [];
   let bassGrenze = Number.NEGATIVE_INFINITY;
 
-  kette.forEach((akkord, akkordIndex) => {
-    const l = lage(akkord, 0); // Grundstellung
-    const gebaut = baueUebung(l, "griff", haende, false);
+  kette.forEach((eintrag, akkordIndex) => {
+    const gebaut = baueUebung(eintrag.lage, "griff", haende, false);
     bassGrenze = gebaut.bassGrenze;
     for (const schritt of gebaut.schritte) {
       schritte.push({ ...schritt, akkordIndex });
@@ -43,78 +33,73 @@ function schritteAusKette(
   return { schritte, bassGrenze };
 }
 
-export function AkkordfolgenUebung() {
-  const lernAkkord = useEinstellungen((z) => z.lernAkkord);
-  const setzeLernAkkord = useEinstellungen((z) => z.setzeLernAkkord);
-  const haende = useEinstellungen((z) => z.akkordHaende);
+function wuerfleAchtSchritte(eintraege: readonly AkkordEintrag[]): AkkordEintrag[] {
+  if (eintraege.length === 0) return [];
+  if (eintraege.length === 1) return Array.from({ length: 8 }, () => eintraege[0]);
 
-  const [phase, setPhase] = useState<"vorbereitung" | "uebung">("vorbereitung");
+  const kette: AkkordEintrag[] = [];
+  while (kette.length < 8) {
+    const vorheriger = kette[kette.length - 1];
+    // Wähle zufälligen Eintrag, vermeide direkte Wiederholung wenn möglich
+    const pool =
+      eintraege.length > 1
+        ? eintraege.filter((e) => !vorheriger || e.id !== vorheriger.id)
+        : eintraege;
+    const zufall = pool[Math.floor(Math.random() * pool.length)];
+    kette.push(zufall);
+  }
+  return kette;
+}
+
+interface AkkordfolgenUebungProps {
+  eintraege: AkkordEintrag[];
+  haende: Haende;
+  onZurueckZuFlashcards: () => void;
+  onZurueckZuAuswahl: () => void;
+}
+
+export function AkkordfolgenUebung({
+  eintraege,
+  haende,
+  onZurueckZuFlashcards,
+  onZurueckZuAuswahl,
+}: AkkordfolgenUebungProps) {
   const [variation, setVariation] = useState(0);
-
-  const akkord = useMemo(() => {
-    return (lernAkkord ? akkordNachSymbol(lernAkkord) : null) ?? akkordNachSymbol("C")!;
-  }, [lernAkkord]);
-
-  const vierAkkorde = useMemo(() => {
-    return stabileViererFolge(akkord);
-  }, [akkord]);
 
   const naechsteVariation = useCallback(() => {
     setVariation((v) => v + 1);
   }, []);
 
-  if (phase === "vorbereitung") {
-    const eintraege = vierAkkorde.map((a) => ({
-      id: a.id,
-      titel: a.symbol,
-      lage: lage(a, 0),
-    }));
-
-    return (
-      <div className="flex flex-col items-center gap-6 py-4 overflow-y-auto">
-        <KuratierteAkkordWahl
-          gewaehlteId={akkord.id}
-          aufWahl={(a) => {
-            setzeLernAkkord(a.id);
-          }}
-        />
-
-        <HandWahl />
-
-        <AkkordVorbereitung
-          titel={`Passende Akkordfolge: ${vierAkkorde.map((a) => a.symbol).join(" – ")}`}
-          eintraege={eintraege}
-          haende={haende}
-          aufBereit={() => setPhase("uebung")}
-        />
-      </div>
-    );
-  }
-
   return (
     <Lauf
-      key={`${akkord.id}#${variation}#${haende}`}
-      vierAkkorde={vierAkkorde}
+      key={`variation-${variation}-${haende}`}
+      eintraege={eintraege}
       haende={haende}
-      aufVorbereitung={() => setPhase("vorbereitung")}
+      rundeNummer={variation + 1}
+      onZurueckZuFlashcards={onZurueckZuFlashcards}
+      onZurueckZuAuswahl={onZurueckZuAuswahl}
       aufNaechste={naechsteVariation}
     />
   );
 }
 
 function Lauf({
-  vierAkkorde,
+  eintraege,
   haende,
-  aufVorbereitung,
+  rundeNummer,
+  onZurueckZuFlashcards,
+  onZurueckZuAuswahl,
   aufNaechste,
 }: {
-  vierAkkorde: Akkord[];
+  eintraege: readonly AkkordEintrag[];
   haende: Haende;
-  aufVorbereitung: () => void;
+  rundeNummer: number;
+  onZurueckZuFlashcards: () => void;
+  onZurueckZuAuswahl: () => void;
   aufNaechste: () => void;
 }) {
   // 8 Schläge/Schritte in variierender Reihenfolge
-  const kette = useMemo(() => wuerfleFolge(vierAkkorde, 8), [vierAkkorde]);
+  const kette = useMemo(() => wuerfleAchtSchritte(eintraege), [eintraege]);
   const { schritte, bassGrenze } = useMemo(() => schritteAusKette(kette, haende), [kette, haende]);
 
   const uhren = useRef<number[]>([]);
@@ -148,7 +133,7 @@ function Lauf({
     return karte;
   }, [lauf.gespielt, lauf.daneben]);
 
-  const [namenSichtbar, setNamenSichtbar] = useState(false);
+  const [namenSichtbar, setNamenSichtbar] = useState(true);
 
   const aktuellerAkkord = lauf.fertig
     ? kette.length - 1
@@ -156,12 +141,17 @@ function Lauf({
 
   return (
     <div className="flex flex-col h-full bg-papier">
-      <div className="flex shrink-0 items-center justify-between gap-3 px-6 py-3">
-        <div className="flex items-center gap-2 overflow-x-auto">
+      {/* Obere Steuerungs- und Fortschrittsleiste */}
+      <div className="flex flex-wrap shrink-0 items-center justify-between gap-3 px-6 py-3 border-b border-papier-tief bg-white/50">
+        <div className="flex items-center gap-2 overflow-x-auto py-1">
+          <span className="text-xs font-bold text-[#785BA3] bg-[#EADCF5] px-2.5 py-1 rounded-full shrink-0">
+            Runde {rundeNummer} (8 Akkorde)
+          </span>
+
           {kette.map((a, i) => {
             const gespielt = lauf.fertig || i < aktuellerAkkord;
             const istAktiv = i === aktuellerAkkord;
-            const text = namenSichtbar || gespielt ? a.symbol : String(i + 1);
+            const text = namenSichtbar || gespielt ? a.titel : String(i + 1);
 
             return (
               <span
@@ -170,7 +160,7 @@ function Lauf({
                   gespielt
                     ? "bg-mint text-tinte opacity-80"
                     : istAktiv
-                      ? "bg-[#EADCF5] text-[#785BA3] ring-2 ring-[#785BA3]/40 scale-105"
+                      ? "bg-[#EADCF5] text-[#785BA3] ring-2 ring-[#785BA3]/40 scale-105 shadow-xs"
                       : "bg-white/80 text-tinte-leise border border-[#785BA3]/10"
                 }`}
               >
@@ -188,15 +178,25 @@ function Lauf({
           </button>
         </div>
 
-        <button
-          type="button"
-          onClick={aufVorbereitung}
-          className="shrink-0 rounded-full bg-white border border-[#785BA3]/20 px-5 py-2 text-sm font-semibold text-tinte transition-colors hover:bg-[#EADCF5]"
-        >
-          Zurück zur Auswahl
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={onZurueckZuFlashcards}
+            className="rounded-full bg-white border border-[#785BA3]/20 px-4 py-1.5 text-xs font-bold text-[#785BA3] transition-colors hover:bg-[#EADCF5]"
+          >
+            ← Flashcards
+          </button>
+          <button
+            type="button"
+            onClick={onZurueckZuAuswahl}
+            className="rounded-full bg-white border border-[#785BA3]/20 px-4 py-1.5 text-xs font-bold text-tinte transition-colors hover:bg-[#EADCF5]"
+          >
+            Auswahl ändern
+          </button>
+        </div>
       </div>
 
+      {/* Notenbild im absoluten Mittelpunkt */}
       <Uebungsflaeche
         notenbild={
           <SchrittReihe
@@ -205,7 +205,7 @@ function Lauf({
             position={lauf.fertig ? schritte.length : lauf.index}
             daneben={[]}
             mitWerten={false}
-            beschreibung={vierAkkorde.map((a) => a.symbol).join(" – ")}
+            beschreibung={eintraege.map((a) => a.titel).join(" – ")}
           />
         }
         hervorgehoben={hervorgehoben}

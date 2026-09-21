@@ -1,62 +1,93 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Kopfzeile } from "@/components/ui/Kopfzeile";
 import { useEinstellungen } from "@/lib/store/einstellungen";
 import { useHydriert } from "@/lib/store/hydriert";
-import { AkkordLernen } from "./AkkordLernen";
+import {
+  type AkkordKomplexitaet,
+  type AkkordEintrag,
+  KOMPLEXITAET_INFOS,
+  baueAkkordEintrag,
+} from "@/lib/music/akkordSets";
+import { AkkordAuswahl } from "./AkkordAuswahl";
+import { AkkordVorschau } from "./AkkordVorschau";
 import { AkkordfolgenUebung } from "./AkkordfolgenUebung";
 
-const REITER = [
-  { wert: "folgen", titel: "Basisakkorde & Folgen" },
-  { wert: "inversionen", titel: "Inversionen" },
-] as const;
+export type AkkordPhase = "auswahl" | "flashcards" | "uebung";
 
 export function AkkordSeite() {
   const hydriert = useHydriert();
-  const rawModus = useEinstellungen((z) => z.akkordModus);
-  const setzeModus = useEinstellungen((z) => z.setzeAkkordModus);
-  const [wechsel, setWechsel] = useState(0);
+  const haende = useEinstellungen((z) => z.akkordHaende);
+  const setzeHaende = useEinstellungen((z) => z.setzeAkkordHaende);
+
+  // Schritt-Navigation
+  const [phase, setPhase] = useState<AkkordPhase>("auswahl");
+
+  // Filter-Zustand für Schritt A
+  const [komplexitaet, setKomplexitaet] = useState<AkkordKomplexitaet>("dreiklaenge");
+  const [ausgewaehlteSymbole, setAusgewaehlteSymbole] = useState<string[]>([
+    "C",
+    "G",
+    "Am",
+    "F",
+  ]);
+
+  // Aufbereitete Akkorde für Flashcards und Übung
+  const eintraege = useMemo(() => {
+    return ausgewaehlteSymbole
+      .map((sym) => baueAkkordEintrag(sym))
+      .filter((e): e is AkkordEintrag => e !== null);
+  }, [ausgewaehlteSymbole]);
 
   if (!hydriert) return <div className="h-full bg-papier" />;
 
-  const modus = rawModus === "inversionen" || rawModus === "lernen" || rawModus === "umkehrungen"
-    ? "inversionen"
-    : "folgen";
+  const info = KOMPLEXITAET_INFOS[komplexitaet];
 
   return (
-    <div className="flex h-full flex-col bg-papier">
+    <div className="flex h-full flex-col bg-papier overflow-hidden">
       <Kopfzeile
         titel="Akkorde"
-        rechts={
-          <div className="flex gap-1.5 rounded-full bg-papier-tief p-1">
-            {REITER.map((reiter) => (
-              <button
-                key={reiter.wert}
-                type="button"
-                aria-pressed={modus === reiter.wert}
-                onClick={() => {
-                  setzeModus(reiter.wert);
-                  setWechsel((w) => w + 1);
-                }}
-                className={`rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 ${
-                  modus === reiter.wert
-                    ? "bg-flieder text-tinte shadow-sm"
-                    : "text-tinte-leise hover:bg-white/60 hover:text-tinte"
-                }`}
-              >
-                {reiter.titel}
-              </button>
-            ))}
-          </div>
+        unterzeile={
+          phase === "auswahl"
+            ? info.kurztitel
+            : phase === "flashcards"
+              ? `${eintraege.length} Akkorde · Flashcards`
+              : `${eintraege.length} Akkorde · Aktive Übung`
         }
       />
 
-      {modus === "folgen" ? (
-        <AkkordfolgenUebung key={wechsel} />
-      ) : (
-        <AkkordLernen key={`${modus}-${wechsel}`} />
-      )}
+      <div className="flex-1 overflow-y-auto">
+        {phase === "auswahl" && (
+          <AkkordAuswahl
+            komplexitaet={komplexitaet}
+            onKomplexitaetChange={setKomplexitaet}
+            haende={haende}
+            onHaendeChange={setzeHaende}
+            ausgewaehlteAkkorde={ausgewaehlteSymbole}
+            onAkkordeChange={setAusgewaehlteSymbole}
+            onWeiter={() => setPhase("flashcards")}
+          />
+        )}
+
+        {phase === "flashcards" && (
+          <AkkordVorschau
+            eintraege={eintraege}
+            haende={haende}
+            onZurueck={() => setPhase("auswahl")}
+            onStartUebung={() => setPhase("uebung")}
+          />
+        )}
+
+        {phase === "uebung" && (
+          <AkkordfolgenUebung
+            eintraege={eintraege}
+            haende={haende}
+            onZurueckZuFlashcards={() => setPhase("flashcards")}
+            onZurueckZuAuswahl={() => setPhase("auswahl")}
+          />
+        )}
+      </div>
     </div>
   );
 }

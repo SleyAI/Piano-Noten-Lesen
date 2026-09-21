@@ -78,14 +78,14 @@ export function Akkordbild({
         <div className="flex items-center gap-2">
           {titel && (
             <span
-              className={`font-titel text-lg sm:text-xl font-bold transition-colors ${
-                titelAnzeigen ? "text-tinte" : "text-tinte-leise/60"
+              className={`font-titel text-xl sm:text-2xl font-bold transition-colors ${
+                titelAnzeigen ? "text-[#785BA3]" : "text-tinte-leise/60"
               }`}
             >
               {titelAnzeigen ? titel : "Akkord ?"}
             </span>
           )}
-          <span className="rounded-full bg-white/90 border border-[#785BA3]/15 text-[#785BA3] px-2.5 py-0.5 text-[11px] font-bold">
+          <span className="rounded-full bg-[#EADCF5] text-[#785BA3] px-2.5 py-0.5 text-[11px] font-bold">
             {ansicht === "noten" ? "Noten" : "Hilfe"}
           </span>
         </div>

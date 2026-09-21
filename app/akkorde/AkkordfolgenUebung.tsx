@@ -8,7 +8,6 @@ import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
 import {
   type Akkord,
   type Haende,
-  type Lage,
   akkordNachSymbol,
   lage,
 } from "@/lib/music/akkorde";

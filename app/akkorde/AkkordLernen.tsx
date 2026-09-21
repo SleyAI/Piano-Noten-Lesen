@@ -8,7 +8,6 @@ import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
 import {
   type Akkord,
   type Haende,
-  type Lage,
   akkordNachSymbol,
   anzahlUmkehrungen,
   lage,
@@ -49,7 +48,7 @@ function schritteFuerInversionen(
   return { schritte, bassGrenze };
 }
 
-export function AkkordLernen({ modus }: { modus?: string }) {
+export function AkkordLernen() {
   const lernAkkord = useEinstellungen((z) => z.lernAkkord);
   const setzeLernAkkord = useEinstellungen((z) => z.setzeLernAkkord);
   const spielart = useEinstellungen((z) => z.inversionsSpielart);

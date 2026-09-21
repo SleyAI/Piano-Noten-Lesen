@@ -170,8 +170,8 @@ function Lauf({
                   gespielt
                     ? "bg-mint text-tinte opacity-80"
                     : istAktiv
-                      ? "bg-[#FDE8D3] text-[#E86518] ring-2 ring-[#E86518]/40 scale-105"
-                      : "bg-white/80 text-tinte-leise border border-[#E86518]/10"
+                      ? "bg-[#EFE3D5] text-[#794D2C] ring-2 ring-[#794D2C]/40 scale-105"
+                      : "bg-white/80 text-tinte-leise border border-[#794D2C]/10"
                 }`}
               >
                 {text}
@@ -182,7 +182,7 @@ function Lauf({
           <button
             type="button"
             onClick={() => setNamenSichtbar((v) => !v)}
-            className="ml-1 rounded-full bg-white border border-[#E86518]/20 px-3 py-1 text-xs font-bold text-[#E86518] hover:bg-[#FDE8D3]/70 transition-colors shrink-0"
+            className="ml-1 rounded-full bg-white border border-[#794D2C]/20 px-3 py-1 text-xs font-bold text-[#794D2C] hover:bg-[#EFE3D5]/70 transition-colors shrink-0"
           >
             {namenSichtbar ? "Namen ausblenden" : "Namen einblenden"}
           </button>
@@ -191,7 +191,7 @@ function Lauf({
         <button
           type="button"
           onClick={aufVorbereitung}
-          className="shrink-0 rounded-full bg-white border border-[#E86518]/20 px-5 py-2 text-sm font-semibold text-tinte transition-colors hover:bg-[#FDF5ED]"
+          className="shrink-0 rounded-full bg-white border border-[#794D2C]/20 px-5 py-2 text-sm font-semibold text-tinte transition-colors hover:bg-[#F8F3EC]"
         >
           Zurück zur Auswahl
         </button>

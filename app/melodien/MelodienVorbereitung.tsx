@@ -162,7 +162,7 @@ export function MelodienVorbereitung({
                 vorspiel.stoppen();
                 neueMelodie();
               }}
-              className="rounded-full bg-white shadow-xs px-4 py-1.5 text-xs sm:text-sm font-semibold text-[#E86518] transition-colors hover:bg-[#FDE8D3]"
+              className="rounded-full bg-white shadow-xs px-4 py-1.5 text-xs sm:text-sm font-semibold text-[#794D2C] transition-colors hover:bg-[#EFE3D5]"
             >
               neu würfeln
             </button>
@@ -193,7 +193,7 @@ export function MelodienVorbereitung({
                 <button
                   type="button"
                   onClick={startePruefung}
-                  className="rounded-full bg-[#E86518] px-6 py-2 text-sm font-bold text-white shadow-[0_4px_16px_rgba(232,101,24,0.25)] transition-all duration-200 hover:bg-[#CF530B] hover:-translate-y-0.5"
+                  className="rounded-full bg-[#794D2C] px-6 py-2 text-sm font-bold text-white shadow-[0_4px_16px_rgba(121,77,44,0.25)] transition-all duration-200 hover:bg-[#5C361A] hover:-translate-y-0.5"
                 >
                   Let&apos;s check
                 </button>
@@ -203,14 +203,14 @@ export function MelodienVorbereitung({
             {phase === "einzaehlen" && (
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-tinte-leise">Einzählen:</span>
-                <span className="font-titel text-3xl font-bold text-[#E86518] animate-puls-sanft">
+                <span className="font-titel text-3xl font-bold text-[#794D2C] animate-puls-sanft">
                   {countIn}
                 </span>
               </div>
             )}
 
             {phase === "pruefen" && (
-              <span className="text-sm font-medium text-[#E86518]">
+              <span className="text-sm font-medium text-[#794D2C]">
                 Prüfung läuft: Ton {uebung.position + 1} von {melodie.length}
               </span>
             )}
@@ -223,7 +223,7 @@ export function MelodienVorbereitung({
                 <button
                   type="button"
                   onClick={neueMelodie}
-                  className="rounded-full bg-[#E86518] px-5 py-2 text-sm font-bold text-white shadow-[0_4px_16px_rgba(232,101,24,0.25)] transition-all duration-200 hover:bg-[#CF530B]"
+                  className="rounded-full bg-[#794D2C] px-5 py-2 text-sm font-bold text-white shadow-[0_4px_16px_rgba(121,77,44,0.25)] transition-all duration-200 hover:bg-[#5C361A]"
                 >
                   Nächste Melodie
                 </button>
@@ -242,7 +242,7 @@ export function MelodienVorbereitung({
                 <button
                   type="button"
                   onClick={startePruefung}
-                  className="rounded-full bg-[#E86518] px-4 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#CF530B]"
+                  className="rounded-full bg-[#794D2C] px-4 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#5C361A]"
                 >
                   Nochmal prüfen
                 </button>

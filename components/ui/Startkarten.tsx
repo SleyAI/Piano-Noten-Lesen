@@ -40,13 +40,13 @@ export function WochenKarte({ className }: { className?: string } = {}) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <span className="font-titel text-xl font-bold text-tinte">Diese Woche</span>
-        <span className="rounded-full bg-[#FDF5ED] border border-[#E86518]/20 px-3 py-1 text-xs font-bold text-[#E86518]">
+        <span className="rounded-full bg-[#F8F3EC] border border-[#794D2C]/20 px-3 py-1 text-xs font-bold text-[#794D2C]">
           {kurzeDauer(heuteSekunden)} heute
         </span>
       </div>
 
-      {/* Cozy Bar Chart */}
-      <div className="flex w-full items-center justify-center my-2">
+      {/* Notenlinien Chart */}
+      <div className="flex h-28 sm:h-32 w-full items-center justify-center my-2">
         <Wochenlinie tage={woche} />
       </div>
 
@@ -56,7 +56,7 @@ export function WochenKarte({ className }: { className?: string } = {}) {
           Diese Woche: <strong className="text-tinte font-bold">{kurzeDauer(wochenGesamt)}</strong>
         </span>
         <span>
-          Ø <strong className="text-[#E86518] font-bold">{kurzeDauer(schnittProTag)}</strong>/Tag
+          Ø <strong className="text-[#794D2C] font-bold">{kurzeDauer(schnittProTag)}</strong>/Tag
         </span>
       </div>
     </Karte>

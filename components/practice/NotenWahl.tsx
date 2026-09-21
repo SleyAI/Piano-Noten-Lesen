@@ -40,8 +40,8 @@ export function NotenWahl() {
                 aria-pressed={aktiv}
                 className={`flex items-center justify-center py-3.5 px-3 rounded-2xl text-center text-sm font-semibold transition-all duration-200 ${
                   aktiv
-                    ? "bg-[#E86518] text-white shadow-[0_4px_16px_rgba(232,101,24,0.25)] -translate-y-0.5"
-                    : "bg-white text-tinte hover:bg-white/80 shadow-[0_2px_10px_rgba(232,101,24,0.06)]"
+                    ? "bg-[#794D2C] text-white shadow-[0_4px_16px_rgba(121,77,44,0.25)] -translate-y-0.5"
+                    : "bg-white text-tinte hover:bg-white/80 shadow-[0_2px_10px_rgba(121,77,44,0.06)]"
                 }`}
               >
                 {eintrag.titel}
@@ -67,8 +67,8 @@ export function NotenWahl() {
                 aria-pressed={aktiv}
                 className={`flex items-center justify-center py-3.5 px-3 rounded-2xl text-center text-sm font-semibold transition-all duration-200 ${
                   aktiv
-                    ? "bg-[#E86518] text-white shadow-[0_4px_16px_rgba(232,101,24,0.25)] -translate-y-0.5"
-                    : "bg-white text-tinte hover:bg-white/80 shadow-[0_2px_10px_rgba(232,101,24,0.06)]"
+                    ? "bg-[#794D2C] text-white shadow-[0_4px_16px_rgba(121,77,44,0.25)] -translate-y-0.5"
+                    : "bg-white text-tinte hover:bg-white/80 shadow-[0_2px_10px_rgba(121,77,44,0.06)]"
                 }`}
               >
                 {eintrag.titel}
@@ -94,8 +94,8 @@ export function NotenWahl() {
                 aria-pressed={aktiv}
                 className={`flex items-center justify-center py-3.5 px-3 rounded-2xl text-center text-sm font-semibold transition-all duration-200 ${
                   aktiv
-                    ? "bg-[#E86518] text-white shadow-[0_4px_16px_rgba(232,101,24,0.25)] -translate-y-0.5"
-                    : "bg-white text-tinte hover:bg-white/80 shadow-[0_2px_10px_rgba(232,101,24,0.06)]"
+                    ? "bg-[#794D2C] text-white shadow-[0_4px_16px_rgba(121,77,44,0.25)] -translate-y-0.5"
+                    : "bg-white text-tinte hover:bg-white/80 shadow-[0_2px_10px_rgba(121,77,44,0.06)]"
                 }`}
               >
                 {eintrag.titel}

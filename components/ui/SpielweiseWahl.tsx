@@ -93,8 +93,8 @@ function Knopf({
       aria-pressed={aktiv}
       className={`rounded-2xl px-5 py-2.5 text-left transition-all duration-200 ${
         aktiv
-          ? "bg-[#E86518] text-white shadow-[0_2px_12px_rgba(232,101,24,0.25)]"
-          : "bg-[#FDF0E2] text-tinte-leise hover:bg-[#FDE8D3] hover:text-tinte"
+          ? "bg-[#794D2C] text-white shadow-[0_2px_12px_rgba(121,77,44,0.25)]"
+          : "bg-[#F8F3EC] text-tinte-leise hover:bg-[#EFE3D5] hover:text-tinte"
       } ${gedaempft && !aktiv ? "opacity-60" : ""}`}
     >
       <span className="block text-sm font-semibold">{titel}</span>
@@ -122,7 +122,7 @@ function Schalter({
     >
       <span
         className={`flex h-5 w-9 items-center rounded-full p-0.5 transition-colors duration-200 ${
-          an ? "bg-[#E86518]" : "bg-papier-tief"
+          an ? "bg-[#794D2C]" : "bg-papier-tief"
         }`}
       >
         <span

@@ -30,7 +30,7 @@ export function StartLeiste({
           type="button"
           disabled={!bereit}
           onClick={onClick}
-          className="ml-auto rounded-full bg-[#E86518] px-8 py-3 font-semibold text-white shadow-[0_6px_20px_rgba(232,101,24,0.25)] transition-all duration-200 hover:bg-[#CF530B] hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:translate-y-0"
+          className="ml-auto rounded-full bg-[#794D2C] px-8 py-3 font-semibold text-white shadow-[0_6px_20px_rgba(121,77,44,0.25)] transition-all duration-200 hover:bg-[#5C361A] hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:translate-y-0"
         >
           {text}
         </button>

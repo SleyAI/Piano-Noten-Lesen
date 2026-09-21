@@ -68,7 +68,7 @@ export function AkkordVorschau({
                   : "text-tinte-leise hover:text-[#785BA3]"
               }`}
             >
-              🎹 Ganzer Griff
+              Ganzer Griff
             </button>
             <button
               type="button"
@@ -79,7 +79,7 @@ export function AkkordVorschau({
                   : "text-tinte-leise hover:text-[#785BA3]"
               }`}
             >
-              🌊 Arpeggio
+              Arpeggio
             </button>
           </div>
 
@@ -94,7 +94,7 @@ export function AkkordVorschau({
                   : "text-tinte-leise hover:text-[#785BA3]"
               }`}
             >
-              🎼 Alle Noten
+              Alle Noten
             </button>
             <button
               type="button"
@@ -105,7 +105,7 @@ export function AkkordVorschau({
                   : "text-tinte-leise hover:text-[#785BA3]"
               }`}
             >
-              🎹 Alle Tastaturen
+              Alle Tastaturen
             </button>
           </div>
 

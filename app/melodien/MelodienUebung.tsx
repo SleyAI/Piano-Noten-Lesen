@@ -18,7 +18,6 @@ import { useVorspielen } from "@/lib/practice/useVorspielen";
 import { useEinstellungen } from "@/lib/store/einstellungen";
 import { useHydriert } from "@/lib/store/hydriert";
 import { useTricky } from "@/lib/store/tricky";
-import { MelodienVorbereitung } from "./MelodienVorbereitung";
 
 const PAUSE_NACH_MELODIE = 800;
 
@@ -33,8 +32,6 @@ export function MelodienUebung() {
   const notenLevel = useEinstellungen((z) => z.notenLevel);
   const schluesselWahl = useEinstellungen((z) => z.schluesselWahl);
   const abfolgeModus = useEinstellungen((z) => z.abfolgeModus);
-  const melodieModus = useEinstellungen((z) => z.melodieModus);
-  const setzeMelodieModus = useEinstellungen((z) => z.setzeMelodieModus);
   const startLevelGewaehlt = useEinstellungen((z) => z.startLevelGewaehlt);
   const setzeStartLevelGewaehlt = useEinstellungen((z) => z.setzeStartLevelGewaehlt);
 
@@ -45,47 +42,11 @@ export function MelodienUebung() {
 
   return (
     <div className="flex h-full flex-col bg-papier">
-      {/* Modus-Umschalter oben */}
-      <div className="flex justify-center pt-2 pb-1 shrink-0 bg-papier">
-        <div className="inline-flex rounded-full bg-white p-1 shadow-[0_2px_10px_rgba(120,91,163,0.08)]">
-          <button
-            type="button"
-            onClick={() => setzeMelodieModus("fliessend")}
-            className={`rounded-full px-5 py-1.5 text-xs font-bold transition-all ${
-              melodieModus === "fliessend"
-                ? "bg-[#785BA3] text-white shadow-sm"
-                : "text-tinte-leise hover:text-tinte"
-            }`}
-          >
-            Noten lesen
-          </button>
-          <button
-            type="button"
-            onClick={() => setzeMelodieModus("vorbereitung")}
-            className={`rounded-full px-5 py-1.5 text-xs font-bold transition-all ${
-              melodieModus === "vorbereitung"
-                ? "bg-[#785BA3] text-white shadow-sm"
-                : "text-tinte-leise hover:text-tinte"
-            }`}
-          >
-            Mit Rhythmus
-          </button>
-        </div>
-      </div>
-
-      {melodieModus === "vorbereitung" ? (
-        <MelodienVorbereitung
-          key={`vorbereitung#${notenLevel}#${schluesselWahl}`}
-          notenLevel={notenLevel}
-          schluesselWahl={schluesselWahl}
-        />
-      ) : (
-        <Endlos
-          key={`endlos#${notenLevel}#${schluesselWahl}#${abfolgeModus}`}
-          notenLevel={notenLevel}
-          schluesselWahl={schluesselWahl}
-        />
-      )}
+      <Endlos
+        key={`endlos#${notenLevel}#${schluesselWahl}#${abfolgeModus}`}
+        notenLevel={notenLevel}
+        schluesselWahl={schluesselWahl}
+      />
 
       {/* Onboarding Dialog beim ersten Start */}
       <LevelAuswahlModal
@@ -170,7 +131,7 @@ function Endlos({
   return (
     <div className="flex h-full flex-col bg-papier">
       <Kopfzeile
-        titel="Noten lesen"
+        titel="Übe Notenlesen"
         unterzeile={melodie.length > 0 ? `${melodie.length} Töne` : undefined}
         rechts={
           <>

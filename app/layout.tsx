@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Fredoka, Nunito } from "next/font/google";
 import "./globals.css";
 import { Wachhalter } from "@/components/ui/Wachhalter";
+import { SessionEndeModal } from "@/components/ui/SessionEndeModal";
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="de" className={`${nunito.variable} ${fredoka.variable} h-full antialiased`}>
       <body className="keine-auswahl h-full overflow-hidden bg-papier text-tinte">
         <Wachhalter />
+        <SessionEndeModal />
         {children}
       </body>
     </html>

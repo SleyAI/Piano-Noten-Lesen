@@ -7,7 +7,7 @@ import {
 } from "./akkorde";
 import { stabileViererFolge } from "./akkordfolgen";
 
-export type AkkordKomplexitaet = "dreiklaenge" | "erweitert" | "komplex";
+export type AkkordKomplexitaet = "dreiklaenge" | "inversionen" | "erweitert" | "komplex";
 export type AkkordSpielart = "griff" | "arpeggio";
 
 export interface AkkordEintrag {
@@ -33,10 +33,16 @@ export const KOMPLEXITAET_INFOS: Record<
     beschreibung: "Einfache Dur- & Moll-Akkorde in Grundstellung",
     einzelAkkorde: ["C", "D", "E", "F", "G", "A", "Dm", "Em", "Am"],
   },
+  inversionen: {
+    titel: "Umkehrungen (Inversionen)",
+    kurztitel: "Umkehrungen",
+    beschreibung: "Grundstellung, 1. und 2. Umkehrung eines Akkords",
+    einzelAkkorde: ["C", "D", "E", "F", "G", "A", "Dm", "Em", "Am", "G7"],
+  },
   erweitert: {
     titel: "Erweiterte Griffe",
     kurztitel: "Erweiterte Griffe",
-    beschreibung: "Umkehrungen (Inversionen), Sus-Akkorde & 4-Klänge wie G7, Cadd9",
+    beschreibung: "4-Klänge wie G7, Cadd9 & Sus-Akkorde",
     einzelAkkorde: [
       "C",
       "G7",

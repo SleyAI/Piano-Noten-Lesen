@@ -208,7 +208,7 @@ function Lauf({
                   : "text-tinte-leise hover:text-[#785BA3]"
               }`}
             >
-              🎹 Griff
+              Griff
             </button>
             <button
               type="button"
@@ -219,7 +219,7 @@ function Lauf({
                   : "text-tinte-leise hover:text-[#785BA3]"
               }`}
             >
-              🌊 Arpeggio
+              Arpeggio
             </button>
           </div>
 

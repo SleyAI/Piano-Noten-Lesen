@@ -3,14 +3,13 @@
 import { useState } from "react";
 import { Karte } from "./Karte";
 import { useSekundentakt } from "@/lib/practice/useSekundentakt";
-import { dauerText, sekundenAmTag, uhrzeitText } from "@/lib/practice/uebungszeit";
+import { uhrzeitText } from "@/lib/practice/uebungszeit";
 import { useUebungszeit } from "@/lib/store/uebungszeit";
 import { useHydriert } from "@/lib/store/hydriert";
 
 export function SessionBand({ className }: { className?: string }) {
   const hydriert = useHydriert();
   const beginn = useUebungszeit((z) => z.beginn);
-  const tage = useUebungszeit((z) => z.tage);
   const starte = useUebungszeit((z) => z.starte);
   const beende = useUebungszeit((z) => z.beende);
 
@@ -22,7 +21,6 @@ export function SessionBand({ className }: { className?: string }) {
 
   const laeuft = beginn !== null;
   const laufend = laeuft ? Math.max(0, Math.floor((jetzt - beginn) / 1000)) : 0;
-  const heute = sekundenAmTag(tage) + laufend;
 
   return (
     <Karte akzent="flieder" className={`p-6 sm:p-7 flex flex-col justify-between ${className ?? ""}`}>
@@ -48,13 +46,6 @@ export function SessionBand({ className }: { className?: string }) {
         <span className="font-titel text-5xl sm:text-6xl font-bold text-[#785BA3] tracking-tight tabular-nums block">
           {uhrzeitText(laufend)}
         </span>
-        <p className="mt-1 text-xs font-semibold text-tinte-leise">
-          {laeuft
-            ? `Heute ${dauerText(heute)} geübt`
-            : heute > 0
-              ? `Heute schon ${dauerText(heute)} geübt`
-              : "Session starten, um die Zeit zu erfassen"}
-        </p>
 
         {/* Quick Ziel-Chips wie im Referenzbild */}
         {!laeuft && (

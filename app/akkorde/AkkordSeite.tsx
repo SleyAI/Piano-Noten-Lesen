@@ -8,7 +8,6 @@ import {
   type AkkordKomplexitaet,
   type AkkordEintrag,
   type AkkordSpielart,
-  KOMPLEXITAET_INFOS,
   baueAkkordEintrag,
   inversionenFuerAkkord,
 } from "@/lib/music/akkordSets";
@@ -30,12 +29,7 @@ export function AkkordSeite() {
   const [komplexitaet, setKomplexitaet] = useState<AkkordKomplexitaet>("dreiklaenge");
   const [modusArt, setModusArt] = useState<"akkorde" | "inversionen">("akkorde");
   const [inversionsAkkord, setInversionsAkkord] = useState<string>("C");
-  const [ausgewaehlteSymbole, setAusgewaehlteSymbole] = useState<string[]>([
-    "C",
-    "G",
-    "Am",
-    "F",
-  ]);
+  const [ausgewaehlteSymbole, setAusgewaehlteSymbole] = useState<string[]>(["C"]);
   const [spielart, setSpielart] = useState<AkkordSpielart>("griff");
 
   // Aufbereitete Akkorde für Flashcards und Übung
@@ -50,20 +44,13 @@ export function AkkordSeite() {
 
   if (!hydriert) return <div className="h-full bg-papier" />;
 
-  const info = KOMPLEXITAET_INFOS[komplexitaet];
-
-  const titelText =
-    modusArt === "inversionen"
-      ? `${inversionsAkkord} Umkehrungen`
-      : info.kurztitel;
-
   return (
     <div className="flex h-full flex-col bg-papier overflow-hidden">
       <Kopfzeile
         titel="Akkorde"
         unterzeile={
           phase === "auswahl"
-            ? titelText
+            ? "Einstellungen"
             : phase === "flashcards"
               ? `${eintraege.length} Griffe · Flashcards`
               : `${eintraege.length} Griffe · ${spielart === "arpeggio" ? "Arpeggios" : "Ganzer Griff"}`

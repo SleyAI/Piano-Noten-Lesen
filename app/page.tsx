@@ -33,21 +33,12 @@ export default function Startseite() {
       titel: "Noten lesen",
       symbol: "♫",
       tag: `Level ${curLevel.id}`,
-      melodieModus: "fliessend" as const,
-    },
-    {
-      id: "melodien-vorbereitung",
-      href: "/melodien",
-      titel: "Melodien mit Rhythmus",
-      symbol: "🎵",
-      tag: "Rhythmus",
-      melodieModus: "vorbereitung" as const,
     },
     {
       id: "akkorde",
       href: "/akkorde",
       titel: "Akkorde",
-      symbol: "🎹",
+      symbol: "♩",
       tag: "Griffe & Folgen",
     },
   ];
@@ -136,7 +127,7 @@ export default function Startseite() {
               <div className="flex items-center justify-between mb-4">
                 <span className="font-titel text-xl font-bold text-tinte">Übungen</span>
                 <span className="rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-3 py-1 text-xs font-bold text-[#785BA3]">
-                  3 Modi
+                  2 Modi
                 </span>
               </div>
 
@@ -145,15 +136,10 @@ export default function Startseite() {
                   <Link
                     key={modus.id}
                     href={modus.href}
-                    onClick={() => {
-                      if (modus.melodieModus) {
-                        useEinstellungen.getState().setzeMelodieModus(modus.melodieModus);
-                      }
-                    }}
-                    className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-[#FAF6FD] hover:bg-[#F3ECF9] transition-all duration-200 border border-[#785BA3]/10 hover:border-[#785BA3]/30 hover:-translate-y-0.5 shadow-xs"
+                    className="group flex items-center justify-between p-4 rounded-2xl bg-[#EDE0F5] hover:bg-[#E2CEF0] transition-all duration-200 border border-[#785BA3]/20 hover:border-[#785BA3]/45 hover:-translate-y-0.5 shadow-xs"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-[#EADCF5] text-[#785BA3] text-lg font-bold shadow-xs">
+                      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-[#D7BEEB] text-[#785BA3] text-lg font-bold shadow-xs">
                         {modus.symbol}
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">

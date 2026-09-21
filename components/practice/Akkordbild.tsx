@@ -126,7 +126,7 @@ export function Akkordbild({
                 : "text-tinte-leise hover:text-[#785BA3]"
             }`}
           >
-            🎼 Noten
+            Noten
           </button>
           <button
             type="button"
@@ -140,7 +140,7 @@ export function Akkordbild({
                 : "text-tinte-leise hover:text-[#785BA3]"
             }`}
           >
-            🎹 Tastatur
+            Tastatur
           </button>
         </div>
       </div>
@@ -174,7 +174,7 @@ export function Akkordbild({
               />
             </div>
             <p className="text-[11px] font-semibold text-tinte-leise mt-3 text-center">
-              💡 Ziffern zeigen den Fingersatz (1 = Daumen, 5 = kleiner Finger)
+              Ziffern zeigen den Fingersatz (1 = Daumen, 5 = kleiner Finger)
             </p>
           </div>
         )}

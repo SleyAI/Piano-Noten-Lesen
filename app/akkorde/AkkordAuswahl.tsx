@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   type AkkordKomplexitaet,
   type AkkordSpielart,
@@ -57,9 +58,13 @@ export function AkkordAuswahl({
     onAkkordeChange(ausgewaehlteAkkorde.filter((_, i) => i !== index));
   }
 
+  const [auffuellVariation, setAuffuellVariation] = useState(0);
+
   function auffuellen() {
     const basis = ausgewaehlteAkkorde[0] ?? "C";
-    const gefuellt = passendeViererFolgeFuer(basis, komplexitaet);
+    const naechste = auffuellVariation + 1;
+    setAuffuellVariation(naechste);
+    const gefuellt = passendeViererFolgeFuer(basis, komplexitaet, naechste);
     onAkkordeChange(gefuellt);
   }
 
@@ -144,8 +149,8 @@ export function AkkordAuswahl({
 
           <div className="grid grid-cols-3 gap-2.5">
             {[
-              { id: "rechts" as const, titel: "Rechts (Violinschlüssel)" },
-              { id: "links" as const, titel: "Links (Bassschlüssel)" },
+              { id: "rechts" as const, titel: "Rechts" },
+              { id: "links" as const, titel: "Links" },
               { id: "beide" as const, titel: "Beide" },
             ].map((h) => {
               const aktiv = haende === h.id;

@@ -33,6 +33,15 @@ export default function Startseite() {
       titel: "Noten lesen",
       symbol: "♫",
       tag: `Level ${curLevel.id}`,
+      melodieModus: "fliessend" as const,
+    },
+    {
+      id: "melodien-vorbereitung",
+      href: "/melodien",
+      titel: "Melodie üben",
+      symbol: "♪",
+      tag: "Vorbereitung",
+      melodieModus: "vorbereitung" as const,
     },
     {
       id: "akkorde",
@@ -127,7 +136,7 @@ export default function Startseite() {
               <div className="flex items-center justify-between mb-4">
                 <span className="font-titel text-xl font-bold text-tinte">Übungen</span>
                 <span className="rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-3 py-1 text-xs font-bold text-[#785BA3]">
-                  2 Modi
+                  3 Modi
                 </span>
               </div>
 
@@ -136,6 +145,11 @@ export default function Startseite() {
                   <Link
                     key={modus.id}
                     href={modus.href}
+                    onClick={() => {
+                      if (modus.melodieModus) {
+                        useEinstellungen.getState().setzeMelodieModus(modus.melodieModus);
+                      }
+                    }}
                     className="group flex items-center justify-between p-4 rounded-2xl bg-[#EDE0F5] hover:bg-[#E2CEF0] transition-all duration-200 border border-[#785BA3]/20 hover:border-[#785BA3]/45 hover:-translate-y-0.5 shadow-xs"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">

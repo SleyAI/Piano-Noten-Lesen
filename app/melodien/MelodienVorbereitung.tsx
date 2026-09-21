@@ -147,7 +147,7 @@ export function MelodienVorbereitung({
   return (
     <div className="flex h-full flex-col bg-papier">
       <Kopfzeile
-        titel="Melodien mit Rhythmus"
+        titel="Melodie üben"
         unterzeile={melodie.length > 0 ? `${melodie.length} Töne` : undefined}
         rechts={
           <>
@@ -184,20 +184,37 @@ export function MelodienVorbereitung({
         }
         aktuelleNote={phase === "pruefen" ? melodie[uebung.position] : melodie[0]}
         hinweis={
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-full">
             {phase === "vorbereiten" && (
-              <>
-                <span className="text-tinte-leise font-medium text-sm">
-                  Bereite eine kurze Melodie vor. Übe sie, bevor du dich prüfst.
-                </span>
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 bg-white/95 px-4 py-2 rounded-2xl border border-[#785BA3]/15 shadow-xs">
+                <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-tinte">
+                  <span className="w-5 h-5 rounded-full bg-[#EADCF5] text-[#785BA3] font-bold text-xs flex items-center justify-center shrink-0">
+                    1
+                  </span>
+                  <span>Rhythmus klatschen</span>
+                </div>
+                <span className="text-tinte-leise/40 text-xs sm:text-sm">›</span>
+                <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-tinte">
+                  <span className="w-5 h-5 rounded-full bg-[#EADCF5] text-[#785BA3] font-bold text-xs flex items-center justify-center shrink-0">
+                    2
+                  </span>
+                  <span>Töne prüfen</span>
+                </div>
+                <span className="text-tinte-leise/40 text-xs sm:text-sm">›</span>
+                <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-tinte">
+                  <span className="w-5 h-5 rounded-full bg-[#EADCF5] text-[#785BA3] font-bold text-xs flex items-center justify-center shrink-0">
+                    3
+                  </span>
+                  <span>In Ruhe anspielen</span>
+                </div>
                 <button
                   type="button"
                   onClick={startePruefung}
-                  className="rounded-full bg-[#785BA3] px-6 py-2 text-sm font-bold text-white shadow-[0_4px_16px_rgba(120,91,163,0.25)] transition-all duration-200 hover:bg-[#654B8D] hover:-translate-y-0.5"
+                  className="rounded-full bg-[#785BA3] px-5 py-1.5 text-xs sm:text-sm font-bold text-white shadow-[0_4px_14px_rgba(120,91,163,0.25)] transition-all duration-200 hover:bg-[#654B8D] hover:-translate-y-0.5 active:scale-98 ml-1"
                 >
-                  Let&apos;s check
+                  Let&apos;s check →
                 </button>
-              </>
+              </div>
             )}
 
             {phase === "einzaehlen" && (

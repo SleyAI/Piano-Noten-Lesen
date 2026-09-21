@@ -7,6 +7,7 @@ import { PlayKnopf } from "@/components/practice/PlayKnopf";
 import { SchnellLeiste } from "@/components/practice/SchnellLeiste";
 import { LevelAuswahlModal } from "@/components/practice/LevelAuswahlModal";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
+import { MelodienVorbereitung } from "./MelodienVorbereitung";
 import { type NotenLevelId, notenFuerLevel } from "@/lib/music/levels";
 import { erzeugeTonabfolge, melodieSchluessel } from "@/lib/music/melodie";
 import { type SchluesselWahl, type UebungsNote, uebungsSchluessel } from "@/lib/music/curriculum";
@@ -32,6 +33,7 @@ export function MelodienUebung() {
   const notenLevel = useEinstellungen((z) => z.notenLevel);
   const schluesselWahl = useEinstellungen((z) => z.schluesselWahl);
   const abfolgeModus = useEinstellungen((z) => z.abfolgeModus);
+  const melodieModus = useEinstellungen((z) => z.melodieModus);
   const startLevelGewaehlt = useEinstellungen((z) => z.startLevelGewaehlt);
   const setzeStartLevelGewaehlt = useEinstellungen((z) => z.setzeStartLevelGewaehlt);
 
@@ -42,11 +44,19 @@ export function MelodienUebung() {
 
   return (
     <div className="flex h-full flex-col bg-papier">
-      <Endlos
-        key={`endlos#${notenLevel}#${schluesselWahl}#${abfolgeModus}`}
-        notenLevel={notenLevel}
-        schluesselWahl={schluesselWahl}
-      />
+      {melodieModus === "vorbereitung" ? (
+        <MelodienVorbereitung
+          key={`vorbereitung#${notenLevel}#${schluesselWahl}`}
+          notenLevel={notenLevel}
+          schluesselWahl={schluesselWahl}
+        />
+      ) : (
+        <Endlos
+          key={`endlos#${notenLevel}#${schluesselWahl}#${abfolgeModus}`}
+          notenLevel={notenLevel}
+          schluesselWahl={schluesselWahl}
+        />
+      )}
 
       {/* Onboarding Dialog beim ersten Start */}
       <LevelAuswahlModal

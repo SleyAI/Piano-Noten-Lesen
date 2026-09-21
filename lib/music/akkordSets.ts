@@ -151,41 +151,152 @@ export function baueAkkordEintrag(symbol: string): AkkordEintrag | null {
   };
 }
 
+const KADENZEN_DREIKLAENGE: Record<string, string[][]> = {
+  C: [
+    ["C", "G", "Am", "F"],
+    ["C", "Am", "F", "G"],
+    ["C", "F", "G", "C"],
+    ["C", "Em", "F", "G"],
+    ["C", "G", "F", "G"],
+  ],
+  G: [
+    ["G", "D", "Em", "C"],
+    ["G", "Em", "C", "D"],
+    ["G", "C", "D", "G"],
+    ["G", "D", "C", "D"],
+  ],
+  Am: [
+    ["Am", "F", "C", "G"],
+    ["Am", "Dm", "Em", "Am"],
+    ["Am", "G", "F", "E"],
+    ["Am", "Dm", "G", "C"],
+  ],
+  F: [
+    ["F", "C", "Dm", "C"],
+    ["F", "G", "Em", "Am"],
+    ["F", "C", "G", "Am"],
+    ["F", "Am", "Dm", "C"],
+  ],
+  Dm: [
+    ["Dm", "G", "C", "Am"],
+    ["Dm", "Em", "F", "G"],
+    ["Dm", "G", "C", "C"],
+  ],
+  Em: [
+    ["Em", "C", "G", "D"],
+    ["Em", "Am", "B", "Em"],
+    ["Em", "D", "C", "D"],
+  ],
+  D: [
+    ["D", "A", "Bm", "G"],
+    ["D", "G", "A", "D"],
+    ["D", "Bm", "G", "A"],
+  ],
+  E: [
+    ["E", "B", "C#m", "A"],
+    ["E", "A", "B", "E"],
+  ],
+  A: [
+    ["A", "E", "F#m", "D"],
+    ["A", "D", "E", "A"],
+  ],
+};
+
+const KADENZEN_ERWEITERT: Record<string, string[][]> = {
+  C: [
+    ["C", "G7", "Am", "F"],
+    ["C", "Cadd9", "F", "G7"],
+    ["C", "Gsus4", "G", "C"],
+    ["C", "Am7", "Dm7", "G7"],
+  ],
+  G: [
+    ["G", "D7", "Em", "C"],
+    ["G", "Gsus4", "G", "D7"],
+    ["G", "Em7", "Cadd9", "D"],
+  ],
+  G7: [
+    ["C", "G7", "Am", "F"],
+    ["Dm7", "G7", "C", "Am"],
+    ["G7", "C", "F", "G7"],
+    ["C", "Em7", "Am7", "G7"],
+  ],
+  Am: [
+    ["Am", "Dm7", "E7", "Am"],
+    ["Am", "F", "C", "E7"],
+    ["Am7", "Dm7", "G7", "C"],
+  ],
+  E7: [
+    ["Am", "Dm", "E7", "Am"],
+    ["E7", "Am", "Dm", "E7"],
+  ],
+  D: [
+    ["D", "Dsus4", "G", "A"],
+    ["D", "A7", "G", "D"],
+  ],
+  Dsus4: [
+    ["D", "Dsus4", "G", "A"],
+    ["Dsus4", "D", "G", "A7"],
+  ],
+};
+
+const KADENZEN_KOMPLEX: Record<string, string[][]> = {
+  Cmaj7: [
+    ["Dm7", "G7", "Cmaj7", "Am7"],
+    ["Cmaj7", "Am7", "Dm7", "G7"],
+    ["Cmaj7", "Fmaj7", "Dm7", "G7"],
+    ["Cmaj7", "Em7", "Fmaj7", "G7"],
+  ],
+  Dm7: [
+    ["Dm7", "G7", "Cmaj7", "Am7"],
+    ["Dm7", "G7", "Em7", "A7"],
+    ["Dm7", "Cmaj7", "Fmaj7", "G7"],
+  ],
+  Fmaj7: [
+    ["Gm7", "C7", "Fmaj7", "Dm7"],
+    ["Fmaj7", "Gm7", "Am7", "C7"],
+    ["Fmaj7", "Dm7", "Gm7", "C7"],
+  ],
+  Gm7: [
+    ["Gm7", "C7", "Fmaj7", "Dm7"],
+    ["Gm7", "C7", "Am7", "D7"],
+  ],
+  C7: [
+    ["C7", "F7", "C7", "G7"],
+    ["C7", "Am7", "Dm7", "G7"],
+    ["F7", "C7", "G7", "C7"],
+  ],
+  Am7: [
+    ["Am7", "Dm7", "G7", "Cmaj7"],
+    ["Dm7", "G7", "Cmaj7", "Am7"],
+    ["Am7", "D7", "Gmaj7", "Em7"],
+  ],
+};
+
 /**
  * Automatische Auffüllung mit passenden harmonischen Akkorden (auf 4 Akkorde),
  * wenn der Nutzer auf "Mit passenden Akkorden auffüllen" klickt.
+ * Unterstützt einen Variations-Index, sodass jeder Klick eine neue Folge liefert.
  */
 export function passendeViererFolgeFuer(
   symbol: string,
   komplexitaet: AkkordKomplexitaet,
+  variation = 0,
 ): string[] {
-  // Wenn es Standardakkorde sind, z. B. C, G, Am, F:
-  const akkord = akkordNachSymbol(symbol.split("/")[0]);
+  const basis = symbol.split("/")[0];
+  const akkord = akkordNachSymbol(basis);
   if (!akkord) return [symbol];
 
-  // Spezialfälle für bekannte beliebte Kadenzen
-  if (komplexitaet === "dreiklaenge") {
-    if (akkord.symbol === "C") return ["C", "G", "Am", "F"];
-    if (akkord.symbol === "G") return ["G", "D", "Em", "C"];
-    if (akkord.symbol === "Am") return ["Am", "F", "C", "G"];
-    if (akkord.symbol === "F") return ["F", "C", "Dm", "C"];
-    if (akkord.symbol === "D") return ["D", "A", "Bm", "G"];
-    if (akkord.symbol === "Em") return ["Em", "C", "G", "D"];
-    if (akkord.symbol === "Dm") return ["Dm", "G", "C", "Am"];
-  }
+  const tabelle =
+    komplexitaet === "komplex"
+      ? KADENZEN_KOMPLEX
+      : komplexitaet === "erweitert"
+        ? KADENZEN_ERWEITERT
+        : KADENZEN_DREIKLAENGE;
 
-  if (komplexitaet === "erweitert") {
-    if (akkord.symbol === "C") return ["C", "G7", "Am", "F"];
-    if (akkord.symbol === "G7") return ["C", "G7", "Am", "F"];
-    if (akkord.symbol === "Am") return ["Am", "Dm7", "E7", "Am"];
-    if (akkord.symbol === "E7") return ["Am", "Dm", "E7", "Am"];
-    if (akkord.symbol === "D" || akkord.symbol === "Dsus4") return ["D", "Dsus4", "G", "A"];
-  }
-
-  if (komplexitaet === "komplex") {
-    if (akkord.symbol === "Cmaj7" || akkord.symbol === "Dm7") return ["Dm7", "G7", "Cmaj7", "Am7"];
-    if (akkord.symbol === "Fmaj7" || akkord.symbol === "Gm7") return ["Gm7", "C7", "Fmaj7", "Dm7"];
-    if (akkord.symbol === "C7") return ["C7", "F7", "C7", "G7"];
+  const optionen = tabelle[akkord.symbol] ?? tabelle[basis];
+  if (optionen && optionen.length > 0) {
+    const idx = Math.abs(variation) % optionen.length;
+    return [...optionen[idx]];
   }
 
   try {

@@ -55,34 +55,8 @@ export function AkkordVorschau({
           </p>
         </div>
 
-        {/* Steuerungs-Pills */}
+        {/* Steuerungs-Pills (Noten / Tastatur & Namen) */}
         <div className="flex flex-wrap items-center justify-center gap-2 shrink-0">
-          {/* Spielart Umschalter */}
-          <div className="inline-flex rounded-full bg-white border border-[#785BA3]/20 p-1 shadow-2xs">
-            <button
-              type="button"
-              onClick={() => onSpielartChange("griff")}
-              className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
-                spielart === "griff"
-                  ? "bg-[#785BA3] text-white shadow-xs"
-                  : "text-tinte-leise hover:text-[#785BA3]"
-              }`}
-            >
-              Ganzer Griff
-            </button>
-            <button
-              type="button"
-              onClick={() => onSpielartChange("arpeggio")}
-              className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
-                spielart === "arpeggio"
-                  ? "bg-[#785BA3] text-white shadow-xs"
-                  : "text-tinte-leise hover:text-[#785BA3]"
-              }`}
-            >
-              Arpeggio
-            </button>
-          </div>
-
           {/* Alle Noten / Alle Tastaturen */}
           <div className="inline-flex rounded-full bg-white border border-[#785BA3]/20 p-1 shadow-2xs">
             <button
@@ -123,7 +97,7 @@ export function AkkordVorschau({
         </div>
       </div>
 
-      {/* Großes Flashcard-Raster mit optimaler Seitenausnutzung */}
+      {/* Großes Flashcard-Raster: 4er Päckchen (2 oben, 2 unten) für breite, entspannte Karten */}
       <div
         className={`grid w-full gap-6 ${
           eintraege.length === 1
@@ -131,10 +105,8 @@ export function AkkordVorschau({
             : eintraege.length === 2
               ? "grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto"
               : eintraege.length === 3
-                ? "grid-cols-1 md:grid-cols-3"
-                : eintraege.length === 4
-                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
-                  : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5"
+                ? "grid-cols-1 md:grid-cols-3 max-w-[1300px] mx-auto"
+                : "grid-cols-1 md:grid-cols-2 max-w-5xl mx-auto"
         }`}
       >
         {eintraege.map((eintrag) => {
@@ -154,12 +126,39 @@ export function AkkordVorschau({
         })}
       </div>
 
-      {/* Großer CTA-Button unten zum Starten der Übung */}
-      <div className="w-full flex justify-center pt-2">
+      {/* Großer CTA-Bereich unten: Spielweise-Umschalter direkt neben Üben-Button */}
+      <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
+        {/* Spielart Umschalter (Ganzer Griff vs. Arpeggio) direkt beim Starten */}
+        <div className="inline-flex rounded-full bg-white border border-[#785BA3]/20 p-1 shadow-sm">
+          <button
+            type="button"
+            onClick={() => onSpielartChange("griff")}
+            className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all ${
+              spielart === "griff"
+                ? "bg-[#785BA3] text-white shadow-xs"
+                : "text-tinte-leise hover:text-[#785BA3]"
+            }`}
+          >
+            Ganzer Griff
+          </button>
+          <button
+            type="button"
+            onClick={() => onSpielartChange("arpeggio")}
+            className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all ${
+              spielart === "arpeggio"
+                ? "bg-[#785BA3] text-white shadow-xs"
+                : "text-tinte-leise hover:text-[#785BA3]"
+            }`}
+          >
+            Arpeggio
+          </button>
+        </div>
+
+        {/* Start-Button */}
         <button
           type="button"
           onClick={onStartUebung}
-          className="w-full sm:w-auto min-w-[320px] rounded-full bg-[#785BA3] px-10 py-4 text-lg font-bold text-white shadow-[0_6px_22px_rgba(120,91,163,0.3)] hover:bg-[#654B8D] hover:-translate-y-0.5 active:scale-98 transition-all duration-200 text-center"
+          className="w-full sm:w-auto min-w-[280px] rounded-full bg-[#785BA3] px-10 py-4 text-lg font-bold text-white shadow-[0_6px_22px_rgba(120,91,163,0.3)] hover:bg-[#654B8D] hover:-translate-y-0.5 active:scale-98 transition-all duration-200 text-center"
         >
           Akkordfolge üben ▶
         </button>

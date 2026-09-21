@@ -42,7 +42,7 @@ export function Uebungsflaeche({
           {notenbild}
         </div>
 
-        <div className="flex h-9 shrink-0 items-center justify-center text-center">
+        <div className="flex min-h-9 shrink-0 items-center justify-center text-center">
           {hinweis}
         </div>
       </div>

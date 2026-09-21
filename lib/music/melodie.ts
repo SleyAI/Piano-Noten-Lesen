@@ -104,7 +104,7 @@ export function wuerfleMelodie(
       const abstand = Math.abs(kandidat.note.diatonic - vorherige.note.diatonic);
       let gewicht = naeheGewicht(abstand);
       // Zum Schluss zieht es zu einem Landmark hin.
-      if (letzterSchritt && istLandmark(kandidat)) gewicht *= 8;
+      if (letzterSchritt && istLandmark(kandidat)) gewicht *= 14;
       return gewicht;
     });
 

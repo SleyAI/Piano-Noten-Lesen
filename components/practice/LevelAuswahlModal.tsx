@@ -36,17 +36,17 @@ export function LevelAuswahlModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-tinte/30 backdrop-blur-xs animate-auftauchen">
-      <div className="relative flex flex-col max-h-[90vh] w-full max-w-lg rounded-[28px] bg-white border border-[#794D2C]/15 shadow-[0_20px_60px_rgba(121,77,44,0.18)] overflow-hidden">
+      <div className="relative flex flex-col max-h-[90vh] w-full max-w-lg rounded-[28px] bg-white border border-[#785BA3]/15 shadow-[0_20px_60px_rgba(120,91,163,0.18)] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-papier-tief bg-[#F8F3EC]/80">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-papier-tief bg-[#FAF6FD]/60">
           <div>
-            <h2 className="font-titel text-2xl font-bold text-[#794D2C]">{titel}</h2>
+            <h2 className="font-titel text-2xl font-bold text-[#785BA3]">{titel}</h2>
             <p className="text-xs text-tinte-leise mt-0.5">{hinweis}</p>
           </div>
           <button
             type="button"
             onClick={aufSchliessen}
-            className="rounded-full w-8 h-8 flex items-center justify-center text-tinte-leise hover:text-[#794D2C] hover:bg-[#EFE3D5]/60 transition-colors"
+            className="rounded-full w-8 h-8 flex items-center justify-center text-tinte-leise hover:text-[#785BA3] hover:bg-[#EADCF5]/60 transition-colors"
             aria-label="Schließen"
           >
             ✕
@@ -75,16 +75,16 @@ export function LevelAuswahlModal({
                         onClick={() => waehle(lvl.id)}
                         className={`group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl text-left transition-all duration-150 border ${
                           aktiv
-                            ? "bg-[#F8F3EC] border-[#794D2C] shadow-xs"
-                            : "bg-[#FAF5EE] border-transparent hover:bg-[#F8F3EC] hover:border-[#794D2C]/20"
+                            ? "bg-[#F3ECF9] border-[#785BA3] shadow-xs"
+                            : "bg-[#FAF6FD]/70 border-transparent hover:bg-[#F3ECF9]/60 hover:border-[#785BA3]/20"
                         }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <span
                             className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-titel text-sm font-bold transition-colors ${
                               aktiv
-                                ? "bg-[#794D2C] text-white shadow-xs"
-                                : "bg-[#EFE3D5] text-[#794D2C] group-hover:bg-[#794D2C] group-hover:text-white"
+                                ? "bg-[#785BA3] text-white shadow-xs"
+                                : "bg-[#EADCF5] text-[#785BA3] group-hover:bg-[#785BA3] group-hover:text-white"
                             }`}
                           >
                             {lvl.id}
@@ -97,7 +97,7 @@ export function LevelAuswahlModal({
                           </div>
                         </div>
                         {aktiv && (
-                          <span className="text-xs font-bold text-[#794D2C] shrink-0 ml-2">
+                          <span className="text-xs font-bold text-[#785BA3] shrink-0 ml-2">
                             ✓ Aktiv
                           </span>
                         )}

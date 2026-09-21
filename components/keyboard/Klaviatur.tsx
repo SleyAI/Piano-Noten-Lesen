@@ -170,8 +170,8 @@ export function Klaviatur({
             >
               {midi === 60 ? (
                 <span className="pointer-events-none absolute inset-x-0 bottom-2 flex flex-col items-center justify-center gap-0.5">
-                  <span className="h-2 w-2 rounded-full bg-[#794D2C] shadow-xs" />
-                  <span className="text-[0.68rem] font-bold text-[#794D2C] leading-none">
+                  <span className="h-2 w-2 rounded-full bg-[#785BA3] shadow-xs" />
+                  <span className="text-[0.68rem] font-bold text-[#785BA3] leading-none">
                     C4
                   </span>
                 </span>

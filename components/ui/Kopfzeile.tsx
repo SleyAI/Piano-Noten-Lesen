@@ -23,7 +23,7 @@ export function Kopfzeile({
       <Link
         href="/"
         aria-label="Zurück zur Auswahl"
-        className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg font-bold text-[#794D2C] shadow-[0_2px_10px_rgba(121,77,44,0.08)] transition-all hover:bg-[#794D2C] hover:text-white"
+        className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg font-bold text-[#785BA3] shadow-[0_2px_10px_rgba(120,91,163,0.08)] transition-all hover:bg-[#785BA3] hover:text-white"
       >
         ←
       </Link>

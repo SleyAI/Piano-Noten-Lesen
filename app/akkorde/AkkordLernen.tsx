@@ -215,7 +215,7 @@ function InversionsLauf({
             {namenSichtbar ? akkord.symbol : "Akkord"}
           </span>
           {namenSichtbar && (
-            <span className="rounded-full bg-[#EFE3D5] px-3 py-1 text-xs font-semibold text-[#794D2C]">
+            <span className="rounded-full bg-[#EADCF5] px-3 py-1 text-xs font-semibold text-[#785BA3]">
               {umkehrungName(aktuelleUmkehrung)}
             </span>
           )}
@@ -226,7 +226,7 @@ function InversionsLauf({
           <button
             type="button"
             onClick={() => setNamenSichtbar((v) => !v)}
-            className="ml-2 rounded-full bg-white border border-[#794D2C]/20 px-3 py-1 text-xs font-bold text-[#794D2C] hover:bg-[#EFE3D5]/70 transition-colors"
+            className="ml-2 rounded-full bg-white border border-[#785BA3]/20 px-3 py-1 text-xs font-bold text-[#785BA3] hover:bg-[#EADCF5]/60 transition-colors"
           >
             {namenSichtbar ? "Name verbergen" : "Name einblenden"}
           </button>
@@ -235,7 +235,7 @@ function InversionsLauf({
         <button
           type="button"
           onClick={aufVorbereitung}
-          className="shrink-0 rounded-full bg-white border border-[#794D2C]/20 px-5 py-2 text-sm font-semibold text-tinte transition-colors hover:bg-[#F8F3EC]"
+          className="shrink-0 rounded-full bg-white border border-[#785BA3]/20 px-5 py-2 text-sm font-semibold text-tinte transition-colors hover:bg-[#EADCF5]"
         >
           Zurück zur Auswahl
         </button>

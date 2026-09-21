@@ -71,7 +71,7 @@ export function Akkordbild({
 
   return (
     <div
-      className={`flex flex-col gap-3 rounded-3xl bg-[#F8F3EC] p-4 sm:p-5 shadow-xs border border-[#794D2C]/15 transition-all ${className}`}
+      className={`flex flex-col gap-3 rounded-3xl bg-[#FAF6FD] p-4 sm:p-5 shadow-xs border border-[#785BA3]/15 transition-all ${className}`}
     >
       {/* Flashcard Header */}
       <div className="flex items-center justify-between px-1">
@@ -85,7 +85,7 @@ export function Akkordbild({
               {titelAnzeigen ? titel : "Akkord ?"}
             </span>
           )}
-          <span className="rounded-full bg-[#EFE3D5] border border-[#794D2C]/15 text-[#794D2C] px-2.5 py-0.5 text-[11px] font-bold">
+          <span className="rounded-full bg-white/90 border border-[#785BA3]/15 text-[#785BA3] px-2.5 py-0.5 text-[11px] font-bold">
             {ansicht === "noten" ? "Noten" : "Hilfe"}
           </span>
         </div>
@@ -93,7 +93,7 @@ export function Akkordbild({
         <button
           type="button"
           onClick={umschalten}
-          className="flex items-center gap-1 rounded-full bg-white hover:bg-[#EFE3D5]/70 border border-[#794D2C]/20 px-3 py-1 text-xs font-bold text-[#794D2C] shadow-2xs transition-all active:scale-95"
+          className="flex items-center gap-1 rounded-full bg-white hover:bg-[#EADCF5]/60 border border-[#785BA3]/20 px-3 py-1 text-xs font-bold text-[#785BA3] shadow-2xs transition-all active:scale-95"
           title="Flashcard umdrehen"
         >
           {ansicht === "noten" ? "🔄 Tastatur zeigen" : "🔄 Noten zeigen"}
@@ -103,7 +103,7 @@ export function Akkordbild({
       {/* Große Anzeige: Entweder Noten (Standard) oder Klaviatur (Hilfe) */}
       <div
         onClick={umschalten}
-        className="cursor-pointer flex items-center justify-center bg-white rounded-2xl p-3 sm:p-4 min-h-[200px] sm:min-h-[240px] shadow-inner transition-all hover:ring-2 hover:ring-[#794D2C]/25 select-none"
+        className="cursor-pointer flex items-center justify-center bg-white rounded-2xl p-3 sm:p-4 min-h-[200px] sm:min-h-[240px] shadow-inner transition-all hover:ring-2 hover:ring-[#785BA3]/25 select-none"
         title="Klicken zum Umdrehen"
       >
         {ansicht === "noten" ? (

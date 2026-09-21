@@ -1,129 +1,70 @@
 "use client";
 
-import { KOPF_VIERTEL, ZEILENABSTAND_EM } from "@/lib/notation/glyphen";
 import { type Tageseintrag, kurzeDauer, wochentagKurz } from "@/lib/practice/uebungszeit";
 
-const HALB = 7;
-const ZEILE = HALB * 2;
-const SPALTE = 56;
-const RAND_OBEN = 24;
-const RAND_UNTEN = 34;
-const HOEHE = RAND_OBEN + 8 * HALB + RAND_UNTEN;
-
-const SKALA = ZEILE / ZEILENABSTAND_EM;
-const KOPF_BREITE = (KOPF_VIERTEL.bbox.x2 - KOPF_VIERTEL.bbox.x1) * SKALA;
-
-function position(sekunden: number, hoechst: number): number | null {
-  if (sekunden <= 0) return null;
-  return Math.min(8, Math.max(1, Math.round((sekunden / hoechst) * 8)));
-}
-
-function y(pos: number): number {
-  return RAND_OBEN + (8 - pos) * HALB;
-}
-
 export function Wochenlinie({ tage }: { tage: readonly Tageseintrag[] }) {
-  const breite = tage.length * SPALTE + 16;
-  const hoechst = Math.max(30 * 60, ...tage.map((t) => t.sekunden));
-  const heute = tage[tage.length - 1]?.schluessel;
-
-  const beschreibung = tage
-    .map((t) => `${wochentagKurz(t.datum)} ${kurzeDauer(t.sekunden)}`)
-    .join(", ");
+  const maxSekunden = Math.max(15 * 60, ...tage.map((t) => t.sekunden));
+  const heuteSchluessel = tage[tage.length - 1]?.schluessel;
 
   return (
-    <svg
-      viewBox={`0 0 ${breite} ${HOEHE}`}
-      className="h-full w-auto max-w-full"
-      role="img"
-      aria-label={`Geübte Zeit der letzten Tage: ${beschreibung}`}
-      preserveAspectRatio="xMidYMid meet"
-    >
-      {/* 5 Notenlinien */}
-      {[0, 2, 4, 6, 8].map((linie) => (
-        <line
-          key={linie}
-          x1={6}
-          x2={breite - 6}
-          y1={y(linie)}
-          y2={y(linie)}
-          stroke="var(--color-tinte-leise)"
-          strokeOpacity={0.3}
-          strokeWidth={1.2}
-          strokeLinecap="round"
-        />
-      ))}
-
-      {tage.map((tag, i) => {
-        const mitte = 8 + i * SPALTE + SPALTE / 2;
-        const pos = position(tag.sekunden, hoechst);
-        const istHeute = tag.schluessel === heute;
-        const farbe = istHeute ? "var(--color-lavendel)" : "var(--color-tinte)";
+    <div className="w-full flex items-end justify-between gap-1.5 sm:gap-3 px-1 pt-3 pb-1 h-36 select-none">
+      {tage.map((tag) => {
+        const istHeute = tag.schluessel === heuteSchluessel;
+        const minuten = Math.round(tag.sekunden / 60);
+        const hoeheProzent = tag.sekunden > 0 ? Math.max(16, Math.min(100, (tag.sekunden / maxSekunden) * 100)) : 0;
 
         return (
-          <g key={tag.schluessel}>
-            <title>
-              {wochentagKurz(tag.datum)}: {tag.sekunden > 0 ? kurzeDauer(tag.sekunden) : "keine Übung"}
-            </title>
-
-            {/* Notenkopf oder leerer Kreis */}
-            {pos === null ? (
-              <circle
-                cx={mitte}
-                cy={y(-1)}
-                r={KOPF_BREITE / 3}
-                fill="none"
-                stroke={istHeute ? "var(--color-lavendel)" : "var(--color-tinte-leise)"}
-                strokeOpacity={istHeute ? 0.75 : 0.35}
-                strokeWidth={1.4}
-              />
-            ) : (
-              <path
-                d={KOPF_VIERTEL.d}
-                fill={farbe}
-                transform={`translate(${mitte - KOPF_BREITE / 2} ${y(pos)}) scale(${SKALA})`}
-              />
-            )}
-
-            {/* Geübte Minuten über der Notenzeile */}
-            {tag.sekunden > 0 && (
-              <text
-                x={mitte}
-                y={11}
-                textAnchor="middle"
-                fill={istHeute ? "var(--color-lavendel)" : "var(--color-tinte)"}
-                fontSize={10}
-                fontWeight={istHeute ? 700 : 600}
-                opacity={0.85}
-              >
-                {kurzeDauer(tag.sekunden)}
-              </text>
-            )}
-
-            {/* Wochentag unter der Notenzeile */}
-            <text
-              x={mitte}
-              y={HOEHE - 10}
-              textAnchor="middle"
-              fill={istHeute ? "var(--color-lavendel)" : "var(--color-tinte-leise)"}
-              fontSize={11}
-              fontWeight={istHeute ? 700 : 500}
+          <div key={tag.schluessel} className="flex-1 flex flex-col items-center justify-end h-full gap-1.5">
+            {/* Minuten-Anzeige oben */}
+            <span
+              className={`text-[11px] tabular-nums font-bold leading-none ${
+                tag.sekunden > 0
+                  ? istHeute
+                    ? "text-[#785BA3]"
+                    : "text-tinte"
+                  : "text-tinte-leise/50"
+              }`}
             >
-              {wochentagKurz(tag.datum)}
-            </text>
+              {tag.sekunden > 0 ? `${minuten}m` : "0m"}
+            </span>
 
-            {/* Dezenter Punkt für Heute */}
-            {istHeute && (
-              <circle
-                cx={mitte}
-                cy={HOEHE - 3}
-                r={2}
-                fill="var(--color-lavendel)"
-              />
+            {/* Säule / Bar */}
+            <div className="w-full flex items-end justify-center h-20">
+              {tag.sekunden > 0 ? (
+                <div
+                  style={{ height: `${hoeheProzent}%` }}
+                  className={`w-6 sm:w-8 rounded-full transition-all duration-300 ${
+                    istHeute
+                      ? "bg-[#785BA3] shadow-sm shadow-[#785BA3]/20"
+                      : "bg-[#D8C4EE] hover:bg-[#C4B5E0]"
+                  }`}
+                  title={`${wochentagKurz(tag.datum)}: ${kurzeDauer(tag.sekunden)}`}
+                />
+              ) : (
+                <div
+                  className={`w-6 sm:w-8 h-2.5 rounded-full border border-dashed ${
+                    istHeute
+                      ? "border-[#785BA3]/60 bg-[#EADCF5]/40"
+                      : "border-papier-tief bg-white/60"
+                  }`}
+                  title={`${wochentagKurz(tag.datum)}: keine Übung`}
+                />
+              )}
+            </div>
+
+            {/* Wochentag-Beschriftung */}
+            {istHeute ? (
+              <span className="rounded-full bg-[#EADCF5] px-1.5 py-0.5 text-[10px] font-bold text-[#785BA3] leading-tight">
+                Heute
+              </span>
+            ) : (
+              <span className="text-xs font-bold text-tinte-leise leading-tight">
+                {wochentagKurz(tag.datum)}
+              </span>
             )}
-          </g>
+          </div>
         );
       })}
-    </svg>
+    </div>
   );
 }

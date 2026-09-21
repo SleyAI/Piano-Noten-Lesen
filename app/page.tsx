@@ -62,52 +62,52 @@ export default function Startseite() {
 
         {/* Header im cozy Stil mit Maskottchen und fliegenden Noten */}
         <header className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 py-1">
-          <h1 className="text-center font-titel text-4xl sm:text-6xl md:text-7xl font-bold text-[#794D2C] tracking-tight">
+          <h1 className="text-center font-titel text-4xl sm:text-6xl md:text-7xl font-bold text-[#785BA3] tracking-tight">
             Noten &amp; Akkorde lernen
           </h1>
 
-          {/* Hüpfendes Maskottchen mit fliegenden Noten (etwas kleiner) */}
+          {/* Hüpfendes Maskottchen mit fliegenden Noten */}
           <div className="relative shrink-0 select-none animate-huepfen flex items-center justify-center">
             {/* Fliegende Noten */}
             <span
-              className="absolute -top-2.5 -left-2 text-base sm:text-xl font-bold text-[#794D2C] animate-note-1 pointer-events-none"
+              className="absolute -top-3 -left-3 text-lg sm:text-2xl font-bold text-[#785BA3] animate-note-1 pointer-events-none"
               aria-hidden
             >
               ♪
             </span>
             <span
-              className="absolute -top-3 -right-1 text-lg sm:text-2xl font-bold text-[#946743] animate-note-2 pointer-events-none"
+              className="absolute -top-4 -right-2 text-xl sm:text-3xl font-bold text-[#9874CC] animate-note-2 pointer-events-none"
               aria-hidden
             >
               ♫
             </span>
             <span
-              className="absolute -bottom-1 -right-2 text-sm sm:text-lg font-bold text-[#794D2C] animate-note-3 pointer-events-none"
+              className="absolute -bottom-2 -right-3 text-base sm:text-xl font-bold text-[#785BA3] animate-note-3 pointer-events-none"
               aria-hidden
             >
               ♩
             </span>
             <span
-              className="absolute 0 -left-2.5 text-xs sm:text-base font-bold text-[#946743] animate-note-2 pointer-events-none"
+              className="absolute -bottom-1 -left-3 text-sm sm:text-lg font-bold text-[#9874CC] animate-note-2 pointer-events-none"
               aria-hidden
             >
               ♬
             </span>
 
-            {/* Maskottchen-Bild via Next Image (basePath-kompatibel, dezent verkleinert) */}
+            {/* Maskottchen-Bild via Next Image (basePath-kompatibel) */}
             <Image
               src={maskottchenBild}
               alt=""
               priority
-              className="w-14 h-14 sm:w-[4.25rem] sm:h-[4.25rem] md:w-20 md:h-20 object-contain filter drop-shadow-sm pointer-events-none"
+              className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain filter drop-shadow-sm pointer-events-none"
             />
           </div>
         </header>
 
         {/* Gemütliche Level-Leiste */}
-        <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white border border-[#794D2C]/12 shadow-[0_4px_20px_rgba(121,77,44,0.05)]">
+        <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white border border-[#785BA3]/10 shadow-[0_4px_20px_rgba(120,91,163,0.05)]">
           <div className="flex items-center gap-3 min-w-0">
-            <span className="w-8 h-8 rounded-xl bg-[#EFE3D5] text-[#794D2C] font-titel text-sm font-bold flex items-center justify-center shrink-0">
+            <span className="w-8 h-8 rounded-xl bg-[#EADCF5] text-[#785BA3] font-titel text-sm font-bold flex items-center justify-center shrink-0">
               {curLevel.id}
             </span>
             <div className="truncate">
@@ -122,7 +122,7 @@ export default function Startseite() {
           <button
             type="button"
             onClick={() => setModalManuellOffen(true)}
-            className="shrink-0 ml-3 rounded-full bg-[#F8F3EC] border border-[#794D2C]/20 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-[#794D2C] hover:bg-[#794D2C] hover:text-white transition-all shadow-xs"
+            className="shrink-0 ml-3 rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-[#785BA3] hover:bg-[#785BA3] hover:text-white transition-all shadow-xs"
           >
             Level wechseln ▾
           </button>
@@ -135,7 +135,7 @@ export default function Startseite() {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="font-titel text-xl font-bold text-tinte">Übungen</span>
-                <span className="rounded-full bg-[#F8F3EC] border border-[#794D2C]/20 px-3 py-1 text-xs font-bold text-[#794D2C]">
+                <span className="rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-3 py-1 text-xs font-bold text-[#785BA3]">
                   3 Modi
                 </span>
               </div>
@@ -150,24 +150,24 @@ export default function Startseite() {
                         useEinstellungen.getState().setzeMelodieModus(modus.melodieModus);
                       }
                     }}
-                    className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-[#F8F3EC] hover:bg-[#EFE5D8] transition-all duration-200 border border-[#794D2C]/10 hover:border-[#794D2C]/25 hover:-translate-y-0.5 shadow-xs"
+                    className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-[#FAF6FD] hover:bg-[#F3ECF9] transition-all duration-200 border border-[#785BA3]/10 hover:border-[#785BA3]/30 hover:-translate-y-0.5 shadow-xs"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-[#EFE3D5] text-[#794D2C] text-lg font-bold shadow-xs">
+                      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-[#EADCF5] text-[#785BA3] text-lg font-bold shadow-xs">
                         {modus.symbol}
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="font-titel text-base sm:text-lg font-bold text-tinte group-hover:text-[#794D2C] transition-colors">
+                        <h2 className="font-titel text-base sm:text-lg font-bold text-tinte group-hover:text-[#785BA3] transition-colors">
                           {modus.titel}
                         </h2>
                         {modus.tag && (
-                          <span className="rounded-full bg-white/80 border border-[#794D2C]/15 text-[#794D2C] px-2.5 py-0.5 text-[11px] font-bold">
+                          <span className="rounded-full bg-white/80 border border-[#785BA3]/15 text-[#785BA3] px-2.5 py-0.5 text-[11px] font-bold">
                             {modus.tag}
                           </span>
                         )}
                       </div>
                     </div>
-                    <span className="text-[#794D2C] text-xl font-bold px-1 transition-transform duration-200 group-hover:translate-x-1 shrink-0">
+                    <span className="text-[#785BA3] text-xl font-bold px-1 transition-transform duration-200 group-hover:translate-x-1 shrink-0">
                       ›
                     </span>
                   </Link>

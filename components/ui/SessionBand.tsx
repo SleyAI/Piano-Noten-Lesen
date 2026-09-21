@@ -31,13 +31,13 @@ export function SessionBand({ className }: { className?: string }) {
         <div className="flex items-center gap-2">
           <span className="text-base select-none">⏱</span>
           <span className="font-titel text-xl font-bold text-tinte">Timer</span>
-          <span className="rounded-full bg-[#F8F3EC] border border-[#794D2C]/20 px-2.5 py-0.5 text-xs font-bold text-[#794D2C]">
+          <span className="rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-2.5 py-0.5 text-xs font-bold text-[#785BA3]">
             {zielMinuten ? `${zielMinuten} Min Ziel` : "Stoppuhr"}
           </span>
         </div>
         {laeuft && (
-          <span className="flex items-center gap-1.5 rounded-full bg-[#EFE3D5] px-3 py-1 text-xs font-bold text-[#794D2C] animate-pulse">
-            <span className="w-2 h-2 rounded-full bg-[#794D2C]" />
+          <span className="flex items-center gap-1.5 rounded-full bg-[#EADCF5] px-3 py-1 text-xs font-bold text-[#785BA3] animate-pulse">
+            <span className="w-2 h-2 rounded-full bg-[#785BA3]" />
             Läuft
           </span>
         )}
@@ -45,7 +45,7 @@ export function SessionBand({ className }: { className?: string }) {
 
       {/* Große Zeitanzeige */}
       <div className="my-4 text-center">
-        <span className="font-titel text-5xl sm:text-6xl font-bold text-[#794D2C] tracking-tight tabular-nums block">
+        <span className="font-titel text-5xl sm:text-6xl font-bold text-[#785BA3] tracking-tight tabular-nums block">
           {uhrzeitText(laufend)}
         </span>
         <p className="mt-1 text-xs font-semibold text-tinte-leise">
@@ -66,8 +66,8 @@ export function SessionBand({ className }: { className?: string }) {
                 onClick={() => setZielMinuten(zielMinuten === m ? null : m)}
                 className={`rounded-xl px-2.5 py-1 text-xs font-bold transition-all ${
                   zielMinuten === m
-                    ? "bg-[#794D2C] text-white shadow-xs"
-                    : "bg-[#F8F3EC] text-tinte-leise hover:bg-[#EFE3D5] hover:text-[#794D2C] border border-[#794D2C]/15"
+                    ? "bg-[#785BA3] text-white shadow-xs"
+                    : "bg-[#FAF5FD] text-tinte-leise hover:bg-[#EADCF5] hover:text-[#785BA3] border border-[#785BA3]/15"
                 }`}
               >
                 {m}m
@@ -78,8 +78,8 @@ export function SessionBand({ className }: { className?: string }) {
               onClick={() => setZielMinuten(null)}
               className={`rounded-xl px-2.5 py-1 text-xs font-bold transition-all ${
                 zielMinuten === null
-                  ? "bg-[#794D2C] text-white shadow-xs"
-                  : "bg-[#F8F3EC] text-tinte-leise hover:bg-[#EFE3D5] hover:text-[#794D2C] border border-[#794D2C]/15"
+                  ? "bg-[#785BA3] text-white shadow-xs"
+                  : "bg-[#FAF5FD] text-tinte-leise hover:bg-[#EADCF5] hover:text-[#785BA3] border border-[#785BA3]/15"
               }`}
             >
               Frei
@@ -95,8 +95,8 @@ export function SessionBand({ className }: { className?: string }) {
           onClick={laeuft ? beende : starte}
           className={`w-full rounded-2xl py-3.5 px-6 font-bold text-base transition-all duration-200 flex items-center justify-center gap-2 active:scale-98 shadow-sm ${
             laeuft
-              ? "bg-[#F8F3EC] border border-[#794D2C]/30 text-[#794D2C] hover:bg-[#EFE3D5]"
-              : "bg-[#794D2C] text-white hover:bg-[#5C361A] shadow-[#794D2C]/25 hover:-translate-y-0.5"
+              ? "bg-[#FAF5FD] border border-[#785BA3]/30 text-[#785BA3] hover:bg-[#EADCF5]"
+              : "bg-[#785BA3] text-white hover:bg-[#654B8D] shadow-[#785BA3]/25 hover:-translate-y-0.5"
           }`}
         >
           {laeuft ? "⏹ Session beenden" : "▶ Start"}
@@ -121,7 +121,7 @@ export function Sessionuhr() {
       type="button"
       onClick={beende}
       title="Session beenden"
-      className="flex items-center rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-[#794D2C] shadow-xs border border-[#794D2C]/20 transition-colors hover:bg-[#EFE3D5]"
+      className="flex items-center rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-[#785BA3] shadow-xs border border-[#785BA3]/20 transition-colors hover:bg-[#EADCF5]"
     >
       <span className="tabular-nums font-semibold">{uhrzeitText(laufend)}</span>
     </button>

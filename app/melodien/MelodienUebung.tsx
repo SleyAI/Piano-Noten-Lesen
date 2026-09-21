@@ -47,13 +47,13 @@ export function MelodienUebung() {
     <div className="flex h-full flex-col bg-papier">
       {/* Modus-Umschalter oben */}
       <div className="flex justify-center pt-2 pb-1 shrink-0 bg-papier">
-        <div className="inline-flex rounded-full bg-white p-1 shadow-[0_2px_10px_rgba(121,77,44,0.08)]">
+        <div className="inline-flex rounded-full bg-white p-1 shadow-[0_2px_10px_rgba(120,91,163,0.08)]">
           <button
             type="button"
             onClick={() => setzeMelodieModus("fliessend")}
             className={`rounded-full px-5 py-1.5 text-xs font-bold transition-all ${
               melodieModus === "fliessend"
-                ? "bg-[#794D2C] text-white shadow-sm"
+                ? "bg-[#785BA3] text-white shadow-sm"
                 : "text-tinte-leise hover:text-tinte"
             }`}
           >
@@ -64,7 +64,7 @@ export function MelodienUebung() {
             onClick={() => setzeMelodieModus("vorbereitung")}
             className={`rounded-full px-5 py-1.5 text-xs font-bold transition-all ${
               melodieModus === "vorbereitung"
-                ? "bg-[#794D2C] text-white shadow-sm"
+                ? "bg-[#785BA3] text-white shadow-sm"
                 : "text-tinte-leise hover:text-tinte"
             }`}
           >
@@ -185,7 +185,7 @@ function Endlos({
                 vorspiel.stoppen();
                 neuWuerfeln();
               }}
-              className="rounded-full bg-white shadow-xs px-4 py-1.5 text-xs sm:text-sm font-semibold text-[#794D2C] transition-colors hover:bg-[#EFE3D5]"
+              className="rounded-full bg-white shadow-xs px-4 py-1.5 text-xs sm:text-sm font-semibold text-[#785BA3] transition-colors hover:bg-[#EADCF5]"
             >
               neu würfeln
             </button>
@@ -240,7 +240,7 @@ function Hinweis({
 
   if (uebung.fehler) {
     const text = `Das war ${nameMitOktave(vonMidi(uebung.fehler.midi))}`;
-    return <span className="text-[#794D2C] font-medium">{text} — noch einmal von vorn.</span>;
+    return <span className="text-[#785BA3] font-medium">{text} — noch einmal von vorn.</span>;
   }
 
   return (

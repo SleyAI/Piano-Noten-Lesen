@@ -20,7 +20,7 @@ interface KartenProps {
 
 export function Karte({ children, className, href }: KartenProps) {
   const grund =
-    "group relative flex min-h-0 flex-col overflow-hidden rounded-[28px] bg-white border border-[#794D2C]/10 shadow-[0_10px_35px_rgba(121,77,44,0.06)]";
+    "group relative flex min-h-0 flex-col overflow-hidden rounded-[28px] bg-white border border-[#785BA3]/10 shadow-[0_10px_35px_rgba(120,91,163,0.06)]";
 
   const inhalt = (
     <span className="relative flex min-h-0 flex-1 flex-col">{children}</span>
@@ -30,7 +30,7 @@ export function Karte({ children, className, href }: KartenProps) {
     return (
       <Link
         href={href}
-        className={`${grund} transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(121,77,44,0.12)] ${className ?? ""}`}
+        className={`${grund} transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(120,91,163,0.12)] ${className ?? ""}`}
       >
         {inhalt}
       </Link>

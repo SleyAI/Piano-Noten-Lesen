@@ -112,7 +112,7 @@ export function NotenKaestchen({
             key={stufe}
             type="button"
             onClick={() => klickStammton(stufe)}
-            className="flex-1 py-3.5 sm:py-4 px-2 rounded-2xl bg-white text-tinte text-lg sm:text-2xl font-bold shadow-sm border border-papier-tief hover:border-[#794D2C]/40 hover:bg-[#F8F3EC] active:scale-95 transition-all duration-100 text-center"
+            className="flex-1 py-3.5 sm:py-4 px-2 rounded-2xl bg-white text-tinte text-lg sm:text-2xl font-bold shadow-sm border border-papier-tief hover:border-[#785BA3]/40 hover:bg-[#F9F6FC] active:scale-95 transition-all duration-100 text-center"
           >
             {stufe}
           </button>

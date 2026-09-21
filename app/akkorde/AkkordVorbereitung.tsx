@@ -29,19 +29,19 @@ export function AkkordVorbereitung({
   return (
     <div className="flex flex-col items-center gap-6 py-6 px-4 max-w-6xl mx-auto w-full">
       <div className="text-center">
-        <h2 className="font-titel text-2xl sm:text-3xl font-bold text-[#794D2C]">{titel}</h2>
+        <h2 className="font-titel text-2xl sm:text-3xl font-bold text-[#785BA3]">{titel}</h2>
       </div>
 
       {/* Cozy Steuerungs-Leiste */}
       <div className="flex flex-wrap items-center justify-center gap-2.5">
-        <div className="inline-flex rounded-full bg-white border border-[#794D2C]/15 p-1 shadow-2xs">
+        <div className="inline-flex rounded-full bg-white border border-[#785BA3]/15 p-1 shadow-2xs">
           <button
             type="button"
             onClick={() => setAnsichtVorgabe("noten")}
             className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
               ansichtVorgabe === "noten"
-                ? "bg-[#794D2C] text-white shadow-xs"
-                : "text-tinte-leise hover:text-[#794D2C]"
+                ? "bg-[#785BA3] text-white shadow-xs"
+                : "text-tinte-leise hover:text-[#785BA3]"
             }`}
           >
             🎼 Noten (Standard)
@@ -51,8 +51,8 @@ export function AkkordVorbereitung({
             onClick={() => setAnsichtVorgabe("tastatur")}
             className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
               ansichtVorgabe === "tastatur"
-                ? "bg-[#794D2C] text-white shadow-xs"
-                : "text-tinte-leise hover:text-[#794D2C]"
+                ? "bg-[#785BA3] text-white shadow-xs"
+                : "text-tinte-leise hover:text-[#785BA3]"
             }`}
           >
             🎹 Klaviatur-Hilfe
@@ -64,8 +64,8 @@ export function AkkordVorbereitung({
           onClick={() => setNamenSichtbar((v) => !v)}
           className={`rounded-full px-4 py-2 text-xs font-bold border transition-all ${
             namenSichtbar
-              ? "bg-[#EFE3D5] text-[#794D2C] border-[#794D2C]/30"
-              : "bg-white text-tinte-leise border-[#794D2C]/15 hover:text-[#794D2C]"
+              ? "bg-[#EADCF5] text-[#785BA3] border-[#785BA3]/30"
+              : "bg-white text-tinte-leise border-[#785BA3]/15 hover:text-[#785BA3]"
           }`}
         >
           {namenSichtbar ? "Akkordnamen verbergen" : "Akkordnamen einblenden"}
@@ -101,7 +101,7 @@ export function AkkordVorbereitung({
           <button
             type="button"
             onClick={aufZurueck}
-            className="rounded-full bg-white border border-[#794D2C]/20 px-6 py-3 text-sm font-bold text-tinte transition-colors hover:bg-[#F8F3EC]"
+            className="rounded-full bg-white border border-[#785BA3]/20 px-6 py-3 text-sm font-bold text-tinte transition-colors hover:bg-[#FAF6FD]"
           >
             Auswahl ändern
           </button>
@@ -109,7 +109,7 @@ export function AkkordVorbereitung({
         <button
           type="button"
           onClick={aufBereit}
-          className="rounded-full bg-[#794D2C] px-10 py-3.5 text-lg font-bold text-white shadow-md hover:bg-[#5C361A] transition-all duration-200 active:scale-95"
+          className="rounded-full bg-[#785BA3] px-10 py-3.5 text-lg font-bold text-white shadow-md hover:bg-[#654B8D] transition-all duration-200 active:scale-95"
         >
           Bin bereit!
         </button>

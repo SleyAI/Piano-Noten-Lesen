@@ -14,6 +14,8 @@ import type { Haende, Stellung } from "@/lib/music/akkorde";
 import type { UebungsartId } from "@/lib/music/akkorduebung";
 import { TEMPO, begrenzeTempo } from "@/lib/music/rhythmus";
 
+import { type Niveau } from "@/lib/music/niveau";
+
 /** Woher kommen die Toene und wohin geht die Eingabe? */
 export type Spielweise =
   /** Unterwegs: Klaviatur auf dem Bildschirm, Klang aus der App. */
@@ -24,8 +26,8 @@ export type Spielweise =
 /** Die zwei Modi fuer die Melodien. */
 export type MelodieModus = "fliessend" | "vorbereitung";
 
-/** Die drei Wege durch die Akkorde. */
-export type AkkordModus = "lernen" | "umkehrungen" | "folgen";
+/** Die zwei Hauptmodi fuer die Akkorde. */
+export type AkkordModus = "folgen" | "inversionen" | "lernen" | "umkehrungen";
 
 /** Woher kommen die Akkorde einer Folge? */
 export type FolgenQuelle =
@@ -65,7 +67,9 @@ export interface EinstellungsZustand {
   /** Klickt das Metronom mit? */
   metronomAn: boolean;
 
+  akkordNiveau: Niveau;
   akkordModus: AkkordModus;
+  inversionsSpielart: "griff" | "arpeggio";
   /** Mit welcher Hand gegriffen wird — oder mit beiden zusammen. */
   akkordHaende: Haende;
   /** Der Akkord, der gerade gelernt oder umgekehrt wird. */
@@ -100,7 +104,9 @@ export interface EinstellungsZustand {
   setzeTempo: (bpm: number) => void;
   schalteMetronom: () => void;
 
+  setzeAkkordNiveau: (n: Niveau) => void;
   setzeAkkordModus: (m: AkkordModus) => void;
+  setzeInversionsSpielart: (s: "griff" | "arpeggio") => void;
   setzeAkkordHaende: (h: Haende) => void;
   setzeLernAkkord: (id: string | null) => void;
   setzeStellung: (modus: "lernen" | "umkehrungen", stellung: Stellung) => void;
@@ -140,17 +146,19 @@ export const useEinstellungen = create<EinstellungsZustand>()(
       tempo: TEMPO,
       metronomAn: false,
 
-      akkordModus: "lernen",
+      akkordNiveau: "anfaenger",
+      akkordModus: "folgen",
+      inversionsSpielart: "griff",
       akkordHaende: "rechts",
-      lernAkkord: null,
+      lernAkkord: "C",
       stellungLernen: 0,
       stellungUmkehrung: 1,
-      taktGenau: true,
+      taktGenau: false,
       uebungsarten: ["griff", "takt", "gebrochen", "melodie"],
 
       folgenQuelle: "passend",
       folgenAkkorde: [],
-      folgenSpielart: "gemischt",
+      folgenSpielart: "block",
 
       setzeSpielweise: (spielweise) => set({ spielweise }),
       schalteKlaviatur: () =>
@@ -170,7 +178,9 @@ export const useEinstellungen = create<EinstellungsZustand>()(
       setzeTempo: (bpm) => set({ tempo: begrenzeTempo(bpm) }),
       schalteMetronom: () => set((z) => ({ metronomAn: !z.metronomAn })),
 
+      setzeAkkordNiveau: (akkordNiveau) => set({ akkordNiveau }),
       setzeAkkordModus: (akkordModus) => set({ akkordModus }),
+      setzeInversionsSpielart: (inversionsSpielart) => set({ inversionsSpielart }),
       setzeAkkordHaende: (akkordHaende) => set({ akkordHaende }),
       setzeLernAkkord: (lernAkkord) => set({ lernAkkord }),
       setzeStellung: (modus, stellung) =>

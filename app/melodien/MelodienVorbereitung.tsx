@@ -213,11 +213,8 @@ export function MelodienVorbereitung({
                   ? {
                       index: letzterFehler.index,
                       note: {
-                        midi: letzterFehler.midi,
-                        stufe: "C",
-                        alteration: 0,
-                        oktave: 4,
-                        diatonic: 28,
+                        ...vonMidi(letzterFehler.midi),
+                        schluessel: melodie[letzterFehler.index]?.schluessel ?? "violin",
                       },
                     }
                   : null

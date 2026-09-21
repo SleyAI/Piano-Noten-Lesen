@@ -267,6 +267,24 @@ export function folgeUm(akkord: Akkord, erlaubt?: ReadonlySet<string>): Akkord[]
 }
 
 /**
+ * Stabile Vierer-Kadenz um einen Akkord herum (z. B. C -> C, G, Am, F).
+ * Behält eine gleichbleibende harmonische Reihenfolge für die Vorbereitung.
+ */
+export function stabileViererFolge(akkord: Akkord): Akkord[] {
+  const { grundton, stufe } = tonartVon(akkord);
+  for (const vorlage of VORLAGEN.filter((v) => v.includes(stufe))) {
+    const start = vorlage.indexOf(stufe);
+    const gedreht = [...vorlage.slice(start), ...vorlage.slice(0, start)];
+    const kette = gedreht.map((s) => akkordDerStufe(grundton, s));
+    if (kette.length === 4 && kette.every((a) => a !== undefined)) {
+      return [akkord, ...(kette as Akkord[]).slice(1)];
+    }
+  }
+  const nachbarn = passendeAkkorde(akkord).filter((a) => a.id !== akkord.id);
+  return [akkord, ...nachbarn.slice(0, 3)];
+}
+
+/**
  * Baut eine Variation aus frei gewaehlten Akkorden.
  *
  * Es geht nicht darum, jeden angehakten Akkord einmal unterzubringen — dann

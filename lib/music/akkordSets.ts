@@ -1,7 +1,14 @@
-import { type Akkord, type Lage, akkordNachSymbol, lage } from "./akkorde";
+import {
+  type Akkord,
+  type Lage,
+  akkordNachSymbol,
+  anzahlUmkehrungen,
+  lage,
+} from "./akkorde";
 import { stabileViererFolge } from "./akkordfolgen";
 
 export type AkkordKomplexitaet = "dreiklaenge" | "erweitert" | "komplex";
+export type AkkordSpielart = "griff" | "arpeggio";
 
 export interface AkkordEintrag {
   id: string;
@@ -11,20 +18,12 @@ export interface AkkordEintrag {
   lage: Lage;
 }
 
-export interface AkkordVorlage {
-  id: string;
-  titel: string;
-  beschreibung?: string;
-  symbole: string[];
-}
-
 export const KOMPLEXITAET_INFOS: Record<
   AkkordKomplexitaet,
   {
     titel: string;
     kurztitel: string;
     beschreibung: string;
-    vorlagen: AkkordVorlage[];
     einzelAkkorde: string[];
   }
 > = {
@@ -32,70 +31,12 @@ export const KOMPLEXITAET_INFOS: Record<
     titel: "Dreiklänge / Grundakkorde",
     kurztitel: "Dreiklänge",
     beschreibung: "Einfache Dur- & Moll-Akkorde in Grundstellung",
-    vorlagen: [
-      {
-        id: "pop-standard",
-        titel: "Pop-Standard",
-        beschreibung: "Die berühmte Vier-Akkord-Folge",
-        symbole: ["C", "G", "Am", "F"],
-      },
-      {
-        id: "klassiker-50s",
-        titel: "Klassiker 50er",
-        beschreibung: "Doo-Wop & Fünfzigerjahre",
-        symbole: ["C", "Am", "F", "G"],
-      },
-      {
-        id: "moll-pop",
-        titel: "Moll-Pop",
-        beschreibung: "Melancholischer Einstieg",
-        symbole: ["Am", "F", "C", "G"],
-      },
-      {
-        id: "schlichte-kadenz",
-        titel: "Schlichte Kadenz",
-        beschreibung: "Klassische I-IV-V Kadenz",
-        symbole: ["C", "F", "G", "C"],
-      },
-      {
-        id: "g-dur-pop",
-        titel: "G-Dur Pop",
-        beschreibung: "Dieselbe Bewegung in G-Dur",
-        symbole: ["G", "D", "Em", "C"],
-      },
-    ],
     einzelAkkorde: ["C", "D", "E", "F", "G", "A", "Dm", "Em", "Am"],
   },
   erweitert: {
     titel: "Erweiterte Griffe",
     kurztitel: "Erweiterte Griffe",
     beschreibung: "Umkehrungen (Inversionen), Sus-Akkorde & 4-Klänge wie G7, Cadd9",
-    vorlagen: [
-      {
-        id: "pop-7er",
-        titel: "Pop mit 7ern",
-        beschreibung: "Dominantseptakkord eingebunden",
-        symbole: ["C", "G7", "Am", "F"],
-      },
-      {
-        id: "moll-dominant",
-        titel: "Moll-Kadenz",
-        beschreibung: "Moll mit Dur-Dominante E7",
-        symbole: ["Am", "Dm", "E7", "Am"],
-      },
-      {
-        id: "inversionen",
-        titel: "Inversionen",
-        beschreibung: "Fließender Basslauf mit C/E",
-        symbole: ["C", "C/E", "F", "G"],
-      },
-      {
-        id: "sus-aufloesung",
-        titel: "Sus-Auflösung",
-        beschreibung: "Sus4-Spannung & Auflösung",
-        symbole: ["D", "Dsus4", "G", "A"],
-      },
-    ],
     einzelAkkorde: [
       "C",
       "G7",
@@ -108,39 +49,12 @@ export const KOMPLEXITAET_INFOS: Record<
       "Cadd9",
       "Gsus4",
       "Dsus4",
-      "C/E",
     ],
   },
   komplex: {
     titel: "Komplexe Akkorde",
     kurztitel: "Komplexe Akkorde",
     beschreibung: "Septakkorde, Optionstöne, Alterationen (z. B. Cmaj7, Dm7, F/G)",
-    vorlagen: [
-      {
-        id: "jazz-c",
-        titel: "Jazz-Kadenz (in C)",
-        beschreibung: "Die klassische II-V-I Verbindung",
-        symbole: ["Dm7", "G7", "Cmaj7", "Am7"],
-      },
-      {
-        id: "jazz-f",
-        titel: "Jazz-Kadenz (in F)",
-        beschreibung: "II-V-I Verbindung in F",
-        symbole: ["Gm7", "C7", "Fmaj7", "Dm7"],
-      },
-      {
-        id: "jazz-g",
-        titel: "Jazz-Kadenz (in G)",
-        beschreibung: "II-V-I Verbindung in G",
-        symbole: ["Am7", "D7", "Gmaj7", "Em7"],
-      },
-      {
-        id: "blues-kurz",
-        titel: "Blues-Schema",
-        beschreibung: "Dominantseptakkorde im Wechsel",
-        symbole: ["C7", "F7", "C7", "G7"],
-      },
-    ],
     einzelAkkorde: [
       "Cmaj7",
       "Fmaj7",
@@ -158,6 +72,40 @@ export const KOMPLEXITAET_INFOS: Record<
 };
 
 /**
+ * Erzeugt alle Umkehrungen eines Akkords:
+ * z. B. für C:
+ * - Grundstellung (C-E-G)
+ * - 1. Umkehrung (E-G-C)
+ * - 2. Umkehrung (G-C-E)
+ */
+export function inversionenFuerAkkord(symbol: string): AkkordEintrag[] {
+  const basis = symbol.split("/")[0];
+  const akkord = akkordNachSymbol(basis);
+  if (!akkord) return [];
+
+  const anzahl = anzahlUmkehrungen(akkord);
+  const eintraege: AkkordEintrag[] = [];
+
+  for (let u = 0; u <= anzahl; u++) {
+    const l = lage(akkord, u);
+    const titel =
+      u === 0
+        ? `${akkord.symbol} (Grundstellung)`
+        : `${akkord.symbol} (${u}. Umkehrung)`;
+
+    eintraege.push({
+      id: `${akkord.id}-umk-${u}`,
+      titel,
+      akkord,
+      umkehrung: u,
+      lage: l,
+    });
+  }
+
+  return eintraege;
+}
+
+/**
  * Erzeugt einen typisierten AkkordEintrag für die Flashcards und Übungen.
  * Unterstützt auch Slash-Akkorde wie C/E (1. Umkehrung) oder C/G (2. Umkehrung).
  */
@@ -167,7 +115,6 @@ export function baueAkkordEintrag(symbol: string): AkkordEintrag | null {
     const akkord = akkordNachSymbol(basis);
     if (!akkord) return null;
 
-    // Finde passende Umkehrung, deren tiefster Ton dem Bass entspricht
     let umkehrung = 1;
     if (bass === "G" && basis === "C") umkehrung = 2;
     else if (bass === "E" && basis === "C") umkehrung = 1;
@@ -199,26 +146,41 @@ export function baueAkkordEintrag(symbol: string): AkkordEintrag | null {
 }
 
 /**
- * Automatische Generierung passender Akkorde (Standard 4), wenn der Nutzer
- * einen Akkord anklickt.
+ * Automatische Auffüllung mit passenden harmonischen Akkorden (auf 4 Akkorde),
+ * wenn der Nutzer auf "Mit passenden Akkorden auffüllen" klickt.
  */
 export function passendeViererFolgeFuer(
   symbol: string,
   komplexitaet: AkkordKomplexitaet,
 ): string[] {
-  // Wenn der Akkord Teil einer bekannten Vorlage ist, nimm diese Vorlage
-  const vorlagen = KOMPLEXITAET_INFOS[komplexitaet].vorlagen;
-  for (const v of vorlagen) {
-    if (v.symbole.includes(symbol)) {
-      // Beginne mit dem gewählten Symbol
-      const idx = v.symbole.indexOf(symbol);
-      return [...v.symbole.slice(idx), ...v.symbole.slice(0, idx)];
-    }
-  }
-
-  // Ansonsten über stabileViererFolge
+  // Wenn es Standardakkorde sind, z. B. C, G, Am, F:
   const akkord = akkordNachSymbol(symbol.split("/")[0]);
   if (!akkord) return [symbol];
+
+  // Spezialfälle für bekannte beliebte Kadenzen
+  if (komplexitaet === "dreiklaenge") {
+    if (akkord.symbol === "C") return ["C", "G", "Am", "F"];
+    if (akkord.symbol === "G") return ["G", "D", "Em", "C"];
+    if (akkord.symbol === "Am") return ["Am", "F", "C", "G"];
+    if (akkord.symbol === "F") return ["F", "C", "Dm", "C"];
+    if (akkord.symbol === "D") return ["D", "A", "Bm", "G"];
+    if (akkord.symbol === "Em") return ["Em", "C", "G", "D"];
+    if (akkord.symbol === "Dm") return ["Dm", "G", "C", "Am"];
+  }
+
+  if (komplexitaet === "erweitert") {
+    if (akkord.symbol === "C") return ["C", "G7", "Am", "F"];
+    if (akkord.symbol === "G7") return ["C", "G7", "Am", "F"];
+    if (akkord.symbol === "Am") return ["Am", "Dm7", "E7", "Am"];
+    if (akkord.symbol === "E7") return ["Am", "Dm", "E7", "Am"];
+    if (akkord.symbol === "D" || akkord.symbol === "Dsus4") return ["D", "Dsus4", "G", "A"];
+  }
+
+  if (komplexitaet === "komplex") {
+    if (akkord.symbol === "Cmaj7" || akkord.symbol === "Dm7") return ["Dm7", "G7", "Cmaj7", "Am7"];
+    if (akkord.symbol === "Fmaj7" || akkord.symbol === "Gm7") return ["Gm7", "C7", "Fmaj7", "Dm7"];
+    if (akkord.symbol === "C7") return ["C7", "F7", "C7", "G7"];
+  }
 
   try {
     const folge = stabileViererFolge(akkord);
@@ -228,5 +190,6 @@ export function passendeViererFolgeFuer(
   } catch {
     // fallback
   }
+
   return [symbol];
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   KOMPLEXITAET_INFOS,
   baueAkkordEintrag,
+  inversionenFuerAkkord,
   passendeViererFolgeFuer,
 } from "./akkordSets";
 import { nameMitOktave } from "./pitch";
@@ -44,6 +45,20 @@ describe("Akkord-Sets & Einträge", () => {
     const folgeG7 = passendeViererFolgeFuer("G7", "erweitert");
     expect(folgeG7.length).toBe(4);
     expect(folgeG7.includes("G7")).toBe(true);
+  });
+
+  it("erzeugt alle Umkehrungen für einen Akkord", () => {
+    const invC = inversionenFuerAkkord("C");
+    expect(invC.length).toBe(3); // Grundstellung, 1. Umkehrung, 2. Umkehrung
+    expect(invC[0].umkehrung).toBe(0);
+    expect(invC[1].umkehrung).toBe(1);
+    expect(invC[2].umkehrung).toBe(2);
+    expect(invC[0].titel).toContain("Grundstellung");
+    expect(invC[1].titel).toContain("1. Umkehrung");
+    expect(invC[2].titel).toContain("2. Umkehrung");
+
+    const invG7 = inversionenFuerAkkord("G7");
+    expect(invG7.length).toBe(4); // Grundstellung + 3 Umkehrungen
   });
 
   it("definiert die 3 Komplexitätsstufen vollständig", () => {

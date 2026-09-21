@@ -5,11 +5,11 @@ import { SchrittReihe } from "@/components/practice/SchrittReihe";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
 import { type Haende } from "@/lib/music/akkorde";
 import { type UebungsSchritt, baueUebung } from "@/lib/music/akkorduebung";
-import { type AkkordEintrag } from "@/lib/music/akkordSets";
+import { type AkkordEintrag, type AkkordSpielart } from "@/lib/music/akkordSets";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
 import { useSchrittfolge } from "@/lib/practice/useSchrittfolge";
 
-const PAUSE_NACH_FOLGE = 900;
+const PAUSE_NACH_FOLGE = 850;
 
 interface FolgenSchritt extends UebungsSchritt {
   akkordIndex: number;
@@ -18,12 +18,18 @@ interface FolgenSchritt extends UebungsSchritt {
 function schritteAusKette(
   kette: readonly AkkordEintrag[],
   haende: Haende,
+  spielart: AkkordSpielart,
 ): { schritte: FolgenSchritt[]; bassGrenze: number } {
   const schritte: FolgenSchritt[] = [];
   let bassGrenze = Number.NEGATIVE_INFINITY;
 
   kette.forEach((eintrag, akkordIndex) => {
-    const gebaut = baueUebung(eintrag.lage, "griff", haende, false);
+    const gebaut = baueUebung(
+      eintrag.lage,
+      spielart === "arpeggio" ? "gebrochen" : "griff",
+      haende,
+      false,
+    );
     bassGrenze = gebaut.bassGrenze;
     for (const schritt of gebaut.schritte) {
       schritte.push({ ...schritt, akkordIndex });
@@ -40,7 +46,6 @@ function wuerfleAchtSchritte(eintraege: readonly AkkordEintrag[]): AkkordEintrag
   const kette: AkkordEintrag[] = [];
   while (kette.length < 8) {
     const vorheriger = kette[kette.length - 1];
-    // Wähle zufälligen Eintrag, vermeide direkte Wiederholung wenn möglich
     const pool =
       eintraege.length > 1
         ? eintraege.filter((e) => !vorheriger || e.id !== vorheriger.id)
@@ -54,6 +59,8 @@ function wuerfleAchtSchritte(eintraege: readonly AkkordEintrag[]): AkkordEintrag
 interface AkkordfolgenUebungProps {
   eintraege: AkkordEintrag[];
   haende: Haende;
+  spielart: AkkordSpielart;
+  onSpielartChange: (s: AkkordSpielart) => void;
   onZurueckZuFlashcards: () => void;
   onZurueckZuAuswahl: () => void;
 }
@@ -61,6 +68,8 @@ interface AkkordfolgenUebungProps {
 export function AkkordfolgenUebung({
   eintraege,
   haende,
+  spielart,
+  onSpielartChange,
   onZurueckZuFlashcards,
   onZurueckZuAuswahl,
 }: AkkordfolgenUebungProps) {
@@ -72,9 +81,11 @@ export function AkkordfolgenUebung({
 
   return (
     <Lauf
-      key={`variation-${variation}-${haende}`}
+      key={`variation-${variation}-${haende}-${spielart}`}
       eintraege={eintraege}
       haende={haende}
+      spielart={spielart}
+      onSpielartChange={onSpielartChange}
       rundeNummer={variation + 1}
       onZurueckZuFlashcards={onZurueckZuFlashcards}
       onZurueckZuAuswahl={onZurueckZuAuswahl}
@@ -86,6 +97,8 @@ export function AkkordfolgenUebung({
 function Lauf({
   eintraege,
   haende,
+  spielart,
+  onSpielartChange,
   rundeNummer,
   onZurueckZuFlashcards,
   onZurueckZuAuswahl,
@@ -93,6 +106,8 @@ function Lauf({
 }: {
   eintraege: readonly AkkordEintrag[];
   haende: Haende;
+  spielart: AkkordSpielart;
+  onSpielartChange: (s: AkkordSpielart) => void;
   rundeNummer: number;
   onZurueckZuFlashcards: () => void;
   onZurueckZuAuswahl: () => void;
@@ -100,7 +115,10 @@ function Lauf({
 }) {
   // 8 Schläge/Schritte in variierender Reihenfolge
   const kette = useMemo(() => wuerfleAchtSchritte(eintraege), [eintraege]);
-  const { schritte, bassGrenze } = useMemo(() => schritteAusKette(kette, haende), [kette, haende]);
+  const { schritte, bassGrenze } = useMemo(
+    () => schritteAusKette(kette, haende, spielart),
+    [kette, haende, spielart],
+  );
 
   const uhren = useRef<number[]>([]);
   useEffect(
@@ -142,7 +160,7 @@ function Lauf({
   return (
     <div className="flex flex-col h-full bg-papier">
       {/* Obere Steuerungs- und Fortschrittsleiste */}
-      <div className="flex flex-wrap shrink-0 items-center justify-between gap-3 px-6 py-3 border-b border-papier-tief bg-white/50">
+      <div className="flex flex-wrap shrink-0 items-center justify-between gap-3 px-6 py-2.5 border-b border-papier-tief bg-white/50">
         <div className="flex items-center gap-2 overflow-x-auto py-1">
           <span className="text-xs font-bold text-[#785BA3] bg-[#EADCF5] px-2.5 py-1 rounded-full shrink-0">
             Runde {rundeNummer} (8 Akkorde)
@@ -179,17 +197,43 @@ function Lauf({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {/* Spielart Umschalter */}
+          <div className="inline-flex rounded-full bg-white border border-[#785BA3]/15 p-0.5 shadow-2xs text-xs font-bold">
+            <button
+              type="button"
+              onClick={() => onSpielartChange("griff")}
+              className={`rounded-full px-2.5 py-1 transition-all ${
+                spielart === "griff"
+                  ? "bg-[#785BA3] text-white shadow-xs"
+                  : "text-tinte-leise hover:text-[#785BA3]"
+              }`}
+            >
+              🎹 Griff
+            </button>
+            <button
+              type="button"
+              onClick={() => onSpielartChange("arpeggio")}
+              className={`rounded-full px-2.5 py-1 transition-all ${
+                spielart === "arpeggio"
+                  ? "bg-[#785BA3] text-white shadow-xs"
+                  : "text-tinte-leise hover:text-[#785BA3]"
+              }`}
+            >
+              🌊 Arpeggio
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={onZurueckZuFlashcards}
-            className="rounded-full bg-white border border-[#785BA3]/20 px-4 py-1.5 text-xs font-bold text-[#785BA3] transition-colors hover:bg-[#EADCF5]"
+            className="rounded-full bg-white border border-[#785BA3]/20 px-3.5 py-1 text-xs font-bold text-[#785BA3] transition-colors hover:bg-[#EADCF5]"
           >
             ← Flashcards
           </button>
           <button
             type="button"
             onClick={onZurueckZuAuswahl}
-            className="rounded-full bg-white border border-[#785BA3]/20 px-4 py-1.5 text-xs font-bold text-tinte transition-colors hover:bg-[#EADCF5]"
+            className="rounded-full bg-white border border-[#785BA3]/20 px-3.5 py-1 text-xs font-bold text-tinte transition-colors hover:bg-[#EADCF5]"
           >
             Auswahl ändern
           </button>

@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { Akkordbild } from "@/components/practice/Akkordbild";
-import { type AkkordEintrag } from "@/lib/music/akkordSets";
+import { type AkkordEintrag, type AkkordSpielart } from "@/lib/music/akkordSets";
 import { griffFuerHaende, type Haende } from "@/lib/music/akkorde";
 
 interface AkkordVorschauProps {
   eintraege: AkkordEintrag[];
   haende: Haende;
+  spielart: AkkordSpielart;
+  onSpielartChange: (s: AkkordSpielart) => void;
   onZurueck: () => void;
   onStartUebung: () => void;
 }
@@ -15,6 +17,8 @@ interface AkkordVorschauProps {
 export function AkkordVorschau({
   eintraege,
   haende,
+  spielart,
+  onSpielartChange,
   onZurueck,
   onStartUebung,
 }: AkkordVorschauProps) {
@@ -35,20 +39,47 @@ export function AkkordVorschau({
 
         <div className="text-center">
           <h2 className="font-titel text-2xl sm:text-3xl font-bold text-[#785BA3]">
-            Akkordfolge: {eintraege.map((e) => e.titel).join(" – ")}
+            {eintraege.map((e) => e.titel).join(" – ")}
           </h2>
           <p className="text-xs text-tinte-leise mt-0.5">
-            Flashcards umdrehen für Tasten &amp; Fingersatz. Präge dir die Notenbilder ein.
+            Flashcards umdrehen für Tasten &amp; Fingersatz. Präge dir die Notenformen ein.
           </p>
         </div>
 
         {/* Steuerungs-Pills */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center justify-center gap-2 shrink-0">
+          {/* Spielart Umschalter */}
+          <div className="inline-flex rounded-full bg-white border border-[#785BA3]/15 p-1 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => onSpielartChange("griff")}
+              className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
+                spielart === "griff"
+                  ? "bg-[#785BA3] text-white shadow-xs"
+                  : "text-tinte-leise hover:text-[#785BA3]"
+              }`}
+            >
+              🎹 Ganzer Griff
+            </button>
+            <button
+              type="button"
+              onClick={() => onSpielartChange("arpeggio")}
+              className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
+                spielart === "arpeggio"
+                  ? "bg-[#785BA3] text-white shadow-xs"
+                  : "text-tinte-leise hover:text-[#785BA3]"
+              }`}
+            >
+              🌊 Arpeggio
+            </button>
+          </div>
+
+          {/* Noten / Klaviatur */}
           <div className="inline-flex rounded-full bg-white border border-[#785BA3]/15 p-1 shadow-2xs">
             <button
               type="button"
               onClick={() => setAnsichtVorgabe("noten")}
-              className={`rounded-full px-3.5 py-1 text-xs font-bold transition-all ${
+              className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
                 ansichtVorgabe === "noten"
                   ? "bg-[#785BA3] text-white shadow-xs"
                   : "text-tinte-leise hover:text-[#785BA3]"
@@ -59,7 +90,7 @@ export function AkkordVorschau({
             <button
               type="button"
               onClick={() => setAnsichtVorgabe("tastatur")}
-              className={`rounded-full px-3.5 py-1 text-xs font-bold transition-all ${
+              className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
                 ansichtVorgabe === "tastatur"
                   ? "bg-[#785BA3] text-white shadow-xs"
                   : "text-tinte-leise hover:text-[#785BA3]"
@@ -72,13 +103,13 @@ export function AkkordVorschau({
           <button
             type="button"
             onClick={() => setNamenSichtbar((v) => !v)}
-            className={`rounded-full px-3.5 py-1.5 text-xs font-bold border transition-all ${
+            className={`rounded-full px-3 py-1 text-xs font-bold border transition-all ${
               !namenSichtbar
                 ? "bg-[#EADCF5] text-[#785BA3] border-[#785BA3]/30"
                 : "bg-white text-tinte-leise border-[#785BA3]/15 hover:text-[#785BA3]"
             }`}
           >
-            {namenSichtbar ? "Namen ausblenden" : "Namen einblenden"}
+            {namenSichtbar ? "Namen verbergen" : "Namen zeigen"}
           </button>
         </div>
       </div>

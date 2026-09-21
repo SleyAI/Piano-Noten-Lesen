@@ -60,7 +60,11 @@ export function AkkordAuswahl({
 
   function auffuellen() {
     const defaultBasis =
-      komplexitaet === "komplex" ? "Cmaj7" : komplexitaet === "erweitert" ? "G7" : "C";
+      komplexitaet === "komplex"
+        ? "Cmaj7"
+        : komplexitaet === "erweitert"
+          ? "G7"
+          : "C";
     const basis = ausgewaehlteAkkorde[0] ?? defaultBasis;
     const naechste = auffuellVariation + 1;
     setAuffuellVariation(naechste);
@@ -132,7 +136,7 @@ export function AkkordAuswahl({
                     aktiv ? "text-[#785BA3]" : "text-tinte"
                   }`}
                 >
-                  {stufenInfo.kurztitel}
+                  {stufenInfo.titel}
                 </span>
                 <span className="text-xs text-tinte-leise mt-1 leading-snug">
                   {stufenInfo.beschreibung}
@@ -186,39 +190,45 @@ export function AkkordAuswahl({
           </span>
           <span className="text-xs text-tinte-leise">
             {modusArt === "inversionen"
-              ? "Wähle einen Akkord, um Grundstellung und alle Umkehrungen zu üben."
-              : "Wähle deine Akkorde frei aus oder fülle sie automatisch auf."}
+              ? "Wähle einen Akkord, um Grundstellung und alle Umkehrungen zu üben, oder wähle direkte Inversionen."
+              : "Wähle deine Akkorde frei aus oder lasse dir eine passende Folge zusammenstellen."}
           </span>
         </div>
 
         {/* Fall 1: Umkehrungen-Modus */}
         {modusArt === "inversionen" ? (
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap gap-2">
-              {["C", "D", "E", "F", "G", "A", "Dm", "Em", "Am", "G7"].map((sym) => {
-                const aktiv = inversionsAkkord === sym;
-                return (
-                  <button
-                    key={sym}
-                    type="button"
-                    onClick={() => waehleInversionenAkkord(sym)}
-                    className={`rounded-xl px-4 py-2.5 text-sm font-bold transition-all ${
-                      aktiv
-                        ? "bg-[#785BA3] text-white shadow-xs scale-105"
-                        : "bg-[#FAF6FD] text-tinte border border-papier-tief hover:border-[#785BA3]/30"
-                    }`}
-                  >
-                    {sym}
-                  </button>
-                );
-              })}
+          <div className="flex flex-col gap-5">
+            {/* 1. Dur/Moll-Basis */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-bold text-[#785BA3] uppercase tracking-wider px-1">
+                Dur/Moll-Basis
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {["C", "G", "D", "A", "E", "F", "Am", "Em", "Dm"].map((sym) => {
+                  const aktiv = inversionsAkkord === sym;
+                  return (
+                    <button
+                      key={sym}
+                      type="button"
+                      onClick={() => waehleInversionenAkkord(sym)}
+                      className={`rounded-xl px-4 py-2.5 text-sm font-bold transition-all ${
+                        aktiv
+                          ? "bg-[#785BA3] text-white shadow-xs scale-105"
+                          : "bg-[#FAF6FD] text-tinte border border-papier-tief hover:border-[#785BA3]/30"
+                      }`}
+                    >
+                      {sym}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Welche Umkehrungen möchtest du üben? */}
+            {/* 2. Welche Umkehrungen möchtest du üben? */}
             <div className="flex flex-col gap-2.5 p-4 rounded-2xl bg-[#FAF6FD] border border-[#785BA3]/15">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-[#785BA3] uppercase tracking-wider px-1">
-                  Welche Umkehrungen möchtest du üben?
+                  Welche Umkehrungen für {inversionsAkkord} möchtest du üben?
                 </span>
                 <span className="text-xs text-tinte-leise font-medium">
                   Tippe zum An- oder Abwählen
@@ -229,15 +239,17 @@ export function AkkordAuswahl({
                   const istGewaehlt = gewaehlteUmkehrungen.includes(inv.umkehrung);
                   const label =
                     inv.umkehrung === 0
-                      ? "Grundakkord (Grundstellung)"
-                      : `${inv.umkehrung}. Umkehrung`;
+                      ? `Grundstellung (${inversionsAkkord})`
+                      : inv.umkehrung === 1
+                        ? `1. Umkehrung (Sextakkord)`
+                        : `2. Umkehrung (Quartsextakkord)`;
 
                   return (
                     <button
                       key={inv.id}
                       type="button"
                       onClick={() => schalteUmkehrung(inv.umkehrung)}
-                      className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs sm:text-sm font-bold transition-all border ${
+                      className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs sm:text-sm font-bold transition-all border ${
                         istGewaehlt
                           ? "bg-[#785BA3] text-white border-[#785BA3] shadow-xs"
                           : "bg-white text-tinte-leise border-[#785BA3]/20 hover:border-[#785BA3]/40 hover:text-tinte"
@@ -250,25 +262,42 @@ export function AkkordAuswahl({
                 })}
               </div>
             </div>
-          </div>
-        ) : (
-          /* Fall 2: Standard-Akkorde freie Auswahl */
-          <div className="flex flex-col gap-4">
-            {/* 1. ZUERST: Die Akkord-Buttons zum Auswählen */}
-            <div>
-              <p className="text-xs text-tinte-leise mb-2.5">
-                Tippe Akkorde an, um sie auszuwählen oder abzuwählen:
-              </p>
+
+            {/* 3. Spezifische Inversions-Akkorde (Direktwahl) */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-xs font-bold text-[#785BA3] uppercase tracking-wider">
+                  Spezifische Inversions-Akkorde (Direktwahl)
+                </span>
+                <span className="text-xs text-tinte-leise">
+                  Wählt Basis & Umkehrung direkt aus
+                </span>
+              </div>
               <div className="flex flex-wrap gap-2">
-                {info.einzelAkkorde.map((sym) => {
-                  const istDrin = ausgewaehlteAkkorde.includes(sym);
+                {[
+                  { sym: "C/E", basis: "C", umk: 1 },
+                  { sym: "C/G", basis: "C", umk: 2 },
+                  { sym: "G/B", basis: "G", umk: 1 },
+                  { sym: "G/D", basis: "G", umk: 2 },
+                  { sym: "F/A", basis: "F", umk: 1 },
+                  { sym: "F/C", basis: "F", umk: 2 },
+                  { sym: "Am/C", basis: "Am", umk: 1 },
+                  { sym: "Am/E", basis: "Am", umk: 2 },
+                ].map(({ sym, basis, umk }) => {
+                  const aktiv =
+                    inversionsAkkord === basis &&
+                    gewaehlteUmkehrungen.length === 1 &&
+                    gewaehlteUmkehrungen[0] === umk;
                   return (
                     <button
                       key={sym}
                       type="button"
-                      onClick={() => klickAkkord(sym)}
-                      className={`rounded-2xl px-4 py-2.5 text-sm font-bold transition-all duration-150 border ${
-                        istDrin
+                      onClick={() => {
+                        onInversionsAkkordChange(basis);
+                        onGewaehlteUmkehrungenChange([umk]);
+                      }}
+                      className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all border ${
+                        aktiv
                           ? "bg-[#785BA3] text-white border-[#785BA3] shadow-xs scale-105"
                           : "bg-white text-tinte border-papier-tief hover:border-[#785BA3]/30 hover:bg-[#FAF6FD]"
                       }`}
@@ -279,9 +308,40 @@ export function AkkordAuswahl({
                 })}
               </div>
             </div>
+          </div>
+        ) : (
+          /* Fall 2: Standard-Akkorde freie Auswahl nach strukturierten Gruppen */
+          <div className="flex flex-col gap-5">
+            {/* Thematische Gruppen von Akkorden */}
+            {info.gruppen.map((gruppe) => (
+              <div key={gruppe.titel} className="flex flex-col gap-2">
+                <span className="text-xs font-bold text-[#785BA3] uppercase tracking-wider px-1">
+                  {gruppe.titel}
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {gruppe.akkorde.map((sym) => {
+                    const istDrin = ausgewaehlteAkkorde.includes(sym);
+                    return (
+                      <button
+                        key={sym}
+                        type="button"
+                        onClick={() => klickAkkord(sym)}
+                        className={`rounded-2xl px-4 py-2.5 text-sm font-bold transition-all duration-150 border ${
+                          istDrin
+                            ? "bg-[#785BA3] text-white border-[#785BA3] shadow-xs scale-105"
+                            : "bg-white text-tinte border-papier-tief hover:border-[#785BA3]/30 hover:bg-[#FAF6FD]"
+                        }`}
+                      >
+                        {sym}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
 
-            {/* 2. DANN UNTEN DRUNTER: Deine Auswahl + Button zum Auffüllen */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#FAF6FD] border border-[#785BA3]/15 mt-1">
+            {/* Deine Auswahl + Button zum Auffüllen */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#FAF6FD] border border-[#785BA3]/15 mt-2">
               <div className="flex flex-wrap items-center gap-2 min-h-[36px]">
                 <span className="text-xs font-bold text-[#785BA3] uppercase tracking-wider px-1">
                   Deine Auswahl:

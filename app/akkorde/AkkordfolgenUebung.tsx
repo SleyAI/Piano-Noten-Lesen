@@ -25,12 +25,14 @@ function schritteAusKette(
   const schritte: FolgenSchritt[] = [];
 
   kette.forEach((eintrag, akkordIndex) => {
-    const effektiveHand: Haende =
-      haende === "abwechselnd"
-        ? akkordIndex % 2 === 0
-          ? "rechts"
-          : "links"
-        : haende;
+    let effektiveHand: Haende;
+    if (spielart === "arpeggio" && haende === "beide") {
+      effektiveHand = akkordIndex % 2 === 0 ? "links" : "rechts";
+    } else if (haende === "abwechselnd") {
+      effektiveHand = akkordIndex % 2 === 0 ? "links" : "rechts";
+    } else {
+      effektiveHand = haende;
+    }
 
     const gebaut = baueUebung(
       eintrag.lage,
@@ -61,21 +63,13 @@ function wuerfleFolgeSchritte(
   spielart: AkkordSpielart,
 ): AkkordEintrag[] {
   if (eintraege.length === 0) return [];
-  // Bei Arpeggios maximal 4 Akkorde (12 Töne), damit die Noten groß und leserlich bleiben.
+  // Bei Arpeggios maximal 4 Akkorde (20 Töne), damit die Noten groß und leserlich bleiben.
   // Bei Griffen 8 Akkorde.
   const anzahl = spielart === "arpeggio" ? 4 : 8;
 
-  if (eintraege.length === 1) return Array.from({ length: anzahl }, () => eintraege[0]);
-
   const kette: AkkordEintrag[] = [];
-  while (kette.length < anzahl) {
-    const vorheriger = kette[kette.length - 1];
-    const pool =
-      eintraege.length > 1
-        ? eintraege.filter((e) => !vorheriger || e.id !== vorheriger.id)
-        : eintraege;
-    const zufall = pool[Math.floor(Math.random() * pool.length)];
-    kette.push(zufall);
+  for (let i = 0; i < anzahl; i += 1) {
+    kette.push(eintraege[i % eintraege.length]);
   }
   return kette;
 }
@@ -204,11 +198,17 @@ function Lauf({
             const gespielt = lauf.fertig || i < aktuellerAkkord;
             const istAktiv = i === aktuellerAkkord;
             const text = namenSichtbar || gespielt ? a.titel : `${i + 1}`;
+            const handLabel =
+              (spielart === "arpeggio" && haende === "beide") || haende === "abwechselnd"
+                ? i % 2 === 0
+                  ? " (Links)"
+                  : " (Rechts)"
+                : "";
 
             return (
               <span
                 key={`${i}-${a.id}`}
-                className={`flex items-center rounded-xl px-3 py-1 text-xs sm:text-sm font-bold transition-all duration-200 shrink-0 ${
+                className={`flex items-center gap-1 rounded-xl px-3 py-1 text-xs sm:text-sm font-bold transition-all duration-200 shrink-0 ${
                   gespielt
                     ? "bg-mint text-tinte opacity-80"
                     : istAktiv
@@ -216,7 +216,12 @@ function Lauf({
                       : "bg-white/80 text-tinte-leise border border-[#785BA3]/10"
                 }`}
               >
-                {text}
+                <span>{text}</span>
+                {handLabel && (
+                  <span className="text-[10px] font-medium opacity-75">
+                    {handLabel}
+                  </span>
+                )}
               </span>
             );
           })}
@@ -328,7 +333,7 @@ function Lauf({
             position={lauf.fertig ? schritte.length : lauf.index}
             daneben={[]}
             mitWerten={false}
-            beschreibung={eintraege.map((a) => a.titel).join(" – ")}
+            beschreibung={kette.map((a) => a.titel).join(" – ")}
           />
         }
         hervorgehoben={hervorgehoben}

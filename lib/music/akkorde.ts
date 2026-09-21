@@ -114,6 +114,42 @@ export const AKKORD_TYPEN = {
     bezeichnung: "Tredezimakkord",
     toene: [[0, 0], [2, 4], [6, 10], [12, 21]],
   },
+  dur6: {
+    id: "dur6",
+    suffix: "6",
+    bezeichnung: "Sextakkord",
+    toene: [[0, 0], [2, 4], [4, 7], [5, 9]],
+  },
+  moll6: {
+    id: "moll6",
+    suffix: "m6",
+    bezeichnung: "Mollsextakkord",
+    toene: [[0, 0], [2, 3], [4, 7], [5, 9]],
+  },
+  maj9: {
+    id: "maj9",
+    suffix: "maj9",
+    bezeichnung: "großer Nonakkord",
+    toene: [[0, 0], [2, 4], [4, 7], [6, 11], [8, 14]],
+  },
+  moll11: {
+    id: "moll11",
+    suffix: "m11",
+    bezeichnung: "Mollundezimakkord",
+    toene: [[0, 0], [2, 3], [6, 10], [8, 14], [10, 17]],
+  },
+  dominant7b9: {
+    id: "dominant7b9",
+    suffix: "7b9",
+    bezeichnung: "Dominantseptakkord b9",
+    toene: [[0, 0], [2, 4], [6, 10], [8, 13]],
+  },
+  dominant7kreuz9: {
+    id: "dominant7kreuz9",
+    suffix: "7#9",
+    bezeichnung: "Dominantseptakkord #9",
+    toene: [[0, 0], [2, 4], [6, 10], [8, 15]],
+  },
 } as const satisfies Record<string, AkkordTyp>;
 
 export type AkkordTypId = keyof typeof AKKORD_TYPEN;
@@ -572,6 +608,22 @@ export const AKKORD_PAKETE: AkkordPaket[] = [
     typen: ["neun", "moll9", "elf", "dreizehn"],
     grundtoene: [0, 5, 7, 2, 9],
   },
+  {
+    id: "sextakkorde",
+    stufe: 9,
+    titel: "Sextakkorde",
+    hinweis: "C6 und Am6 für Jazz und Pop.",
+    typen: ["dur6", "moll6"],
+    grundtoene: [0, 2, 4, 5, 7, 9, 11],
+  },
+  {
+    id: "tensions-und-alteriert",
+    stufe: 10,
+    titel: "Tensions & Alteriert",
+    hinweis: "Maj9, m11, 7b9 und 7#9.",
+    typen: ["maj9", "moll11", "dominant7b9", "dominant7kreuz9"],
+    grundtoene: [0, 2, 5, 7, 9],
+  },
 ];
 
 /** Alle Akkorde eines Pakets, in sinnvoller Reihenfolge. */
@@ -619,10 +671,31 @@ for (const paket of AKKORD_PAKETE) {
   }
 }
 
+// C°7 (C diminished 7) enharmonisch mit A statt Bbb aufgebaut, um Doppelvorzeichen zu vermeiden
+const cDim7Akkord: Akkord = {
+  id: "Cdim7",
+  symbol: "Cdim7",
+  typ: AKKORD_TYPEN.vermindert7,
+  grundton: note("C", 0, 4),
+  toene: [
+    note("C", 0, 4),
+    note("E", -1, 4),
+    note("G", -1, 4),
+    note("A", 0, 4),
+  ],
+  paket: "vermindert-uebermaessig",
+};
+ALLE_AKKORDE.set("Cdim7", cDim7Akkord);
+ALLE_AKKORDE.set("C°7", cDim7Akkord);
+
 const SYMBOL_ALIASES: Record<string, string> = {
+  "B (H)": "H",
   Bb: "B",
   Bbm: "Bm",
   Bm: "Hm",
+  Bm7b5: "Hm7b5",
+  "C°7": "Cdim7",
+  "Cdim": "Cdim7",
   "F#m": "Fism",
   "F#": "Fis",
   "C#": "Cis",

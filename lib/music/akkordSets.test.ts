@@ -37,6 +37,53 @@ describe("Akkord-Sets & Einträge", () => {
     expect(cSlashG?.lage.toene[0].stufe).toBe("G");
   });
 
+  it("baut alle spezifizierten Akkorde fehlerfrei auf", () => {
+    const alleStufen = ["dreiklaenge", "inversionen", "erweitert", "komplex"] as const;
+    for (const stufe of alleStufen) {
+      for (const sym of KOMPLEXITAET_INFOS[stufe].einzelAkkorde) {
+        const eintrag = baueAkkordEintrag(sym);
+        expect(eintrag, `Akkord ${sym} in Stufe ${stufe} konnte nicht gebaut werden`).not.toBeNull();
+        expect(eintrag?.lage.toene.length).toBeGreaterThanOrEqual(3);
+      }
+    }
+  });
+
+  it("unterstützt B (H), Bm, C6, Am6, Tensions, Alterationen und Slash-Chords", () => {
+    const bH = baueAkkordEintrag("B (H)");
+    expect(bH).not.toBeNull();
+    expect(bH?.lage.toene.map(nameMitOktave)).toEqual(["H3", "Dis4", "Fis4"]);
+
+    const bm = baueAkkordEintrag("Bm");
+    expect(bm).not.toBeNull();
+    expect(bm?.lage.toene.map(nameMitOktave)).toEqual(["H3", "D4", "Fis4"]);
+
+    const c6 = baueAkkordEintrag("C6");
+    expect(c6).not.toBeNull();
+    expect(c6?.lage.toene.map(nameMitOktave)).toEqual(["C4", "E4", "G4", "A4"]);
+
+    const am6 = baueAkkordEintrag("Am6");
+    expect(am6).not.toBeNull();
+    expect(am6?.lage.toene.map(nameMitOktave)).toEqual(["A3", "C4", "E4", "Fis4"]);
+
+    const fg = baueAkkordEintrag("F/G");
+    expect(fg).not.toBeNull();
+    expect(fg?.lage.toene.map(nameMitOktave)).toEqual(["G3", "F4", "A4", "C5"]);
+
+    const bbc = baueAkkordEintrag("Bb/C");
+    expect(bbc).not.toBeNull();
+    expect(bbc?.lage.toene.map(nameMitOktave)).toEqual(["C3", "B3", "D4", "F4"]);
+  });
+
+  it("enthält in erweiterten und komplexen Griffen keine reinen Dreiklänge", () => {
+    const dreiklaengePool = new Set(["C", "D", "E", "F", "G", "A", "H", "B"]);
+    for (const sym of KOMPLEXITAET_INFOS.erweitert.einzelAkkorde) {
+      expect(dreiklaengePool.has(sym), `${sym} darf nicht in erweitert sein`).toBe(false);
+    }
+    for (const sym of KOMPLEXITAET_INFOS.komplex.einzelAkkorde) {
+      expect(dreiklaengePool.has(sym), `${sym} darf nicht in komplex sein`).toBe(false);
+    }
+  });
+
   it("findet passende Viererfolgen ausgehend von einem Akkord mit 4 unterschiedlichen Akkorden", () => {
     const folgeC = passendeViererFolgeFuer("C", "dreiklaenge");
     expect(folgeC.length).toBe(4);
@@ -55,6 +102,20 @@ describe("Akkord-Sets & Einträge", () => {
       expect(new Set(f2).size).toBe(4);
       const f3 = passendeViererFolgeFuer("Cmaj7", "komplex", v);
       expect(new Set(f3).size).toBe(4);
+    }
+  });
+
+  it("füllt in erweiterten und komplexen Kadenzen streng aus der eigenen Stufe auf", () => {
+    const erweiterterPool = new Set(KOMPLEXITAET_INFOS.erweitert.einzelAkkorde);
+    const folgeDm7 = passendeViererFolgeFuer("C7", "erweitert");
+    for (const akk of folgeDm7) {
+      expect(erweiterterPool.has(akk), `${akk} muss aus erweitert sein`).toBe(true);
+    }
+
+    const komplexPool = new Set(KOMPLEXITAET_INFOS.komplex.einzelAkkorde);
+    const folgeCmaj7 = passendeViererFolgeFuer("Cmaj7", "komplex");
+    for (const akk of folgeCmaj7) {
+      expect(komplexPool.has(akk), `${akk} muss aus komplex sein`).toBe(true);
     }
   });
 
@@ -83,9 +144,15 @@ describe("Akkord-Sets & Einträge", () => {
     expect(invNur2[0].umkehrung).toBe(2);
   });
 
-  it("definiert die 3 Komplexitätsstufen vollständig", () => {
+  it("definiert die 4 Komplexitätsstufen vollständig mit Gruppen", () => {
     expect(KOMPLEXITAET_INFOS.dreiklaenge.kurztitel).toBe("Dreiklänge");
+    expect(KOMPLEXITAET_INFOS.inversionen.kurztitel).toBe("Umkehrungen");
     expect(KOMPLEXITAET_INFOS.erweitert.kurztitel).toBe("Erweiterte Griffe");
     expect(KOMPLEXITAET_INFOS.komplex.kurztitel).toBe("Komplexe Akkorde");
+
+    expect(KOMPLEXITAET_INFOS.dreiklaenge.gruppen.length).toBe(2);
+    expect(KOMPLEXITAET_INFOS.inversionen.gruppen.length).toBe(2);
+    expect(KOMPLEXITAET_INFOS.erweitert.gruppen.length).toBe(2);
+    expect(KOMPLEXITAET_INFOS.komplex.gruppen.length).toBe(4);
   });
 });

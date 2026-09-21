@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Klaviatur } from "@/components/keyboard/Klaviatur";
 import { Notensystem, type NotenSpalte, type SystemNote } from "@/components/notation/Notensystem";
 import type { Griff } from "@/lib/music/akkorde";
@@ -39,14 +39,16 @@ export function Akkordbild({
   namenSichtbar?: boolean;
   className?: string;
 }) {
-  const [ansicht, setAnsicht] = useState<"noten" | "tastatur">(ansichtVorgabe ?? "noten");
+  const [overrideAnsicht, setOverrideAnsicht] = useState<"noten" | "tastatur" | null>(null);
+  const [prevVorgabe, setPrevVorgabe] = useState(ansichtVorgabe);
 
-  // Synchronisieren, wenn sich die Ansichtsvorgabe von außen ändert (z. B. Toolbar oben)
-  useEffect(() => {
-    if (ansichtVorgabe) {
-      setAnsicht(ansichtVorgabe);
-    }
-  }, [ansichtVorgabe]);
+  // Synchronisieren, wenn sich die übergeordnete Ansichtsvorgabe ändert
+  if (ansichtVorgabe !== prevVorgabe) {
+    setPrevVorgabe(ansichtVorgabe);
+    setOverrideAnsicht(null);
+  }
+
+  const ansicht = overrideAnsicht ?? ansichtVorgabe ?? "noten";
 
   const { noten, links, rechts } = griff;
   if (noten.length === 0) return null;
@@ -79,7 +81,7 @@ export function Akkordbild({
 
   function toggleAnsicht(e?: React.MouseEvent) {
     e?.stopPropagation();
-    setAnsicht((a) => (a === "noten" ? "tastatur" : "noten"));
+    setOverrideAnsicht(ansicht === "noten" ? "tastatur" : "noten");
   }
 
   const { hauptTitel, unterTitel } = parseTitel(titel);
@@ -116,7 +118,7 @@ export function Akkordbild({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              setAnsicht("noten");
+              setOverrideAnsicht("noten");
             }}
             className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
               ansicht === "noten"
@@ -130,7 +132,7 @@ export function Akkordbild({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              setAnsicht("tastatur");
+              setOverrideAnsicht("tastatur");
             }}
             className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
               ansicht === "tastatur"

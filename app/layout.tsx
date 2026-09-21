@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import type { ReactNode } from "react";
 import { Fredoka, Nunito } from "next/font/google";
 import "./globals.css";
 import { Wachhalter } from "@/components/ui/Wachhalter";
@@ -31,7 +32,7 @@ export const viewport: Viewport = {
   themeColor: "#F4EFF8",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="de" className={`${nunito.variable} ${fredoka.variable} h-full antialiased`}>
       <body className="keine-auswahl h-full overflow-hidden bg-papier text-tinte">

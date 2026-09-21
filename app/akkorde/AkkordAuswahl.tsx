@@ -74,7 +74,7 @@ export function AkkordAuswahl({
   const aktuelleInversionen = inversionenFuerAkkord(inversionsAkkord);
 
   return (
-    <div className="flex flex-col items-center gap-5 py-4 px-4 max-w-4xl mx-auto w-full pb-16">
+    <div className="flex flex-col items-center gap-6 py-6 px-4 sm:px-8 max-w-[1200px] mx-auto w-full pb-20">
       {/* Header */}
       <div className="text-center">
         <h2 className="font-titel text-3xl sm:text-4xl font-bold text-[#785BA3]">

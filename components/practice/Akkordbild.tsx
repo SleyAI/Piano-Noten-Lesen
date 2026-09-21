@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Klaviatur } from "@/components/keyboard/Klaviatur";
 import { Notensystem, type NotenSpalte, type SystemNote } from "@/components/notation/Notensystem";
 import type { Griff } from "@/lib/music/akkorde";
@@ -13,6 +13,15 @@ function fingerFuer(toene: readonly Note[], umkehrung: number, hand: Schluessel)
   return new Map(
     fingersatz(toene.length, umkehrung, hand).map((finger, i) => [toene[i].midi, String(finger)]),
   );
+}
+
+function parseTitel(rawTitel?: string): { hauptTitel: string; unterTitel?: string } {
+  if (!rawTitel) return { hauptTitel: "" };
+  const match = rawTitel.match(/^(.*?)\s*\((.*?)\)$/);
+  if (match) {
+    return { hauptTitel: match[1].trim(), unterTitel: match[2].trim() };
+  }
+  return { hauptTitel: rawTitel };
 }
 
 export function Akkordbild({
@@ -30,8 +39,14 @@ export function Akkordbild({
   namenSichtbar?: boolean;
   className?: string;
 }) {
-  const [lokaleAnsicht, setLokaleAnsicht] = useState<"noten" | "tastatur">("noten");
-  const ansicht = ansichtVorgabe ?? lokaleAnsicht;
+  const [ansicht, setAnsicht] = useState<"noten" | "tastatur">(ansichtVorgabe ?? "noten");
+
+  // Synchronisieren, wenn sich die Ansichtsvorgabe von außen ändert (z. B. Toolbar oben)
+  useEffect(() => {
+    if (ansichtVorgabe) {
+      setAnsicht(ansichtVorgabe);
+    }
+  }, [ansichtVorgabe]);
 
   const { noten, links, rechts } = griff;
   if (noten.length === 0) return null;
@@ -62,68 +77,103 @@ export function Akkordbild({
     },
   ];
 
-  function umschalten() {
-    setLokaleAnsicht((a) => (a === "noten" ? "tastatur" : "noten"));
+  function toggleAnsicht(e?: React.MouseEvent) {
+    e?.stopPropagation();
+    setAnsicht((a) => (a === "noten" ? "tastatur" : "noten"));
   }
 
+  const { hauptTitel, unterTitel } = parseTitel(titel);
   const toeneText = (rechts.length > 0 ? rechts : links).map(name).join(" · ");
   const titelAnzeigen = namenSichtbar || ansicht === "tastatur";
 
+  const minMidi = Math.min(...noten.map((n) => n.midi));
+  const maxMidi = Math.max(...noten.map((n) => n.midi));
+
   return (
     <div
-      className={`flex flex-col gap-3 rounded-3xl bg-[#FAF6FD] p-4 sm:p-5 shadow-xs border border-[#785BA3]/15 transition-all ${className}`}
+      className={`flex flex-col gap-3.5 rounded-3xl bg-[#FAF6FD] p-5 sm:p-6 shadow-sm border border-[#785BA3]/15 transition-all hover:shadow-md ${className}`}
     >
       {/* Flashcard Header */}
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          {titel && (
-            <span
-              className={`font-titel text-xl sm:text-2xl font-bold transition-colors ${
-                titelAnzeigen ? "text-[#785BA3]" : "text-tinte-leise/60"
-              }`}
-            >
-              {titelAnzeigen ? titel : "Akkord ?"}
+      <div className="flex items-center justify-between gap-3 px-1">
+        <div className="flex items-center gap-2 flex-wrap min-w-0">
+          <span
+            className={`font-titel text-2xl sm:text-3xl font-bold transition-colors truncate ${
+              titelAnzeigen ? "text-[#785BA3]" : "text-tinte-leise/60"
+            }`}
+          >
+            {titelAnzeigen ? hauptTitel : "Akkord ?"}
+          </span>
+          {unterTitel && titelAnzeigen && (
+            <span className="rounded-full bg-[#EADCF5] text-[#785BA3] px-3 py-0.5 text-xs font-bold shrink-0 shadow-2xs border border-[#785BA3]/20">
+              {unterTitel}
             </span>
           )}
-          <span className="rounded-full bg-[#EADCF5] text-[#785BA3] px-2.5 py-0.5 text-[11px] font-bold">
-            {ansicht === "noten" ? "Noten" : "Hilfe"}
-          </span>
         </div>
 
-        <button
-          type="button"
-          onClick={umschalten}
-          className="flex items-center gap-1 rounded-full bg-white hover:bg-[#EADCF5]/60 border border-[#785BA3]/20 px-3 py-1 text-xs font-bold text-[#785BA3] shadow-2xs transition-all active:scale-95"
-          title="Flashcard umdrehen"
-        >
-          {ansicht === "noten" ? "🔄 Tastatur zeigen" : "🔄 Noten zeigen"}
-        </button>
+        {/* Direkt umschaltbare Segment-Buttons */}
+        <div className="inline-flex rounded-full bg-white p-1 border border-[#785BA3]/20 shadow-2xs shrink-0">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setAnsicht("noten");
+            }}
+            className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
+              ansicht === "noten"
+                ? "bg-[#785BA3] text-white shadow-xs"
+                : "text-tinte-leise hover:text-[#785BA3]"
+            }`}
+          >
+            🎼 Noten
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setAnsicht("tastatur");
+            }}
+            className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
+              ansicht === "tastatur"
+                ? "bg-[#785BA3] text-white shadow-xs"
+                : "text-tinte-leise hover:text-[#785BA3]"
+            }`}
+          >
+            🎹 Tastatur
+          </button>
+        </div>
       </div>
 
-      {/* Große Anzeige: Entweder Noten (Standard) oder Klaviatur (Hilfe) */}
+      {/* Große Karte: Klickbar zum Umdrehen */}
       <div
-        onClick={umschalten}
-        className="cursor-pointer flex items-center justify-center bg-white rounded-2xl p-3 sm:p-4 min-h-[200px] sm:min-h-[240px] shadow-inner transition-all hover:ring-2 hover:ring-[#785BA3]/25 select-none"
-        title="Klicken zum Umdrehen"
+        onClick={toggleAnsicht}
+        className="cursor-pointer flex items-center justify-center bg-white rounded-2xl p-4 sm:p-5 min-h-[220px] sm:min-h-[250px] shadow-inner transition-all hover:ring-2 hover:ring-[#785BA3]/30 select-none group relative"
+        title="Klicken zum Umdrehen (Noten / Tastatur)"
       >
         {ansicht === "noten" ? (
           <div className="w-full h-44 sm:h-52 flex items-center justify-center">
             <Notensystem
               spalten={spalten}
-              beschreibung={titelAnzeigen ? `${titel ?? "Akkord"} im Notensystem` : "Akkord im Notensystem"}
+              beschreibung={
+                titelAnzeigen ? `${titel ?? "Akkord"} im Notensystem` : "Akkord im Notensystem"
+              }
               className="h-full w-full max-h-52 object-contain"
             />
           </div>
         ) : (
-          <div className="w-full flex items-center justify-center py-2">
-            <Klaviatur
-              von={noten[0].midi - LUFT}
-              bis={noten[noten.length - 1].midi + LUFT}
-              hervorgehoben={hervorgehoben}
-              beschriftungen={beschriftungen}
-              nurZeigen
-              className="h-28 sm:h-36 w-full overflow-hidden rounded-xl"
-            />
+          <div className="w-full flex flex-col items-center justify-center py-2">
+            <div className="w-full max-w-md">
+              <Klaviatur
+                von={minMidi - LUFT}
+                bis={maxMidi + LUFT}
+                hervorgehoben={hervorgehoben}
+                beschriftungen={beschriftungen}
+                nurZeigen
+                className="h-28 sm:h-36 w-full overflow-hidden rounded-xl border border-papier-tief shadow-2xs"
+              />
+            </div>
+            <p className="text-[11px] font-semibold text-tinte-leise mt-3 text-center">
+              💡 Ziffern zeigen den Fingersatz (1 = Daumen, 5 = kleiner Finger)
+            </p>
           </div>
         )}
       </div>

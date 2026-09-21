@@ -9,7 +9,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Kopfzeile } from "@/components/ui/Kopfzeile";
-import { NotenReihe } from "@/components/practice/NotenReihe";
+import { type DanebenStelle, NotenReihe } from "@/components/practice/NotenReihe";
 import { NotenWahl } from "@/components/practice/NotenWahl";
 import { PlayKnopf } from "@/components/practice/PlayKnopf";
 import { Uebungsflaeche } from "@/components/practice/Uebungsflaeche";
@@ -25,6 +25,7 @@ import {
 import { melodieSchluessel, wuerfleMelodie } from "@/lib/music/melodie";
 import { nameMitOktave, vonMidi } from "@/lib/music/pitch";
 import { type NotenwertId, wuerfleRhythmus } from "@/lib/music/rhythmus";
+import { danebenAlsNote } from "@/lib/practice/danebenNote";
 import { klaviaturBereich } from "@/lib/practice/klaviaturbereich";
 import { type Fehler, useReihenUebung } from "@/lib/practice/useReihenUebung";
 import { useVorspielen } from "@/lib/practice/useVorspielen";
@@ -92,6 +93,17 @@ export function MelodienVorbereitung({
     [melodie, werte],
   );
   const vorspiel = useVorspielen(klang, tempo);
+
+  // Fehlgriff neben der erwarteten Note zeigen — nur bei falschem Ton, und nur,
+  // wenn er ueberhaupt ins gezeichnete Bild passt.
+  const danebenStelle = useMemo<DanebenStelle | null>(() => {
+    if (phase !== "fehler" || !letzterFehler || letzterFehler.art !== "ton") return null;
+    const note = danebenAlsNote(
+      letzterFehler.midi,
+      melodie[letzterFehler.index]?.schluessel ?? null,
+    );
+    return note ? { index: letzterFehler.index, note } : null;
+  }, [phase, letzterFehler, melodie]);
 
   // Prüfung via ReihenUebung
   const aufFertig = useCallback(() => {
@@ -206,17 +218,7 @@ export function MelodienVorbereitung({
               reihe={melodie}
               werte={werte}
               position={phase === "pruefen" ? uebung.position : -1}
-              daneben={
-                phase === "fehler" && letzterFehler
-                  ? {
-                      index: letzterFehler.index,
-                      note: {
-                        ...vonMidi(letzterFehler.midi),
-                        schluessel: melodie[letzterFehler.index]?.schluessel ?? "violin",
-                      },
-                    }
-                  : null
-              }
+              daneben={danebenStelle}
               beschreibung={`Melodie aus ${melodie.length} Tönen mit Notenwerten`}
             />
           }

@@ -37,6 +37,7 @@ export interface ReihenUebungOptionen {
   aktiv: boolean;
   /** Wird einmal aufgerufen, sobald der letzte Ton sitzt. */
   aufFertig: () => void;
+  /** Wird bei jedem Fehlgriff aufgerufen, bevor die Reihe zurueckgesetzt wird. */
   aufFehler?: (fehler: Fehler) => void;
 }
 

@@ -53,17 +53,17 @@ export default function Startseite() {
   ];
 
   return (
-    <main className="flex h-full flex-col justify-center overflow-y-auto px-4 sm:px-6 py-6 sm:py-8">
+    <main className="flex h-full flex-col overflow-y-auto px-4 sm:px-6 lg:px-8 pt-[max(2.5rem,calc(env(safe-area-inset-top)+1.5rem))] sm:pt-[max(3.5rem,calc(env(safe-area-inset-top)+2.5rem))] md:pt-16 lg:pt-20 pb-[max(4rem,calc(env(safe-area-inset-bottom)+2rem))]">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 sm:gap-6">
         {/* Klavier-Status rechts oben wie im Referenzdesign, weit weg vom Maskottchen */}
-        <div className="flex justify-end w-full px-1 -mb-2 sm:-mb-1">
+        <div className="flex justify-end w-full px-1 mb-1 sm:mb-2">
           <MidiStatus />
         </div>
 
         {/* Header im cozy Stil mit Maskottchen und fliegenden Noten */}
-        <header className="flex flex-col items-center justify-center gap-1 sm:gap-2 py-1 text-center">
+        <header className="flex flex-col items-center justify-center gap-1.5 sm:gap-2.5 py-1 text-center">
           <div className="flex items-center justify-center gap-3 sm:gap-5">
-            <h1 className="font-titel text-4xl sm:text-6xl md:text-7xl font-bold text-[#785BA3] tracking-tight">
+            <h1 className="font-titel text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[#785BA3] tracking-tight leading-tight">
               Notenlesen üben
             </h1>
 
@@ -71,13 +71,13 @@ export default function Startseite() {
             <div className="relative shrink-0 select-none animate-huepfen flex items-center justify-center">
               {/* Fliegende Noten */}
               <span
-                className="absolute -top-2 -left-2 text-base sm:text-lg font-bold text-[#785BA3] animate-note-1 pointer-events-none"
+                className="absolute -top-2.5 -left-2.5 text-base sm:text-lg font-bold text-[#785BA3] animate-note-1 pointer-events-none"
                 aria-hidden
               >
                 ♪
               </span>
               <span
-                className="absolute -top-3 -right-2 text-lg sm:text-xl font-bold text-[#9874CC] animate-note-2 pointer-events-none"
+                className="absolute -top-3.5 -right-2.5 text-lg sm:text-xl font-bold text-[#9874CC] animate-note-2 pointer-events-none"
                 aria-hidden
               >
                 ♫
@@ -104,7 +104,7 @@ export default function Startseite() {
               />
             </div>
           </div>
-          <p className="font-titel text-lg sm:text-2xl md:text-3xl font-medium text-[#785BA3]/80 -mt-1 sm:-mt-2">
+          <p className="font-titel text-base sm:text-xl md:text-2xl font-medium text-[#785BA3]/80 -mt-0.5 sm:-mt-1">
             mit Otto
           </p>
         </header>

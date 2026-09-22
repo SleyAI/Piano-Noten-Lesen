@@ -23,14 +23,14 @@ export function Kopfzeile({
   zurueckHref?: string;
 }) {
   return (
-    <header className="flex shrink-0 items-center gap-4 px-6 py-4">
+    <header className="flex shrink-0 items-center gap-3 sm:gap-4 px-4 sm:px-6 pt-[max(1rem,calc(env(safe-area-inset-top)+0.5rem))] pb-3 sm:pb-4">
       {onZurueck ? (
         <button
           type="button"
           onClick={onZurueck}
           aria-label="Einen Schritt zurück"
           title="Zurück"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg font-bold text-[#785BA3] shadow-[0_2px_10px_rgba(120,91,163,0.08)] transition-all hover:bg-[#785BA3] hover:text-white active:scale-95"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-lg font-bold text-[#785BA3] shadow-[0_2px_10px_rgba(120,91,163,0.08)] transition-all hover:bg-[#785BA3] hover:text-white active:scale-95"
         >
           ←
         </button>
@@ -39,14 +39,14 @@ export function Kopfzeile({
           href={zurueckHref ?? "/"}
           aria-label="Zurück zur Startseite"
           title="Zurück zur Startseite"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg font-bold text-[#785BA3] shadow-[0_2px_10px_rgba(120,91,163,0.08)] transition-all hover:bg-[#785BA3] hover:text-white active:scale-95"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-lg font-bold text-[#785BA3] shadow-[0_2px_10px_rgba(120,91,163,0.08)] transition-all hover:bg-[#785BA3] hover:text-white active:scale-95"
         >
           ←
         </Link>
       )}
 
-      <div className="min-w-0">
-        <h1 className="truncate font-titel text-2xl leading-tight font-bold text-tinte">
+      <div className="min-w-0 flex-1 sm:flex-initial">
+        <h1 className="truncate font-titel text-xl sm:text-2xl leading-tight font-bold text-tinte">
           {titel}
         </h1>
         {unterzeile && (
@@ -54,7 +54,7 @@ export function Kopfzeile({
         )}
       </div>
 
-      <div className="ml-auto flex items-center gap-2.5">
+      <div className="ml-auto flex items-center gap-2 sm:gap-2.5 shrink-0">
         {rechts}
         <Sessionuhr />
         <MidiStatus />

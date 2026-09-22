@@ -153,4 +153,43 @@ describe("Zufall & Tonabfolgen", () => {
     const reihe = erzeugeTonabfolge(VORRAT, "melodisch");
     expect(reihe).toHaveLength(8);
   });
+
+  it("wuerfleZufall vermeidet A -> B -> A Ping-Pong wenn mindestens 3 Töne vorhanden sind", () => {
+    for (let r = 0; r < 50; r++) {
+      const reihe = wuerfleZufall(VORRAT);
+      for (let i = 2; i < reihe.length; i++) {
+        expect(
+          reihe[i].note.midi,
+          `Ping-Pong an Position ${i}: ${reihe.map((t) => t.note.stufe + t.note.oktave).join(" -> ")}`,
+        ).not.toBe(reihe[i - 2].note.midi);
+      }
+    }
+  });
+
+  it("wuerfleZufall springt aktiv über das Notensystem (überwiegend Sprünge statt Schritte)", () => {
+    let spruenge = 0;
+    let schritte = 0;
+    for (let r = 0; r < 50; r++) {
+      const reihe = wuerfleZufall(VORRAT);
+      for (let i = 1; i < reihe.length; i++) {
+        const dist = Math.abs(reihe[i].note.diatonic - reihe[i - 1].note.diatonic);
+        if (dist >= 2) spruenge++;
+        else if (dist === 1) schritte++;
+      }
+    }
+    // Sprünge müssen gegenüber Einzelschritten deutlich überwiegen
+    expect(spruenge).toBeGreaterThan(schritte * 2);
+  });
+
+  it("wuerfleMelodie erzeugt zueinander passende Noten ohne Tritonus-Dissonanzen", () => {
+    for (let r = 0; r < 50; r++) {
+      const reihe = wuerfleMelodie(VORRAT);
+      for (let i = 1; i < reihe.length; i++) {
+        const midiDist = Math.abs(reihe[i].note.midi - reihe[i - 1].note.midi);
+        // Kein Tritonus (6 Halbtöne)
+        expect(midiDist, `Tritonus gefunden: ${reihe[i - 1].note.stufe} -> ${reihe[i].note.stufe}`).not.toBe(6);
+      }
+    }
+  });
 });
+

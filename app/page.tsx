@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import maskottchenBild from "@/public/maskottchen.png";
+import { OttoMaskottchen } from "@/components/ui/OttoMaskottchen";
 import { MidiStatus } from "@/components/ui/MidiStatus";
 import { SessionBand } from "@/components/ui/SessionBand";
 import { SpielweiseWahl } from "@/components/ui/SpielweiseWahl";
@@ -53,73 +52,44 @@ export default function Startseite() {
   ];
 
   return (
-    <main className="flex h-full flex-col overflow-y-auto px-4 sm:px-6 lg:px-8 pt-[max(2.5rem,calc(env(safe-area-inset-top)+1.5rem))] sm:pt-[max(3.5rem,calc(env(safe-area-inset-top)+2.5rem))] md:pt-16 lg:pt-20 pb-[max(4rem,calc(env(safe-area-inset-bottom)+2rem))]">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 sm:gap-6">
-        {/* Klavier-Status rechts oben wie im Referenzdesign, weit weg vom Maskottchen */}
-        <div className="flex justify-end w-full px-1 mb-1 sm:mb-2">
-          <MidiStatus />
-        </div>
-
+    <main className="flex h-full flex-col overflow-y-auto px-4 sm:px-6 lg:px-8 pt-[max(0.75rem,calc(env(safe-area-inset-top)+0.5rem))] sm:pt-4 md:pt-5 lg:pt-6 pb-4 sm:pb-6">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 sm:gap-3.5 md:gap-4 my-auto">
         {/* Header im cozy Stil mit Maskottchen und fliegenden Noten */}
-        <header className="flex flex-col items-center justify-center gap-1.5 sm:gap-2.5 py-1 text-center">
-          <div className="flex items-center justify-center gap-3 sm:gap-5">
-            <h1 className="font-titel text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[#785BA3] tracking-tight leading-tight">
+        <header className="relative flex flex-col items-center justify-center gap-1 sm:gap-1.5 py-0.5 text-center">
+          <div className="flex items-center justify-center gap-2.5 sm:gap-3.5">
+            <h1 className="font-titel text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#785BA3] tracking-tight leading-tight">
               Notenlesen üben
             </h1>
 
-            {/* Hüpfendes Maskottchen mit fliegenden Noten */}
-            <div className="relative shrink-0 select-none animate-huepfen flex items-center justify-center">
-              {/* Fliegende Noten */}
-              <span
-                className="absolute -top-2.5 -left-2.5 text-base sm:text-lg font-bold text-[#785BA3] animate-note-1 pointer-events-none"
-                aria-hidden
-              >
-                ♪
-              </span>
-              <span
-                className="absolute -top-3.5 -right-2.5 text-lg sm:text-xl font-bold text-[#9874CC] animate-note-2 pointer-events-none"
-                aria-hidden
-              >
-                ♫
-              </span>
-              <span
-                className="absolute -bottom-1 -right-2 text-sm sm:text-base font-bold text-[#785BA3] animate-note-3 pointer-events-none"
-                aria-hidden
-              >
-                ♩
-              </span>
-              <span
-                className="absolute -bottom-1 -left-2 text-xs sm:text-sm font-bold text-[#9874CC] animate-note-2 pointer-events-none"
-                aria-hidden
-              >
-                ♬
-              </span>
-
-              {/* Maskottchen-Bild via Next Image (basePath-kompatibel) */}
-              <Image
-                src={maskottchenBild}
-                alt=""
-                priority
-                className="w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain filter drop-shadow-sm pointer-events-none"
-              />
-            </div>
+            {/* Interaktives Maskottchen mit hochschießenden Noten bei Klick */}
+            <OttoMaskottchen bildClassName="w-9 h-9 sm:w-11 sm:h-11 md:w-13 md:h-13" />
           </div>
-          <p className="font-titel text-base sm:text-xl md:text-2xl font-medium text-[#785BA3]/80 -mt-0.5 sm:-mt-1">
+          <p className="font-titel text-xs sm:text-sm md:text-base font-medium text-[#785BA3]/80 -mt-0.5">
             mit Otto
           </p>
+
+          {/* Klavier-Status rechts im Header auf Tablets und Desktop */}
+          <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2">
+            <MidiStatus />
+          </div>
         </header>
 
+        {/* Mobile Klavier-Status (unter Header auf kleinen Smartphones) */}
+        <div className="flex sm:hidden justify-center -mt-0.5">
+          <MidiStatus />
+        </div>
+
         {/* Gemütliche Level-Leiste */}
-        <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white border border-[#785BA3]/10 shadow-[0_4px_20px_rgba(120,91,163,0.05)]">
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="w-8 h-8 rounded-xl bg-[#EADCF5] text-[#785BA3] font-titel text-sm font-bold flex items-center justify-center shrink-0">
+        <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-white border border-[#785BA3]/10 shadow-[0_4px_20px_rgba(120,91,163,0.05)]">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#EADCF5] text-[#785BA3] font-titel text-xs sm:text-sm font-bold flex items-center justify-center shrink-0">
               {curLevel.id}
             </span>
             <div className="truncate">
-              <span className="font-titel text-sm sm:text-base font-bold text-tinte">
+              <span className="font-titel text-xs sm:text-sm md:text-base font-bold text-tinte">
                 Level {curLevel.id}:
               </span>{" "}
-              <span className="text-xs sm:text-sm text-tinte-leise font-medium">
+              <span className="text-[11px] sm:text-xs md:text-sm text-tinte-leise font-medium">
                 {curLevel.inhalt}
               </span>
             </div>
@@ -127,25 +97,25 @@ export default function Startseite() {
           <button
             type="button"
             onClick={() => setModalManuellOffen(true)}
-            className="shrink-0 ml-3 rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-[#785BA3] hover:bg-[#785BA3] hover:text-white transition-all shadow-xs"
+            className="shrink-0 ml-2 sm:ml-3 rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-3 py-1 sm:px-3.5 sm:py-1.5 text-xs sm:text-sm font-bold text-[#785BA3] hover:bg-[#785BA3] hover:text-white transition-all shadow-xs"
           >
             Level wechseln ▾
           </button>
         </div>
 
-        {/* 2-Spalten-Bereich */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 items-stretch">
+        {/* 2-Spalten-Bereich: Auf Tablets (ab md: 768px) direkt 2 Spalten! */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5 md:gap-4 items-stretch">
           {/* Linke Seite: Übungen im DECKS-Stil der Referenz */}
-          <Karte className="p-6 sm:p-7 flex flex-col justify-between h-full">
+          <Karte className="p-4 sm:p-5 flex flex-col justify-between h-full">
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <span className="font-titel text-xl font-bold text-tinte">Übungen</span>
-                <span className="rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-3 py-1 text-xs font-bold text-[#785BA3]">
+              <div className="flex items-center justify-between mb-2.5 sm:mb-3">
+                <span className="font-titel text-lg sm:text-xl font-bold text-tinte">Übungen</span>
+                <span className="rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-2.5 py-0.5 text-xs font-bold text-[#785BA3]">
                   3 Modi
                 </span>
               </div>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2 sm:gap-2.5">
                 {MODI.map((modus) => (
                   <Link
                     key={modus.id}
@@ -155,24 +125,24 @@ export default function Startseite() {
                         useEinstellungen.getState().setzeMelodieModus(modus.melodieModus);
                       }
                     }}
-                    className="group flex items-center justify-between p-4 rounded-2xl bg-[#EDE0F5] hover:bg-[#E2CEF0] transition-all duration-200 border border-[#785BA3]/20 hover:border-[#785BA3]/45 hover:-translate-y-0.5 shadow-xs"
+                    className="group flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-[#EDE0F5] hover:bg-[#E2CEF0] transition-all duration-200 border border-[#785BA3]/20 hover:border-[#785BA3]/45 hover:-translate-y-0.5 shadow-xs"
                   >
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-[#D7BEEB] text-[#785BA3] text-lg font-bold shadow-xs">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 bg-[#D7BEEB] text-[#785BA3] text-base sm:text-lg font-bold shadow-xs">
                         {modus.symbol}
                       </div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="font-titel text-base sm:text-lg font-bold text-tinte group-hover:text-[#785BA3] transition-colors">
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                        <h2 className="font-titel text-sm sm:text-base font-bold text-tinte group-hover:text-[#785BA3] transition-colors">
                           {modus.titel}
                         </h2>
                         {modus.tag && (
-                          <span className="rounded-full bg-white/80 border border-[#785BA3]/15 text-[#785BA3] px-2.5 py-0.5 text-[11px] font-bold">
+                          <span className="rounded-full bg-white/80 border border-[#785BA3]/15 text-[#785BA3] px-2 py-0.5 text-[10px] sm:text-[11px] font-bold">
                             {modus.tag}
                           </span>
                         )}
                       </div>
                     </div>
-                    <span className="text-[#785BA3] text-xl font-bold px-1 transition-transform duration-200 group-hover:translate-x-1 shrink-0">
+                    <span className="text-[#785BA3] text-lg sm:text-xl font-bold px-1 transition-transform duration-200 group-hover:translate-x-1 shrink-0">
                       ›
                     </span>
                   </Link>
@@ -182,7 +152,7 @@ export default function Startseite() {
           </Karte>
 
           {/* Rechte Seite: Timer oben, Statistik unten */}
-          <div className="flex flex-col gap-5 sm:gap-6">
+          <div className="flex flex-col gap-3 sm:gap-3.5 md:gap-4">
             <SessionBand />
             <WochenKarte />
           </div>

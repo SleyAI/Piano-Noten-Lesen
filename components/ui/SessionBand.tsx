@@ -23,39 +23,39 @@ export function SessionBand({ className }: { className?: string }) {
   const laufend = laeuft ? Math.max(0, Math.floor((jetzt - beginn) / 1000)) : 0;
 
   return (
-    <Karte akzent="flieder" className={`p-6 sm:p-7 flex flex-col justify-between ${className ?? ""}`}>
+    <Karte akzent="flieder" className={`p-4 sm:p-5 flex flex-col justify-between ${className ?? ""}`}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-base select-none">⏱</span>
-          <span className="font-titel text-xl font-bold text-tinte">Timer</span>
-          <span className="rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-2.5 py-0.5 text-xs font-bold text-[#785BA3]">
+          <span className="text-sm select-none">⏱</span>
+          <span className="font-titel text-lg sm:text-xl font-bold text-tinte">Timer</span>
+          <span className="rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-2 py-0.5 text-[11px] sm:text-xs font-bold text-[#785BA3]">
             {zielMinuten ? `${zielMinuten} Min Ziel` : "Stoppuhr"}
           </span>
         </div>
         {laeuft && (
-          <span className="flex items-center gap-1.5 rounded-full bg-[#EADCF5] px-3 py-1 text-xs font-bold text-[#785BA3] animate-pulse">
-            <span className="w-2 h-2 rounded-full bg-[#785BA3]" />
+          <span className="flex items-center gap-1.5 rounded-full bg-[#EADCF5] px-2.5 py-0.5 text-[11px] sm:text-xs font-bold text-[#785BA3] animate-pulse">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#785BA3]" />
             Läuft
           </span>
         )}
       </div>
 
       {/* Große Zeitanzeige */}
-      <div className="my-4 text-center">
-        <span className="font-titel text-5xl sm:text-6xl font-bold text-[#785BA3] tracking-tight tabular-nums block">
+      <div className="my-2 sm:my-3 text-center">
+        <span className="font-titel text-4xl sm:text-5xl font-bold text-[#785BA3] tracking-tight tabular-nums block">
           {uhrzeitText(laufend)}
         </span>
 
         {/* Quick Ziel-Chips wie im Referenzbild */}
         {!laeuft && (
-          <div className="flex items-center justify-center gap-1.5 mt-3">
+          <div className="flex items-center justify-center gap-1.5 mt-2">
             {[5, 15, 25].map((m) => (
               <button
                 key={m}
                 type="button"
                 onClick={() => setZielMinuten(zielMinuten === m ? null : m)}
-                className={`rounded-xl px-2.5 py-1 text-xs font-bold transition-all ${
+                className={`rounded-xl px-2.5 py-0.5 text-xs font-bold transition-all ${
                   zielMinuten === m
                     ? "bg-[#785BA3] text-white shadow-xs"
                     : "bg-[#FAF5FD] text-tinte-leise hover:bg-[#EADCF5] hover:text-[#785BA3] border border-[#785BA3]/15"
@@ -67,7 +67,7 @@ export function SessionBand({ className }: { className?: string }) {
             <button
               type="button"
               onClick={() => setZielMinuten(null)}
-              className={`rounded-xl px-2.5 py-1 text-xs font-bold transition-all ${
+              className={`rounded-xl px-2.5 py-0.5 text-xs font-bold transition-all ${
                 zielMinuten === null
                   ? "bg-[#785BA3] text-white shadow-xs"
                   : "bg-[#FAF5FD] text-tinte-leise hover:bg-[#EADCF5] hover:text-[#785BA3] border border-[#785BA3]/15"
@@ -79,12 +79,12 @@ export function SessionBand({ className }: { className?: string }) {
         )}
       </div>
 
-      {/* Großer Start/Stop-Button */}
+      {/* Start/Stop-Button */}
       <div>
         <button
           type="button"
           onClick={laeuft ? beende : starte}
-          className={`w-full rounded-2xl py-3.5 px-6 font-bold text-base transition-all duration-200 flex items-center justify-center gap-2 active:scale-98 shadow-sm ${
+          className={`w-full rounded-2xl py-2 sm:py-2.5 px-4 font-bold text-sm sm:text-base transition-all duration-200 flex items-center justify-center gap-2 active:scale-98 shadow-xs ${
             laeuft
               ? "bg-[#FAF5FD] border border-[#785BA3]/30 text-[#785BA3] hover:bg-[#EADCF5]"
               : "bg-[#785BA3] text-white hover:bg-[#654B8D] shadow-[#785BA3]/25 hover:-translate-y-0.5"

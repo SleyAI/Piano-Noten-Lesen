@@ -36,22 +36,22 @@ export function WochenKarte({ className }: { className?: string } = {}) {
   const heuteSekunden = woche[woche.length - 1]?.sekunden ?? 0;
 
   return (
-    <Karte href="/statistik" akzent="flieder" className={`p-6 sm:p-7 flex flex-col justify-between ${className ?? ""}`}>
+    <Karte href="/statistik" akzent="flieder" className={`p-4 sm:p-5 flex flex-col justify-between ${className ?? ""}`}>
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="font-titel text-xl font-bold text-tinte">Diese Woche</span>
-        <span className="rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-3 py-1 text-xs font-bold text-[#785BA3]">
+        <span className="font-titel text-lg sm:text-xl font-bold text-tinte">Diese Woche</span>
+        <span className="rounded-full bg-[#FAF5FD] border border-[#785BA3]/20 px-2.5 py-0.5 text-xs font-bold text-[#785BA3]">
           {kurzeDauer(heuteSekunden)} heute
         </span>
       </div>
 
       {/* Notensystem Chart */}
-      <div className="flex h-32 sm:h-36 w-full items-center justify-center my-2">
+      <div className="flex h-20 sm:h-24 md:h-28 w-full items-center justify-center my-1 sm:my-1.5">
         <Wochenlinie tage={woche} />
       </div>
 
       {/* Footer Stats */}
-      <div className="flex items-center justify-between pt-3 border-t border-papier-tief text-xs text-tinte-leise font-medium">
+      <div className="flex items-center justify-between pt-2 border-t border-papier-tief text-xs text-tinte-leise font-medium">
         <span>
           Diese Woche: <strong className="text-tinte font-bold">{kurzeDauer(wochenGesamt)}</strong>
         </span>

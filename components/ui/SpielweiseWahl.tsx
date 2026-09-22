@@ -28,9 +28,9 @@ export function SpielweiseWahl({ className }: { className?: string }) {
   const midiUnmoeglich = midi.art === "nicht-verfuegbar" || midi.art === "unsicherer-kontext";
 
   return (
-    <Karte akzent="flieder" className={`px-6 py-4 ${className ?? ""}`}>
-      <div className="flex items-center gap-4">
-        <div className="flex gap-2.5">
+    <Karte akzent="flieder" className={`px-4 sm:px-5 py-2.5 sm:py-3 ${className ?? ""}`}>
+      <div className="flex items-center gap-3 sm:gap-4 flex-wrap sm:flex-nowrap justify-between">
+        <div className="flex gap-2">
           <Knopf
             aktiv={spielweise === "tippen"}
             onClick={() => setzeSpielweise("tippen")}
